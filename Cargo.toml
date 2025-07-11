@@ -6,3 +6,7 @@ version = "1.0.0"
 edition = "2024"
 
 [dependencies]
+url = "2.5.4"
+
+[dev-dependencies]
+attestify_test_framework = { git = "https://github.com/attestify/test-framework-oss.git", tag = "v0.1.0" }
