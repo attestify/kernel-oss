@@ -1,3 +1,5 @@
+# Attestify Kernel - Open Source
+
 [package]
 name = "attestify_kernel"
 version = "1.0.0"
