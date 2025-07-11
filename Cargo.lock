@@ -13,7 +13,7 @@ dependencies = [
 [[package]]
 name = "attestify_test_framework"
 version = "0.1.0"
-source = "git+https://github.com/attestify/test-framework-oss.git?tag=v0.1.0#37aa99d94db78b11a064d399cb39c3b858b6d0de"
+source = "git+https://github.com/attestify/test-framework-oss.git?tag=v0.1.1#5e7e681dac194a910c190fded82f1914614d1384"
 
 [[package]]
 name = "displaydoc"
