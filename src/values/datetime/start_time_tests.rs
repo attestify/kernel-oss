@@ -1,6 +1,6 @@
 use crate::error::Audience;
 use crate::error::Kind;
-use crate::values::time::start_time::StartTime;
+use crate::values::datetime::start_time::StartTime;
 
 #[test]
 fn now_success() {
