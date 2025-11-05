@@ -3,14 +3,6 @@
 version = 4
 
 [[package]]
-name = "attestify_kernel"
-version = "0.1.0"
-dependencies = [
- "attestify_test_framework",
- "url",
-]
-
-[[package]]
 name = "attestify_test_framework"
 version = "0.1.0"
 source = "git+https://github.com/attestify/test-framework-oss.git?tag=v0.1.1#5e7e681dac194a910c190fded82f1914614d1384"
@@ -135,6 +127,14 @@ checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
+]
+
+[[package]]
+name = "kernel_oss"
+version = "0.2.1"
+dependencies = [
+ "attestify_test_framework",
+ "url",
 ]
 
 [[package]]

@@ -1,8 +1,8 @@
 # Attestify Kernel - Open Source
 
 [package]
-name = "attestify_kernel"
-version = "0.2.0"
+name = "kernel_oss"
+version = "0.2.1"
 edition = "2024"
 
 [dependencies]
