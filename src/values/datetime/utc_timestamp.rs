@@ -14,7 +14,7 @@ use crate::error::Kind::InvalidInput;
 ///
 /// ## Examples
 /// ```rust
-/// use attestify_kernel::values::datetime::utc_timestamp::UTCTimestamp;
+/// use kernel_oss::values::datetime::utc_timestamp::UTCTimestamp;
 ///
 /// // Build from nanoseconds
 /// let ts = UTCTimestamp::builder().use_ns(1_500_000u128).build().unwrap();

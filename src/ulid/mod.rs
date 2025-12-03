@@ -60,7 +60,7 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     ///
     /// let ulid = ULID::from_parts(1234567890123456789, 12345678901234567890123456789012345678);
     ///
@@ -81,7 +81,7 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    ///  use attestify_kernel::ulid::ULID;
+    ///  use kernel_oss::ulid::ULID;
     ///
     /// let text = "01D39ZY06FGSCTVN4T2V9PKHFZ";
     /// let result = ULID::from_string(text);
@@ -102,7 +102,7 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     ///
     /// let ulid = ULID::nil();
     ///
@@ -119,7 +119,7 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     ///
     /// let text = "01D39ZY06FGSCTVN4T2V9PKHFZ";
     /// let ulid = ULID::from_string(text).unwrap();
@@ -135,8 +135,8 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    /// use attestify_kernel::ulid::ULID;
-    /// use attestify_kernel::ulid::base32:: ULID_LEN;
+    /// use kernel_oss::ulid::ULID;
+    /// use kernel_oss::ulid::base32:: ULID_LEN;
     ///
     /// let text = "01D39ZY06FGSCTVN4T2V9PKHFZ";
     /// let ulid = ULID::from_string(text).unwrap();
@@ -155,7 +155,7 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     ///
     /// let text = "01D39ZY06FGSCTVN4T2V9PKHFZ";
     /// let ulid = ULID::from_string(text).unwrap();
@@ -171,7 +171,7 @@ impl ULID {
     ///
     /// # Example
     /// ```rust
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     ///
     /// # let ulid = ULID(1);
     /// # #[cfg(feature = "std")]
@@ -200,7 +200,7 @@ impl ULID {
     ///
     /// # Example
     /// ```
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     /// let bytes = [0xFF; 16];
     ///
     /// let ulid = ULID::from_bytes(bytes);
@@ -218,7 +218,7 @@ impl ULID {
     ///
     /// # Example
     /// ```
-    /// use attestify_kernel::ulid::ULID;
+    /// use kernel_oss::ulid::ULID;
     ///
     /// let text = "7ZZZZZZZZZZZZZZZZZZZZZZZZZ";
     /// let ulid = ULID::from_string(text).unwrap();
