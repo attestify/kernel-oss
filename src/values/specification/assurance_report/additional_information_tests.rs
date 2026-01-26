@@ -1,7 +1,7 @@
 use crate::error::{Audience, Kind};
 use crate::values::specification::assurance_report::additional_information::AdditionalInformation;
-use attestify_test_framework::is_ok;
-use attestify_test_framework::kernel_error_contains;
+use test_framework_oss::is_ok;
+use test_framework_oss::kernel_error_contains;
 
 #[test]
 fn add_success() {

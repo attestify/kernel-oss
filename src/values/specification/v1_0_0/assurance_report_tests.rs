@@ -15,8 +15,8 @@ use crate::values::specification::procedure::Procedure;
 use crate::values::specification::subject::Subject;
 use crate::values::specification::traits::AssuranceReport;
 use crate::values::specification::v1_0_0::assurance_report::Builder;
-use attestify_test_framework::is_ok;
-use attestify_test_framework::kernel_error_starts_with;
+use test_framework_oss::is_ok;
+use test_framework_oss::kernel_error_starts_with;
 
 #[test]
 fn builder_success() {

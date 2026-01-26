@@ -1,6 +1,6 @@
 use crate::error::{Audience, Kind};
 use crate::values::specification::procedure::Procedure;
-use attestify_test_framework::kernel_error_eq;
+use test_framework_oss::kernel_error_eq;
 
 #[test]
 fn new_procedure_success() {

@@ -1,8 +1,8 @@
 use crate::error::Audience;
 use crate::error::Kind;
-use attestify_test_framework::kernel_error_eq;
-use attestify_test_framework::is_error;
-use attestify_test_framework::is_ok;
+use test_framework_oss::kernel_error_eq;
+use test_framework_oss::is_error;
+use test_framework_oss::is_ok;
 use crate::values::datetime::utc_timestamp::UTCTimestamp;
 
 #[test]

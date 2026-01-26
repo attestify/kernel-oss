@@ -7,7 +7,7 @@ use crate::values::specification::assurance_report::activity::Activity;
 use crate::values::specification::assurance_report::signed_file::SignedFile;
 use crate::values::specification::name::Name;
 use crate::values::specification::outcome::Outcome;
-use attestify_test_framework::kernel_error_starts_with;
+use test_framework_oss::kernel_error_starts_with;
 
 /** Positive Tests **/
 

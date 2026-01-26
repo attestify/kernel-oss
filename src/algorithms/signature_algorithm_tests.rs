@@ -1,7 +1,7 @@
 use crate::algorithms::signature_algorithm::{Signature, SignatureType};
 use crate::error::{Audience, Kind};
-use attestify_test_framework::is_ok;
-use attestify_test_framework::kernel_error_eq;
+use test_framework_oss::is_ok;
+use test_framework_oss::kernel_error_eq;
 
 mod signature_type {
     use super::*;
