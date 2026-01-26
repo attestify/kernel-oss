@@ -2,11 +2,11 @@
 
 [package]
 name = "kernel_oss"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 
 [dependencies]
 url = "2.5.4"
 
 [dev-dependencies]
-test_framework_oss = { git = "https://github.com/attestify/test-framework-oss.git", tag = "0.2.3" }
+test_framework_oss = { git = "https://github.com/attestify/test-framework-oss.git", tag = "0.2.4" }
