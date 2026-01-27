@@ -479,7 +479,12 @@ fn builder_no_subject_nrn_error() {
         .additional_information("additional information")
         .try_build();
 
-    kernel_error_starts_with!(report_result, Kind::InvalidInput, Audience::User, "The AssuranceReport could not be created. The subject NRN is required, although it was not provided.");
+    kernel_error_starts_with!(
+        report_result,
+        Kind::InvalidInput,
+        Audience::User,
+        "The AssuranceReport could not be created. The subject NRN is required, although it was not provided."
+    );
 }
 #[test]
 fn builder_bad_subject_nrn_error() {
@@ -518,7 +523,12 @@ fn builder_no_subject_id_error() {
         .additional_information("additional information")
         .try_build();
 
-    kernel_error_starts_with!(report_result, Kind::InvalidInput, Audience::User, "The AssuranceReport could not be created. The subject ID is required, although it was not provided.");
+    kernel_error_starts_with!(
+        report_result,
+        Kind::InvalidInput,
+        Audience::User,
+        "The AssuranceReport could not be created. The subject ID is required, although it was not provided."
+    );
 }
 #[test]
 fn builder_bad_subject_id_error() {
@@ -558,7 +568,12 @@ fn builder_no_procedure_repository_error() {
         .additional_information("additional information")
         .try_build();
 
-    kernel_error_starts_with!(report_result, Kind::InvalidInput, Audience::User, "The AssuranceReport could not be created. The procedure repository link is required, but was not provided.");
+    kernel_error_starts_with!(
+        report_result,
+        Kind::InvalidInput,
+        Audience::User,
+        "The AssuranceReport could not be created. The procedure repository link is required, but was not provided."
+    );
 }
 #[test]
 fn builder_bad_procedure_repository_error() {
@@ -596,7 +611,12 @@ fn builder_no_procedure_directory_error() {
         .additional_information("additional information")
         .try_build();
 
-    kernel_error_starts_with!(report_result, Kind::InvalidInput, Audience::User, "The AssuranceReport could not be created. The procedure directory is required, but was not provided.");
+    kernel_error_starts_with!(
+        report_result,
+        Kind::InvalidInput,
+        Audience::User,
+        "The AssuranceReport could not be created. The procedure directory is required, but was not provided."
+    );
 }
 #[test]
 fn builder_bad_procedure_directory_error() {
@@ -662,7 +682,12 @@ fn builder_additional_information_empty_string_error() {
         .additional_information("")
         .try_build();
 
-    kernel_error_starts_with!(report_result, Kind::InvalidInput, Audience::User, "The AssuranceReport could not be created. There is an issue adding your Additional Information to the report. ");
+    kernel_error_starts_with!(
+        report_result,
+        Kind::InvalidInput,
+        Audience::User,
+        "The AssuranceReport could not be created. There is an issue adding your Additional Information to the report. "
+    );
 }
 
 /** Testing Helpers */

@@ -1,6 +1,6 @@
 use crate::error::{Audience, Kind};
 use crate::values::specification::description::Description;
-use crate::values::specification::metadata::{MetaData, KEY_MAX, VALUE_MAX};
+use crate::values::specification::metadata::{KEY_MAX, MetaData, VALUE_MAX};
 use crate::values::specification::name::Name;
 
 #[test]
@@ -101,7 +101,13 @@ fn add_error_key_that_exceeds_max_length() {
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert_eq!(error.message, format!("The metadata key '{}' exceeds the maximum allowed length of '64' characters.  Please provide a metadata key that is less than '64' characters.", key));
+    assert_eq!(
+        error.message,
+        format!(
+            "The metadata key '{}' exceeds the maximum allowed length of '64' characters.  Please provide a metadata key that is less than '64' characters.",
+            key
+        )
+    );
 }
 
 #[test]
@@ -114,9 +120,11 @@ fn add_error_invalid_key_error() {
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert!(error
-        .message
-        .starts_with("The metadata key 'a b' is invalid: "));
+    assert!(
+        error
+            .message
+            .starts_with("The metadata key 'a b' is invalid: ")
+    );
 }
 
 /** Value Error Tests */
@@ -131,7 +139,13 @@ fn add_error_value_that_exceeds_max_length() {
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert_eq!(error.message, format!("The metadata value '{}' exceeds the maximum allowed length of '256' characters.  Please provide a metadata value that is less than '256' characters.", value));
+    assert_eq!(
+        error.message,
+        format!(
+            "The metadata value '{}' exceeds the maximum allowed length of '256' characters.  Please provide a metadata value that is less than '256' characters.",
+            value
+        )
+    );
 }
 
 #[test]
@@ -144,9 +158,11 @@ fn add_error_invalid_value() {
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert!(error
-        .message
-        .starts_with("The metadata value '  ' is invalid: "));
+    assert!(
+        error
+            .message
+            .starts_with("The metadata value '  ' is invalid: ")
+    );
 }
 
 /** Get Error Tests */
@@ -176,9 +192,11 @@ fn upsert_error_invalid_key() {
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert!(error
-        .message
-        .starts_with("The metadata key 'some bad key' is invalid: "));
+    assert!(
+        error
+            .message
+            .starts_with("The metadata key 'some bad key' is invalid: ")
+    );
 }
 
 #[test]
@@ -198,7 +216,9 @@ fn upsert_error_invalid_value() {
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert!(error
-        .message
-        .starts_with("The metadata value '' is invalid: "));
+    assert!(
+        error
+            .message
+            .starts_with("The metadata value '' is invalid: ")
+    );
 }

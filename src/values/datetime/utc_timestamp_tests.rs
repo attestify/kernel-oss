@@ -1,9 +1,9 @@
 use crate::error::Audience;
 use crate::error::Kind;
-use test_framework_oss::kernel_error_eq;
+use crate::values::datetime::utc_timestamp::UTCTimestamp;
 use test_framework_oss::is_error;
 use test_framework_oss::is_ok;
-use crate::values::datetime::utc_timestamp::UTCTimestamp;
+use test_framework_oss::kernel_error_eq;
 
 #[test]
 /// Verifies builder accepts a millisecond input, converts to nanoseconds, and that as_nano(),
@@ -32,13 +32,15 @@ fn from_nanos_success() {
 /// so the final timestamp reflects the last setter call.
 fn builder_override_last_call_success() {
     let ts = is_ok!(
-            UTCTimestamp::builder().use_ms(1_234_567u64).use_ns(9_223_372_036_854_775_807u128).build()
-        );
+        UTCTimestamp::builder()
+            .use_ms(1_234_567u64)
+            .use_ns(9_223_372_036_854_775_807u128)
+            .build()
+    );
     assert_eq!(ts.as_nano(), 9_223_372_036_854_775_807u128);
     assert_eq!(ts.as_milli(), 9_223_372_036_854u64);
     assert_eq!(ts.as_sec(), 9_223_372_036u64);
 }
-
 
 #[test]
 /// Ensures using [u64::MAX] milliseconds produces the correct nanosecond value, preserves the
@@ -49,7 +51,11 @@ fn builder_override_last_call_success() {
 /// silent integer overflow or incorrect rounding that could corrupt timestamps stored or sent to
 /// other systems (logs, databases, protocols).
 fn ms_at_u64_max_success() {
-    let ts = is_ok!(UTCTimestamp::builder().use_ms(18446744073709551615u64).build());
+    let ts = is_ok!(
+        UTCTimestamp::builder()
+            .use_ms(18446744073709551615u64)
+            .build()
+    );
     assert_eq!(ts.as_nano(), 18446744073709551615000000u128);
     assert_eq!(ts.as_milli(), 18446744073709551615u64);
     assert_eq!(ts.as_sec(), 18446744073709551u64);
@@ -64,9 +70,11 @@ fn ms_at_u64_max_success() {
 /// safe millisecond range instead of producing a wrapped or unpredictable value, which is
 /// important when callers expect a bounded millisecond representation.
 fn ns_triggers_millis_cap_success() {
-    let ts = is_ok!( UTCTimestamp::builder()
-                        .use_ns(18446744073709551616000000u128) // (u64::MAX + 1) * 1_000_000
-                        .build() );
+    let ts = is_ok!(
+        UTCTimestamp::builder()
+            .use_ns(18446744073709551616000000u128) // (u64::MAX + 1) * 1_000_000
+            .build()
+    );
     assert_eq!(ts.as_nano(), 18446744073709551616000000u128);
     assert_eq!(ts.as_milli(), 18446744073709551615u64); // capped
     assert_eq!(ts.as_sec(), 18446744073709551u64);
@@ -81,9 +89,11 @@ fn ns_triggers_millis_cap_success() {
 /// the failure mode and avoid relying on undefined-looking values. It also prevents regressions
 /// where a later change might silently panic or produce a different wrap/overflow behavior
 fn ns_causes_seconds_wrap_to_zero_success() {
-    let ts = is_ok!(UTCTimestamp::builder()
-                        .use_ns(18446744073709551616000000000u128) // (u64::MAX + 1) * 1_000_000_000
-                        .build() );
+    let ts = is_ok!(
+        UTCTimestamp::builder()
+            .use_ns(18446744073709551616000000000u128) // (u64::MAX + 1) * 1_000_000_000
+            .build()
+    );
     assert_eq!(ts.as_nano(), 18446744073709551616000000000u128);
     assert_eq!(ts.as_milli(), 18446744073709551615u64); // capped
     assert_eq!(ts.as_sec(), 0u64); // cast wraps/truncates
@@ -116,7 +126,7 @@ fn non_multiple_truncation_behavior_success() {
     let ts = is_ok!(UTCTimestamp::builder().use_ns(1_234_567_890u128).build());
     assert_eq!(ts.as_nano(), 1_234_567_890u128);
     assert_eq!(ts.as_milli(), 1234u64); // floor(1_234_567_890 / 1_000_000)
-    assert_eq!(ts.as_sec(), 1u64);      // floor(1_234_567_890 / 1_000_000_000)
+    assert_eq!(ts.as_sec(), 1u64); // floor(1_234_567_890 / 1_000_000_000)
 }
 
 #[test]
@@ -125,6 +135,10 @@ fn non_multiple_truncation_behavior_success() {
 fn missing_value_error() {
     let datetime = UTCTimestamp::builder().build();
     is_error!(&datetime);
-    kernel_error_eq!(&datetime, Kind::InvalidInput, Audience::System,
-        "A value was not provided for the UTCTimestamp, please provide a valid UTCTimestamp value.");
+    kernel_error_eq!(
+        &datetime,
+        Kind::InvalidInput,
+        Audience::System,
+        "A value was not provided for the UTCTimestamp, please provide a valid UTCTimestamp value."
+    );
 }

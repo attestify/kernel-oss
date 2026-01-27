@@ -43,5 +43,8 @@ fn test_new_description_error_on_empty_value() {
     let error = result.err().unwrap();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, crate::error::Kind::InvalidInput);
-    assert_eq!(error.message, "You provided an empty description. A description must have a value with at least one character.");
+    assert_eq!(
+        error.message,
+        "You provided an empty description. A description must have a value with at least one character."
+    );
 }

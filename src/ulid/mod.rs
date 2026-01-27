@@ -22,15 +22,18 @@
 
 pub mod base32;
 
-#[cfg(test)] mod base32_tests;
-#[cfg(test)] mod ulid_tests;
+#[cfg(test)]
+mod base32_tests;
+#[cfg(test)]
+mod ulid_tests;
 
+use crate::ulid::base32::{DecodeError, ULID_LEN};
 use std::fmt;
 use std::str::FromStr;
-use crate::ulid::base32::{DecodeError, ULID_LEN};
 
 /// Create a right-aligned bitmask of $len bits
-#[macro_export] macro_rules! bitmask {
+#[macro_export]
+macro_rules! bitmask {
     ($len:expr) => {
         ((1 << $len) - 1)
     };
@@ -40,15 +43,14 @@ use crate::ulid::base32::{DecodeError, ULID_LEN};
 ///
 /// Canonically, it is represented as a 26 character Crockford's Base32 encoded string.
 ///
-/// - Of the 128-bits, the first 48 are a unix timestamp in milliseconds. 
-/// - The  remaining 80 are random. 
+/// - Of the 128-bits, the first 48 are a unix timestamp in milliseconds.
+/// - The  remaining 80 are random.
 /// - The first 48 provide for lexicographic sorting and the remaining 80 ensure that the identifier is unique.
 ///
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct ULID(pub u128);
 
 impl ULID {
-
     /// The number of bits in a [ULID]'s time portion
     pub const TIME_BITS: u8 = 48;
     /// The number of bits in a [ULID]'s random portion
@@ -162,7 +164,7 @@ impl ULID {
     ///
     /// assert_eq!(&ulid.to_string(), text);
     /// ```
-    #[allow(clippy::inherent_to_string_shadow_display)]  // Significantly faster than Display::to_string
+    #[allow(clippy::inherent_to_string_shadow_display)] // Significantly faster than Display::to_string
     pub fn to_string(&self) -> String {
         base32::encode(self.0)
     }
@@ -228,7 +230,6 @@ impl ULID {
     pub const fn to_bytes(&self) -> [u8; 16] {
         self.0.to_be_bytes()
     }
-
 }
 
 impl Default for ULID {
@@ -301,10 +302,3 @@ impl fmt::Display for ULID {
         write!(f, "{}", self.array_to_str(&mut buffer))
     }
 }
-
-
-
-
-
-
-

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
-use super::{Error, Audience, Kind};
+use super::{Audience, Error, Kind};
 
 /// Test: new constructor, accessors and Display
 /// What: Construct an error with `Error::new` and verify fields, `is_user`/`is_system`, and `Display`.

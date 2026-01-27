@@ -24,9 +24,11 @@ fn new_artifact_error_invalid_name() {
     let error = artifact.unwrap_err();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(error
-        .message
-        .starts_with("There is an issue with your artifact name 'bad artifact name': "));
+    assert!(
+        error
+            .message
+            .starts_with("There is an issue with your artifact name 'bad artifact name': ")
+    );
 }
 
 #[test]
@@ -40,9 +42,11 @@ fn test_new_artifact_error_invalid_description() {
     let error = artifact.unwrap_err();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(error
-        .message
-        .starts_with("There is an issue with your artifact description '': "));
+    assert!(
+        error
+            .message
+            .starts_with("There is an issue with your artifact description '': ")
+    );
 }
 
 #[test]
@@ -56,7 +60,9 @@ fn test_new_artifact_error_invalid_metadata() {
     let error = artifact.unwrap_err();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(error
-        .message
-        .starts_with("There is an issue with your artifact metadata 'bad key name': "));
+    assert!(
+        error
+            .message
+            .starts_with("There is an issue with your artifact metadata 'bad key name': ")
+    );
 }

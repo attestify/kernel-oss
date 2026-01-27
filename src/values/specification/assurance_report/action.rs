@@ -266,7 +266,7 @@ impl ActionBuilder {
                         return Err(Error::for_user(
                             Kind::InvalidInput,
                             "Please provide a test file path for the action.".to_string(),
-                        ))
+                        ));
                     }
                 };
                 let file_signature = match &self.test_file_signature_str {
@@ -275,7 +275,7 @@ impl ActionBuilder {
                         return Err(Error::for_user(
                             Kind::InvalidInput,
                             "Please provide a test file signature for the action.".to_string(),
-                        ))
+                        ));
                     }
                 };
 
@@ -311,7 +311,7 @@ impl ActionBuilder {
                         return Err(Error::for_user(
                             Kind::InvalidInput,
                             "Please provide an evidence file path for the action.".to_string(),
-                        ))
+                        ));
                     }
                 };
                 let file_signature = match &self.evidence_file_signature_str {
@@ -320,7 +320,7 @@ impl ActionBuilder {
                         return Err(Error::for_user(
                             Kind::InvalidInput,
                             "Please provide an evidence file signature for the action.".to_string(),
-                        ))
+                        ));
                     }
                 };
 

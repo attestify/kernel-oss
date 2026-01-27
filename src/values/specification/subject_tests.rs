@@ -35,9 +35,11 @@ fn new_subject_error_handle_nrn_error() {
     let error = result.err().unwrap();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(error
-        .message
-        .contains("We were unable to create the Subject: "));
+    assert!(
+        error
+            .message
+            .contains("We were unable to create the Subject: ")
+    );
 }
 
 #[test]
@@ -58,7 +60,9 @@ fn new_subject_error_handle_subject_id_error() {
     let error = result.err().unwrap();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(error
-        .message
-        .contains("We were unable to create the Subject: "));
+    assert!(
+        error
+            .message
+            .contains("We were unable to create the Subject: ")
+    );
 }

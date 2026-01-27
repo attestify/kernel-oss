@@ -1,7 +1,7 @@
-use std::str::FromStr;
+use crate::ulid::ULID;
 use crate::ulid::base32::DecodeError;
 use crate::ulid::base32::EncodeError;
-use crate::ulid::ULID;
+use std::str::FromStr;
 
 #[test]
 fn test_static() {

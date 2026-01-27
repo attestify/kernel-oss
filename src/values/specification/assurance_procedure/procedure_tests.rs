@@ -46,9 +46,11 @@ fn new_process_error_invalid_nrn() {
     let result = result.err().unwrap();
     assert_eq!(result.kind, error::Kind::InvalidInput);
     assert_eq!(result.audience, error::Audience::User);
-    assert!(result
-        .message
-        .starts_with("There is an issue with your procedure information: "));
+    assert!(
+        result
+            .message
+            .starts_with("There is an issue with your procedure information: ")
+    );
 }
 
 #[test]

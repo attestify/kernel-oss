@@ -53,7 +53,8 @@ fn try_from_missing_value_error() {
     let err = result.unwrap_err();
     assert_eq!(err.kind, Kind::InvalidInput);
     assert_eq!(err.audience, Audience::User);
-    assert!(err
-        .message
-        .starts_with("The file path is required, although a value was not provided."));
+    assert!(
+        err.message
+            .starts_with("The file path is required, although a value was not provided.")
+    );
 }

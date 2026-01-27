@@ -75,7 +75,11 @@ impl DirectoryList {
         if self.try_get(path_name).is_some() {
             return Err(Error::for_system(
                 Kind::InvalidInput,
-                format!("The path name '{}' already exists in the directory List.  Please provide a unique path name.", path_name)));
+                format!(
+                    "The path name '{}' already exists in the directory List.  Please provide a unique path name.",
+                    path_name
+                ),
+            ));
         }
 
         let mut current_list = self.paths.clone();
@@ -91,7 +95,11 @@ impl DirectoryList {
             if self.try_get(path_name).is_some() {
                 return Err(Error::for_system(
                     Kind::InvalidInput,
-                    format!("The path name '{}' already exists in the directory List.  Please provide a unique path name.", path_name)));
+                    format!(
+                        "The path name '{}' already exists in the directory List.  Please provide a unique path name.",
+                        path_name
+                    ),
+                ));
             }
             updated_list.push((path_name.to_string(), path.to_string()));
         }

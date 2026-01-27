@@ -1,4 +1,5 @@
-#[cfg(test)] mod tests;
+#[cfg(test)]
+mod tests;
 
 /// A structured error used across the kernel crates.
 ///
@@ -39,10 +40,10 @@ impl Error {
     ///
     /// Example:
     /// ```rust
-	/// use kernel_oss::error::Kind;
-	/// use kernel_oss::error::Audience;
-	/// use kernel_oss::error::Error;
-	///
+    /// use kernel_oss::error::Kind;
+    /// use kernel_oss::error::Audience;
+    /// use kernel_oss::error::Error;
+    ///
     /// let e = Error::new(Audience::User, Kind::InvalidInput, "missing field");
     /// ```
     pub fn new(audience: Audience, kind: Kind, message: impl Into<String>) -> Error {
@@ -87,7 +88,6 @@ impl std::fmt::Display for Error {
         write!(f, "{}", self.message)
     }
 }
-
 
 /// Specifies who should handle an `Error`.
 ///

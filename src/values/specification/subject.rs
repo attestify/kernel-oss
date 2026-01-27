@@ -28,7 +28,7 @@ impl Subject {
                 return Err(Error::for_user(
                     Kind::InvalidInput,
                     format!("We were unable to create the Subject: {}", e.message),
-                ))
+                ));
             }
         };
         let validated_subject_id = match SubjectId::new(id) {
@@ -37,7 +37,7 @@ impl Subject {
                 return Err(Error::for_user(
                     Kind::InvalidInput,
                     format!("We were unable to create the Subject: {}", e.message),
-                ))
+                ));
             }
         };
 

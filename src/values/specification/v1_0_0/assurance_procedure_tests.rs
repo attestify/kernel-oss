@@ -80,9 +80,11 @@ fn builder_error_invalid_api_version() {
     let err = result.unwrap_err();
     assert_eq!(err.kind, error::Kind::InvalidInput);
     assert_eq!(err.audience, error::Audience::User);
-    assert!(err
-        .message
-        .starts_with("The AssuranceProcedure could not be created: The APIVersion has an issue: "));
+    assert!(
+        err.message.starts_with(
+            "The AssuranceProcedure could not be created: The APIVersion has an issue: "
+        )
+    );
 }
 
 /*** Procedure Sad Path Tests ***/
@@ -104,7 +106,10 @@ fn builder_error_missing_nrn() {
     let err = result.unwrap_err();
     assert_eq!(err.kind, error::Kind::InvalidInput);
     assert_eq!(err.audience, error::Audience::User);
-    assert_eq!("The AssuranceProcedure could not be created: Check that you provided the procedure info. Either the procedure NRN, short description, or long description is missing.", err.message);
+    assert_eq!(
+        "The AssuranceProcedure could not be created: Check that you provided the procedure info. Either the procedure NRN, short description, or long description is missing.",
+        err.message
+    );
 }
 #[test]
 fn builder_error_invalid_procedure_nrn() {

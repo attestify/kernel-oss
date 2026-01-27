@@ -1,5 +1,5 @@
 use crate::error::{Audience, Kind};
-use crate::values::nrn::nrn::{NapeNID, NID, NRN, NSS};
+use crate::values::nrn::nrn::{NID, NRN, NSS, NapeNID};
 
 /*** NRN Tests ***/
 
@@ -33,7 +33,10 @@ fn nrn_from_str_error_wrong_scheme() {
     let result = NRN::new("urn:sourecode:nape::project/nape-cli");
 
     assert!(result.is_err());
-    assert_eq!(result.err().unwrap().message, "You provided 'urn:sourecode:nape::project/nape-cli' as an NRN and the scheme 'urn'  is not valid. Must be 'nrn'");
+    assert_eq!(
+        result.err().unwrap().message,
+        "You provided 'urn:sourecode:nape::project/nape-cli' as an NRN and the scheme 'urn'  is not valid. Must be 'nrn'"
+    );
 }
 #[test]
 fn nrn_from_str_error_wrong_nid() {
@@ -145,7 +148,10 @@ fn new_nid_error_invalid_character() {
     assert!(result.is_err());
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert_eq!(error.message, "NID 'source code' contains invalid character ' ' at position 6.  An NID can only contains alphanumeric characters or a dash '-'.")
+    assert_eq!(
+        error.message,
+        "NID 'source code' contains invalid character ' ' at position 6.  An NID can only contains alphanumeric characters or a dash '-'."
+    )
 }
 #[test]
 fn new_nid_greater_than_31_characters() {
@@ -153,7 +159,10 @@ fn new_nid_greater_than_31_characters() {
     assert!(result.is_err());
     let error = result.err().unwrap();
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert_eq!(error.message, "The NID 'sourcecode1234567890123456789012' is too long. An NID must be 31 characters or less.")
+    assert_eq!(
+        error.message,
+        "The NID 'sourcecode1234567890123456789012' is too long. An NID must be 31 characters or less."
+    )
 }
 
 /*** NSS Tests ***/

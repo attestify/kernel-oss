@@ -1,8 +1,7 @@
-
-use crate::ulid::base32::ULID_LEN;
-use crate::ulid::base32::DecodeError;
 use crate::ulid::base32::ALPHABET;
-use crate::ulid::base32::{encode, decode};
+use crate::ulid::base32::DecodeError;
+use crate::ulid::base32::ULID_LEN;
+use crate::ulid::base32::{decode, encode};
 
 /// Generator code for `LOOKUP`
 #[test]
@@ -17,7 +16,6 @@ fn test_lookup_table() {
     }
     assert_eq!(crate::ulid::base32::LOOKUP, lookup);
 }
-
 
 #[test]
 fn test_valid() {

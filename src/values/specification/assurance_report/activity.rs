@@ -98,8 +98,13 @@ impl Builder {
         let mut seen_names = HashSet::new();
         for action in &self.actions {
             if !seen_names.insert(action.name()) {
-                return Err(Error::for_user(Kind::InvalidInput,
-                    format!("The activity '{}' has one or more actions with the same action name of '{}'. All action names for a given activity must be unique. Review the actions for this activity to ensure each action has a unique name.", activity_name.value,  action.name().value),
+                return Err(Error::for_user(
+                    Kind::InvalidInput,
+                    format!(
+                        "The activity '{}' has one or more actions with the same action name of '{}'. All action names for a given activity must be unique. Review the actions for this activity to ensure each action has a unique name.",
+                        activity_name.value,
+                        action.name().value
+                    ),
                 ));
             }
         }

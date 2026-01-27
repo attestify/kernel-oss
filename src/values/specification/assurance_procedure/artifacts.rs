@@ -38,9 +38,13 @@ impl Artifacts {
             .iter()
             .any(|existing_artifact| existing_artifact.name == artifact.name)
         {
-            return Err(
-                Error::for_user(Kind::InvalidInput,
-                                format!("The artifact '{}' cannot be added because an artifact with the name '{}' already exists.", artifact.name.value, artifact.name.value)));
+            return Err(Error::for_user(
+                Kind::InvalidInput,
+                format!(
+                    "The artifact '{}' cannot be added because an artifact with the name '{}' already exists.",
+                    artifact.name.value, artifact.name.value
+                ),
+            ));
         }
         let mut new_artifacts = self.clone();
         new_artifacts.artifacts.push(artifact.clone());

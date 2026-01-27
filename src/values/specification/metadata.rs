@@ -52,7 +52,13 @@ impl MetaData {
 
 fn clean_key(key: &str) -> Result<Name, Error> {
     if exceeds_max_length(key, KEY_MAX) {
-        return Err(Error::for_user(Kind::InvalidInput, format!("The metadata key '{}' exceeds the maximum allowed length of '{}' characters.  Please provide a metadata key that is less than '{}' characters.", key, KEY_MAX, KEY_MAX ) ));
+        return Err(Error::for_user(
+            Kind::InvalidInput,
+            format!(
+                "The metadata key '{}' exceeds the maximum allowed length of '{}' characters.  Please provide a metadata key that is less than '{}' characters.",
+                key, KEY_MAX, KEY_MAX
+            ),
+        ));
     }
     let key_as_name = Name::try_from(key).map_err(|error| {
         Error::for_user(
@@ -65,7 +71,13 @@ fn clean_key(key: &str) -> Result<Name, Error> {
 
 fn clean_value(value: &str) -> Result<Description, Error> {
     if exceeds_max_length(value, VALUE_MAX) {
-        return Err(Error::for_user(Kind::InvalidInput,format!("The metadata value '{}' exceeds the maximum allowed length of '{}' characters.  Please provide a metadata value that is less than '{}' characters.", value, VALUE_MAX, VALUE_MAX)));
+        return Err(Error::for_user(
+            Kind::InvalidInput,
+            format!(
+                "The metadata value '{}' exceeds the maximum allowed length of '{}' characters.  Please provide a metadata value that is less than '{}' characters.",
+                value, VALUE_MAX, VALUE_MAX
+            ),
+        ));
     }
     let value_as_desc = Description::try_from(value).map_err(|error| {
         Error::for_user(

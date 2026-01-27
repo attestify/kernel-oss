@@ -1,4 +1,4 @@
-use crate::error::{Error};
+use crate::error::Error;
 use crate::error::Kind::InvalidInput;
 
 /// ## Public interface
@@ -59,7 +59,7 @@ pub struct UTCTimestamp {
 
 impl UTCTimestamp {
     pub fn builder() -> UTCTimestampBuilder {
-     UTCTimestampBuilder::default()
+        UTCTimestampBuilder::default()
     }
 
     pub fn as_nano(&self) -> u128 {
@@ -78,7 +78,6 @@ impl UTCTimestamp {
     pub fn as_sec(&self) -> u64 {
         (self.timestamp / 1_000_000_000) as u64
     }
-    
 }
 
 #[derive(Debug, Clone, Default)]
@@ -86,9 +85,7 @@ pub struct UTCTimestampBuilder {
     timestamp: Option<u128>,
 }
 
-
 impl UTCTimestampBuilder {
-
     /// Provide a 64-bit millisecond value representing seconds since the Unix epoch.
     pub fn use_ms(mut self, timestamp: u64) -> Self {
         let nanos = (timestamp as u128).saturating_mul(1_000_000u128);
@@ -105,7 +102,6 @@ impl UTCTimestampBuilder {
     pub fn build(self) -> Result<UTCTimestamp, Error> {
         validate_value(self.timestamp)
     }
-    
 }
 
 fn validate_value(value: Option<u128>) -> Result<UTCTimestamp, Error> {

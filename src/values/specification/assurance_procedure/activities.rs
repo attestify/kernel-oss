@@ -115,10 +115,16 @@ impl Activities {
         match position {
             Some(index) => {
                 let mut existing_activity = new_activities.list[index].clone();
-                existing_activity = existing_activity .add(action.clone());
-                Ok(self.merge(&existing_activity ))
-            },
-            None => Err(Error::for_user(Kind::InvalidInput, format!("Activity '{}' does not exist. The activity must exist before you can add an action to it.  Please add a activity with the name you provided, a short description, and a long description.", activity_name))),
+                existing_activity = existing_activity.add(action.clone());
+                Ok(self.merge(&existing_activity))
+            }
+            None => Err(Error::for_user(
+                Kind::InvalidInput,
+                format!(
+                    "Activity '{}' does not exist. The activity must exist before you can add an action to it.  Please add a activity with the name you provided, a short description, and a long description.",
+                    activity_name
+                ),
+            )),
         }
     }
 

@@ -31,9 +31,10 @@ fn new_short_description_error_empty_value() {
     let err = result.unwrap_err();
     assert_eq!(err.kind, Kind::InvalidInput);
     assert_eq!(err.audience, Audience::User);
-    assert!(err
-        .message
-        .starts_with("There is an issue with your short description: "));
+    assert!(
+        err.message
+            .starts_with("There is an issue with your short description: ")
+    );
 }
 
 #[test]

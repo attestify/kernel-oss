@@ -2,13 +2,10 @@ use crate::error::Error;
 use crate::ulid::ULID;
 
 /// Defines the behavior for an implementation which provides a [ULID] which are unique identifier be used as identities for persistable entities.
-pub trait IdentityGateway:  IdentityGatewayClone + Sync + Send {
-    
+pub trait IdentityGateway: IdentityGatewayClone + Sync + Send {
     /// Generates a new & unique [ULID]
     fn generate(&self) -> Result<ULID, Error>;
-
 }
-
 
 /// This trait enables cloning of `Box<dyn IdentityGateway>` trait objects.
 ///
@@ -18,16 +15,15 @@ pub trait IdentityGatewayClone {
     fn clone_box(&self) -> Box<dyn IdentityGateway>;
 }
 
-
 /// Blanket implementation of `IdentityGatewayClone` for any type `T` that  implements `IdentityGateway` and `Clone`.
 ///
 /// This allows cloning of `Box<dyn IdentityGateway>` as long as the underlying concrete type implements `Clone`
 ///
-impl<Gw>  IdentityGatewayClone for Gw
+impl<Gw> IdentityGatewayClone for Gw
 where
-    Gw: 'static + IdentityGateway + Clone
+    Gw: 'static + IdentityGateway + Clone,
 {
-    fn clone_box(&self) -> Box<dyn  IdentityGateway> {
+    fn clone_box(&self) -> Box<dyn IdentityGateway> {
         Box::new(self.clone())
     }
 }

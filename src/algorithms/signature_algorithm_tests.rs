@@ -10,7 +10,12 @@ mod signature_type {
     fn new_signature_type_error_from_str() {
         let sig_type = SignatureType::from("some-invalid-type");
 
-        kernel_error_eq!(sig_type, Kind::InvalidInput, Audience::System, "The signature algorithm 'some-invalid-type' is not supported. The supported algorithms are: [SHA256]");
+        kernel_error_eq!(
+            sig_type,
+            Kind::InvalidInput,
+            Audience::System,
+            "The signature algorithm 'some-invalid-type' is not supported. The supported algorithms are: [SHA256]"
+        );
     }
 
     #[test]
@@ -66,7 +71,12 @@ mod signature {
     fn try_from_unsupported_algorithm_error() {
         let signature_str = "BILL123[234928039042340892]";
         let result = Signature::try_from(signature_str);
-        kernel_error_eq!(result, Kind::InvalidInput, Audience::System, "The signature algorithm 'BILL123' is not supported. The supported algorithms are: [SHA256]");
+        kernel_error_eq!(
+            result,
+            Kind::InvalidInput,
+            Audience::System,
+            "The signature algorithm 'BILL123' is not supported. The supported algorithms are: [SHA256]"
+        );
     }
 
     #[test]
@@ -74,59 +84,71 @@ mod signature {
         let signature_str = "[234928039042340892]";
         let result = Signature::try_from(signature_str);
 
-        kernel_error_eq!(result,
+        kernel_error_eq!(
+            result,
             Kind::InvalidInput,
             Audience::System,
-            "The signature string provided does not have a signature algorithm. The signature algorithm are the characters before the first bracket: ALGO[the-signature-data-here].");
+            "The signature string provided does not have a signature algorithm. The signature algorithm are the characters before the first bracket: ALGO[the-signature-data-here]."
+        );
     }
 
     #[test]
     fn try_from_empty_signature_error() {
         let signature_str = "SHA256[]";
         let result = Signature::try_from(signature_str);
-        kernel_error_eq!(result,
+        kernel_error_eq!(
+            result,
             Kind::InvalidInput,
             Audience::System,
-            "The signature string provided does not have any signature data. Signature data are the characters between the two brackets: ALGO[the-signature-data-here].");
+            "The signature string provided does not have any signature data. Signature data are the characters between the two brackets: ALGO[the-signature-data-here]."
+        );
     }
 
     #[test]
     fn try_from_no_first_bracket_error() {
         let signature_str = "SHA256234928039042340892]";
         let result = Signature::try_from(signature_str);
-        kernel_error_eq!(result,
+        kernel_error_eq!(
+            result,
             Kind::InvalidInput,
             Audience::System,
-            "The signature 'SHA256234928039042340892]' is not in the correct format, the first bracket is missing. Check the signature you provided to ensure it in the format of ALGO[the-signature-data].");
+            "The signature 'SHA256234928039042340892]' is not in the correct format, the first bracket is missing. Check the signature you provided to ensure it in the format of ALGO[the-signature-data]."
+        );
     }
 
     #[test]
     fn try_from_no_last_bracket_error() {
         let signature_str = "SHA256[234928039042340892";
         let result = Signature::try_from(signature_str);
-        kernel_error_eq!(result,
+        kernel_error_eq!(
+            result,
             Kind::InvalidInput,
             Audience::System,
-            "The signature 'SHA256[234928039042340892' is not in the correct format, the last bracket is missing. Check the signature you provided to ensure it in the format of ALGO[the-signature-data].");
+            "The signature 'SHA256[234928039042340892' is not in the correct format, the last bracket is missing. Check the signature you provided to ensure it in the format of ALGO[the-signature-data]."
+        );
     }
 
     #[test]
     fn try_from_backwards_brackets() {
         let signature_str = "SHA256]234928039042340892[";
         let result = Signature::try_from(signature_str);
-        kernel_error_eq!(result,
+        kernel_error_eq!(
+            result,
             Kind::InvalidInput,
             Audience::System,
-             "The signature you provided has the closing bracket before the opening bracket. Check the signature you provided to ensure it in the format of ALGO[the-signature-data].");
+            "The signature you provided has the closing bracket before the opening bracket. Check the signature you provided to ensure it in the format of ALGO[the-signature-data]."
+        );
     }
 
     #[test]
     fn try_from_no_brackets_error() {
         let signature_str = "SHA256234928039042340892";
         let result = Signature::try_from(signature_str);
-        kernel_error_eq!(result,
+        kernel_error_eq!(
+            result,
             Kind::InvalidInput,
             Audience::System,
-            "The signature 'SHA256234928039042340892' is not in the correct format, the first bracket is missing. Check the signature you provided to ensure it in the format of ALGO[the-signature-data].");
+            "The signature 'SHA256234928039042340892' is not in the correct format, the first bracket is missing. Check the signature you provided to ensure it in the format of ALGO[the-signature-data]."
+        );
     }
 }

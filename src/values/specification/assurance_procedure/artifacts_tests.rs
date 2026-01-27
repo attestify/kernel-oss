@@ -48,9 +48,11 @@ fn add_artifact_error_already_exists() {
 
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
-    assert!(error
-        .message
-        .starts_with("The artifact  'artifact-1' cannot be added because it already exists."));
+    assert!(
+        error
+            .message
+            .starts_with("The artifact  'artifact-1' cannot be added because it already exists.")
+    );
 }
 
 #[test]

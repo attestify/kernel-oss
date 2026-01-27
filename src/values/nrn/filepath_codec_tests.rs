@@ -41,7 +41,9 @@ fn decode_error_bad_nrn() {
 
     assert_eq!(error.kind, crate::error::Kind::InvalidInput);
     assert_eq!(error.audience, crate::error::Audience::User);
-    assert!(error
-        .message
-        .starts_with("Could not decode the NRN from the directory name: 'sourcecode_example': "));
+    assert!(
+        error.message.starts_with(
+            "Could not decode the NRN from the directory name: 'sourcecode_example': "
+        )
+    );
 }

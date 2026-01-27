@@ -86,9 +86,11 @@ fn new_activity_error_invalid_name() {
     let err = result.unwrap_err();
     assert_eq!(err.kind, Kind::InvalidInput);
     assert_eq!(err.audience, Audience::User);
-    assert!(err
-        .message
-        .starts_with("There is an issue with the activity information: The name has an issue: "));
+    assert!(
+        err.message.starts_with(
+            "There is an issue with the activity information: The name has an issue: "
+        )
+    );
 }
 
 #[test]

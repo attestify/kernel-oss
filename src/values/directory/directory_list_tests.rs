@@ -177,7 +177,10 @@ fn directory_list_error_add_empty_path_name() {
 
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::System);
-    assert_eq!(error.message, "You provided an empty path name to add to the directory List.  Please provide a non-empty path name.");
+    assert_eq!(
+        error.message,
+        "You provided an empty path name to add to the directory List.  Please provide a non-empty path name."
+    );
 }
 #[test]
 fn directory_list_error_add_duplicate_path_name() {
@@ -210,7 +213,10 @@ fn directory_list_error_add_duplicate_path_name() {
 
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::System);
-    assert_eq!(error.message, "The path name 'path-key' already exists in the directory List.  Please provide a unique path name.");
+    assert_eq!(
+        error.message,
+        "The path name 'path-key' already exists in the directory List.  Please provide a unique path name."
+    );
 }
 #[test]
 fn directory_list_error_add_empty_path() {
@@ -230,7 +236,10 @@ fn directory_list_error_add_empty_path() {
 
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::System);
-    assert_eq!(error.message, "You provided an empty path to add to the directory List.  Please provide a non-empty path.");
+    assert_eq!(
+        error.message,
+        "You provided an empty path to add to the directory List.  Please provide a non-empty path."
+    );
 }
 #[test]
 fn directory_list_error_get_not_found() {

@@ -22,14 +22,12 @@ pub(crate) const LOOKUP: [u8; 256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-
 /// An error that can occur when encoding a base32 string
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum EncodeError {
     /// The length of the provided buffer is not large enough
     BufferTooSmall,
 }
-
 
 impl std::error::Error for EncodeError {}
 
@@ -41,7 +39,6 @@ impl fmt::Display for EncodeError {
         write!(f, "{}", text)
     }
 }
-
 
 /// Encode an u128 value to a given buffer.
 pub fn encode_to_array(mut value: u128, buffer: &mut [u8; ULID_LEN]) {
@@ -69,7 +66,6 @@ pub enum DecodeError {
     /// A non-base32 character was found
     InvalidChar,
 }
-
 
 impl std::error::Error for DecodeError {}
 

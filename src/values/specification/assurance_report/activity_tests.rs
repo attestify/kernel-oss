@@ -221,5 +221,10 @@ fn duplicate_action_error() {
         .add(&dup_action)
         .try_build();
 
-    kernel_error_starts_with!(result, Kind::InvalidInput, Audience::User, "The activity 'activity-name' has one or more actions with the same action name of 'action-name'. All action names for a given activity must be unique. Review the actions for this activity to ensure each action has a unique name.");
+    kernel_error_starts_with!(
+        result,
+        Kind::InvalidInput,
+        Audience::User,
+        "The activity 'activity-name' has one or more actions with the same action name of 'action-name'. All action names for a given activity must be unique. Review the actions for this activity to ensure each action has a unique name."
+    );
 }

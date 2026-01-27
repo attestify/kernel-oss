@@ -30,9 +30,11 @@ fn new_procedure_error_invalid_procedure_repository() {
     let error = result.unwrap_err();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(error
-        .message
-        .contains("'' is not a valid procedure location: "));
+    assert!(
+        error
+            .message
+            .contains("'' is not a valid procedure location: ")
+    );
 }
 #[test]
 fn new_procedure_error_contiguous_slashes() {
@@ -40,7 +42,10 @@ fn new_procedure_error_contiguous_slashes() {
     let error = result.unwrap_err();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert_eq!(error.message, "The directory path cannot contain contiguous forward slashes at position 16. Please remove the extra forward slash.");
+    assert_eq!(
+        error.message,
+        "The directory path cannot contain contiguous forward slashes at position 16. Please remove the extra forward slash."
+    );
 }
 #[test]
 fn new_procedure_error_directory_path_starts_with_slash() {
@@ -70,7 +75,10 @@ fn new_procedure_error_directory_path_invalid_character() {
     let error = result.unwrap_err();
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert_eq!(error.message, "Invalid character at position 3: '@'. The directory path can only contain alphanumeric characters, underscores, and non-contiguous forward slashes.");
+    assert_eq!(
+        error.message,
+        "Invalid character at position 3: '@'. The directory path can only contain alphanumeric characters, underscores, and non-contiguous forward slashes."
+    );
 }
 
 #[test]

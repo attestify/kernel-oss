@@ -52,7 +52,13 @@ fn check_for_non_alphanumeric_and_dashes_only(name: &str) -> Result<(), Error> {
     if name.chars().all(|c| c.is_alphanumeric() || c == '-') {
         return Ok(());
     }
-    Err(Error::for_user(Kind::InvalidInput,  format!("You provided the name '{}' which contains invalid characters. A name must contain only alphanumeric characters and dashes.", name)))
+    Err(Error::for_user(
+        Kind::InvalidInput,
+        format!(
+            "You provided the name '{}' which contains invalid characters. A name must contain only alphanumeric characters and dashes.",
+            name
+        ),
+    ))
 }
 fn check_for_leading_or_trailing_dashes(name: &str) -> Result<(), Error> {
     if name.starts_with('-') || name.ends_with('-') {

@@ -160,12 +160,24 @@ impl NID {
 
         let first_char = nid_input.chars().next().unwrap();
         if !first_char.is_alphabetic() {
-            return Err(Error::for_user(Kind::InvalidInput, format!("The NID must start with an alphabetic character. You NID '{}' starts with '{}'.", nid_input, first_char)));
+            return Err(Error::for_user(
+                Kind::InvalidInput,
+                format!(
+                    "The NID must start with an alphabetic character. You NID '{}' starts with '{}'.",
+                    nid_input, first_char
+                ),
+            ));
         }
 
         for (index, character) in nid_input.chars().enumerate() {
             if !character.is_alphanumeric() && character != '-' {
-                return Err(Error::for_user(Kind::InvalidInput, format!("NID '{}' contains invalid character '{}' at position {}.  An NID can only contains alphanumeric characters or a dash '-'.", nid_input, character, index)));
+                return Err(Error::for_user(
+                    Kind::InvalidInput,
+                    format!(
+                        "NID '{}' contains invalid character '{}' at position {}.  An NID can only contains alphanumeric characters or a dash '-'.",
+                        nid_input, character, index
+                    ),
+                ));
             }
         }
 

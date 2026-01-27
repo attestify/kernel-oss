@@ -160,9 +160,10 @@ fn add_activity_error() {
     let err = result.unwrap_err();
     assert_eq!(err.kind, Kind::InvalidInput);
     assert_eq!(err.audience, Audience::User);
-    assert!(err
-        .message
-        .starts_with("We could not add the activity '' to the list of activities: "));
+    assert!(
+        err.message
+            .starts_with("We could not add the activity '' to the list of activities: ")
+    );
 }
 #[test]
 fn add_action_without_existing_activity_error() {
@@ -190,5 +191,8 @@ fn add_action_without_existing_activity_error() {
     let err = activities.unwrap_err();
     assert_eq!(err.kind, Kind::InvalidInput);
     assert_eq!(err.audience, Audience::User);
-    assert_eq!(err.message, "Activity 'activity-1' does not exist. The activity must exist before you can add an action to it.  Please add a activity with the name you provided, a short description, and a long description.");
+    assert_eq!(
+        err.message,
+        "Activity 'activity-1' does not exist. The activity must exist before you can add an action to it.  Please add a activity with the name you provided, a short description, and a long description."
+    );
 }
