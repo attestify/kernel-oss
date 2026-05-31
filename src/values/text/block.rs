@@ -1,4 +1,4 @@
-use crate::values::value::Value;
+use crate::values::Value;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Block {

@@ -1,5 +1,5 @@
 use crate::error::{Error, Kind};
-use crate::values::value::Value;
+use crate::values::Value;
 
 /// The [`Description`] struct represents a long form text describing something.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

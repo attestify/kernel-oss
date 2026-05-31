@@ -1,5 +1,5 @@
 use crate::error::{Error, Kind};
-use crate::values::value::Value;
+use crate::values::Value;
 use std::fmt::Display;
 use std::string::ToString;
 

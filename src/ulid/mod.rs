@@ -28,7 +28,7 @@ mod base32_tests;
 mod ulid_tests;
 
 use crate::ulid::base32::{DecodeError, ULID_LEN};
-use crate::values::value::Value;
+use crate::values::Value;
 use std::fmt;
 use std::str::FromStr;
 

@@ -1,6 +1,6 @@
 use crate::error::{Error, Kind};
 use crate::values::strings::{STRING_256_MAX, exceeds_max_length, has_more_than_alphanumeric};
-use crate::values::value::Value;
+use crate::values::Value;
 
 /// The `SubjectId` is a unique identifier for the subject of an NAPE entity.  It can only be alphanumeric characters and is limited to 256 characters.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

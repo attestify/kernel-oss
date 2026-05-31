@@ -1,7 +1,7 @@
 use crate::error::{Error, Kind};
 use crate::values::specification::description::Description;
 use crate::values::strings::exceeds_max_length;
-use crate::values::value::Value;
+use crate::values::Value;
 
 /// the [`MAX_LENGTH`] is the maximum amount of characters the [`ShortDescription`] can contain
 const MAX_LENGTH: usize = 255;

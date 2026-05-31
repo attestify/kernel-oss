@@ -1,5 +1,5 @@
 use crate::values::specification::name::Name;
-use crate::values::value::Value;
+use crate::values::Value;
 
 #[derive(Clone, Debug)]
 pub struct DirectoryName {

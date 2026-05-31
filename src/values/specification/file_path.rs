@@ -1,5 +1,5 @@
 use crate::error::{Error, Kind};
-use crate::values::value::Value;
+use crate::values::Value;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct FilePath {

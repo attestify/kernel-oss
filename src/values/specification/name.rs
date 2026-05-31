@@ -1,5 +1,5 @@
 use crate::error::{Error, Kind};
-use crate::values::value::Value;
+use crate::values::Value;
 
 /// The [`Name`] struct represents a name that is used to identify an NAPE entity.  It is a human-readable name that only allows alphanumeric characters and dashes. The [`Name`] struct contains the following fields:
 ///
