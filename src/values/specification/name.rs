@@ -1,4 +1,5 @@
 use crate::error::{Error, Kind};
+use crate::values::value::Value;
 
 /// The [`Name`] struct represents a name that is used to identify an NAPE entity.  It is a human-readable name that only allows alphanumeric characters and dashes. The [`Name`] struct contains the following fields:
 ///
@@ -9,6 +10,11 @@ pub struct Name {
 }
 
 impl Name {
+    /// Returns the normalized name value.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
     /// Create a new [`Name`] instance
     ///
     /// # Arguments
@@ -36,6 +42,14 @@ impl Name {
         Ok(Name {
             value: cleaned_name,
         })
+    }
+}
+
+impl Value for Name {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }
 

@@ -46,11 +46,35 @@ impl URL {
     pub fn value(&self) -> String {
         self.value.value()
     }
+    pub fn line(&self) -> &Line {
+        &self.value
+    }
+    pub fn scheme(&self) -> &str {
+        &self.scheme
+    }
+    pub fn host(&self) -> &str {
+        &self.host
+    }
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+    pub fn query_string(&self) -> &str {
+        &self.query_string
+    }
     pub fn queries(&self) -> Vec<(String, String)> {
         self.queries.clone()
     }
+    pub fn query_pairs(&self) -> &[(String, String)] {
+        &self.queries
+    }
     pub fn query_count(&self) -> usize {
         self.queries.len()
+    }
+    pub fn fragment(&self) -> &str {
+        &self.fragment
     }
 }
 

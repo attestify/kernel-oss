@@ -9,6 +9,16 @@ pub struct Subject {
 }
 
 impl Subject {
+    /// Returns the subject NRN.
+    pub fn nrn(&self) -> &NRN {
+        &self.nrn
+    }
+
+    /// Returns the subject identifier.
+    pub fn id(&self) -> &SubjectId {
+        &self.id
+    }
+
     /// #Overview
     ///
     /// Attempts to create a new Subject instance.

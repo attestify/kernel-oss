@@ -7,6 +7,9 @@ pub mod specification;
 pub mod strings;
 pub mod text;
 pub mod uri;
+pub mod value;
+
+pub use value::Value;
 
 #[cfg(test)]
 mod strings_tests;

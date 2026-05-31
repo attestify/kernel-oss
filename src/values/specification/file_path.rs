@@ -1,4 +1,5 @@
 use crate::error::{Error, Kind};
+use crate::values::value::Value;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct FilePath {
@@ -49,5 +50,13 @@ impl FilePath {
 
     pub fn as_str(&self) -> &str {
         &self.value
+    }
+}
+
+impl Value for FilePath {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }

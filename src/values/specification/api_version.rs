@@ -9,6 +9,21 @@ pub struct APIVersion {
 }
 
 impl APIVersion {
+    /// Returns the major version number.
+    pub fn major(&self) -> u8 {
+        self.major
+    }
+
+    /// Returns the minor version number.
+    pub fn minor(&self) -> u8 {
+        self.minor
+    }
+
+    /// Returns the patch version number.
+    pub fn patch(&self) -> u8 {
+        self.patch
+    }
+
     /// Create a new [`APIVersion`] instance
     ///
     /// # Arguments

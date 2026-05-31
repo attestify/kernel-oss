@@ -7,6 +7,11 @@ pub struct StartTime {
 }
 
 impl StartTime {
+    /// Returns the start time in milliseconds.
+    pub fn time(&self) -> u128 {
+        self.time
+    }
+
     /// # Overview
     /// Creates a new [`StartTime`] struct with the current time in milliseconds.
     ///

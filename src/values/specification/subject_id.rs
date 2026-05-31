@@ -1,5 +1,6 @@
 use crate::error::{Error, Kind};
 use crate::values::strings::{STRING_256_MAX, exceeds_max_length, has_more_than_alphanumeric};
+use crate::values::value::Value;
 
 /// The `SubjectId` is a unique identifier for the subject of an NAPE entity.  It can only be alphanumeric characters and is limited to 256 characters.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -8,6 +9,11 @@ pub struct SubjectId {
 }
 
 impl SubjectId {
+    /// Returns the subject identifier value.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
     pub fn new(value: &str) -> Result<SubjectId, Error> {
         if value.is_empty() {
             return Err(Error::for_user(
@@ -34,5 +40,13 @@ impl SubjectId {
         Ok(SubjectId {
             value: value.to_string(),
         })
+    }
+}
+
+impl Value for SubjectId {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }

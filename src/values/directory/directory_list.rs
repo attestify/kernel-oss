@@ -12,6 +12,11 @@ pub struct DirectoryList {
 }
 
 impl DirectoryList {
+    /// Returns the configured directory or file paths.
+    pub fn paths(&self) -> &[(String, String)] {
+        &self.paths
+    }
+
     /// Creates a new [`DirectoryList`] from an existing Vec<(String,String)> which contains paths to directories or files.
     ///
     /// # Arguments

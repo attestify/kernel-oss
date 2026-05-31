@@ -1,6 +1,7 @@
 use crate::error::{Error, Kind};
 use crate::values::specification::description::Description;
 use crate::values::strings::exceeds_max_length;
+use crate::values::value::Value;
 
 /// the [`MAX_LENGTH`] is the maximum amount of characters the [`ShortDescription`] can contain
 const MAX_LENGTH: usize = 255;
@@ -12,6 +13,11 @@ pub struct ShortDescription {
 }
 
 impl ShortDescription {
+    /// Returns the short description value.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
     /// Creates a new [`ShortDescription`] instance.
     ///
     /// # Arguments
@@ -35,6 +41,14 @@ impl ShortDescription {
                 format!("The short description provided is too long. A description must have a value with at most {} characters.", MAX_LENGTH).as_str()));
         }
         Ok(Self { value: desc.value })
+    }
+}
+
+impl Value for ShortDescription {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }
 

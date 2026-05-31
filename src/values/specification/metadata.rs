@@ -16,6 +16,11 @@ pub struct MetaData {
 }
 
 impl MetaData {
+    /// Returns the metadata entries.
+    pub fn data(&self) -> &[(Name, Description)] {
+        &self.data
+    }
+
     /// Add a key-value pair to the [`MetaData`]
     pub fn add(&mut self, key: &str, value: &str) -> Result<(), Error> {
         let cleaned_key = clean_key(key)?;

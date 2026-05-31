@@ -28,6 +28,7 @@ mod base32_tests;
 mod ulid_tests;
 
 use crate::ulid::base32::{DecodeError, ULID_LEN};
+use crate::values::value::Value;
 use std::fmt;
 use std::str::FromStr;
 
@@ -55,6 +56,11 @@ impl ULID {
     pub const TIME_BITS: u8 = 48;
     /// The number of bits in a [ULID]'s random portion
     pub const RAND_BITS: u8 = 80;
+
+    /// Returns the numeric value contained by this [`ULID`].
+    pub const fn value(&self) -> u128 {
+        self.0
+    }
 
     /// Create a [ULID] from separated parts.
     ///
@@ -229,6 +235,14 @@ impl ULID {
     /// ```
     pub const fn to_bytes(&self) -> [u8; 16] {
         self.0.to_be_bytes()
+    }
+}
+
+impl Value for ULID {
+    type ValueType = u128;
+
+    fn value(&self) -> &Self::ValueType {
+        &self.0
     }
 }
 

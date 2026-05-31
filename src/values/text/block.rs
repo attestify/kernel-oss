@@ -1,3 +1,5 @@
+use crate::values::value::Value;
+
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Block {
     value: String,
@@ -65,6 +67,14 @@ impl Block {
         Block {
             value: String::from(self.value.trim()),
         }
+    }
+}
+
+impl Value for Block {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }
 

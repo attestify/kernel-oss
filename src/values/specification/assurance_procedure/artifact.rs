@@ -12,6 +12,21 @@ pub struct Artifact {
 }
 
 impl Artifact {
+    /// Returns the artifact name.
+    pub fn name(&self) -> &Name {
+        &self.name
+    }
+
+    /// Returns the artifact description.
+    pub fn description(&self) -> &Description {
+        &self.description
+    }
+
+    /// Returns the artifact's expected metadata.
+    pub fn expected_metadata(&self) -> &MetaData {
+        &self.expected_metadata
+    }
+
     /// Create a new [`Artifact`] with the given name, description, and expected metadata.
     ///
     /// # Arguments

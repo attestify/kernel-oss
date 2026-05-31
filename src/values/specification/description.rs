@@ -1,4 +1,5 @@
 use crate::error::{Error, Kind};
+use crate::values::value::Value;
 
 /// The [`Description`] struct represents a long form text describing something.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -7,6 +8,11 @@ pub struct Description {
 }
 
 impl Description {
+    /// Returns the description value.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
     /// Creates a new [`Description`] instance.
     ///
     /// # Arguments
@@ -30,6 +36,14 @@ impl Description {
         Ok(Self {
             value: String::from(cleaned_value),
         })
+    }
+}
+
+impl Value for Description {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }
 

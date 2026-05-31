@@ -14,6 +14,31 @@ pub struct Action {
 }
 
 impl Action {
+    /// Returns the action name.
+    pub fn name(&self) -> &Name {
+        &self.name
+    }
+
+    /// Returns the short description.
+    pub fn short(&self) -> &ShortDescription {
+        &self.short
+    }
+
+    /// Returns the long description.
+    pub fn description(&self) -> &Description {
+        &self.description
+    }
+
+    /// Returns the test file path.
+    pub fn test(&self) -> &FilePath {
+        &self.test
+    }
+
+    /// Returns the evidence file path.
+    pub fn evidence(&self) -> &FilePath {
+        &self.evidence
+    }
+
     pub fn builder() -> ActionBuilder {
         ActionBuilder::new()
     }

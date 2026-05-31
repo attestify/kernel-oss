@@ -15,6 +15,31 @@ pub struct Activity {
 }
 
 impl Activity {
+    /// Returns the activity name.
+    pub fn name(&self) -> &Name {
+        &self.name
+    }
+
+    /// Returns the short description.
+    pub fn short(&self) -> &ShortDescription {
+        &self.short
+    }
+
+    /// Returns the long description.
+    pub fn description(&self) -> &Description {
+        &self.description
+    }
+
+    /// Returns the expected evidence file paths.
+    pub fn expected_evidence(&self) -> &[FilePath] {
+        &self.expected_evidence
+    }
+
+    /// Returns the actions associated with this activity.
+    pub fn actions(&self) -> &[Action] {
+        &self.actions
+    }
+
     /// Create a new instance of the activity
     ///
     /// # Arguments

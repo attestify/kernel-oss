@@ -17,6 +17,16 @@ pub struct Procedure {
 }
 
 impl Procedure {
+    /// Returns the repository location for this procedure.
+    pub fn repository(&self) -> &str {
+        &self.repository
+    }
+
+    /// Returns the directory path for this procedure.
+    pub fn directory(&self) -> &str {
+        &self.directory
+    }
+
     /// # Overview
     ///
     /// Attempts to create a new Procedure instance.

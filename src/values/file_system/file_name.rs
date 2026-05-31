@@ -1,4 +1,5 @@
 use crate::error::{Error, Kind};
+use crate::values::value::Value;
 
 // A value representing the file name for a file on the virtual file system.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -15,6 +16,14 @@ impl FileName {
     /// Retrieve the value of the file name
     pub fn value(&self) -> &str {
         &self.value
+    }
+}
+
+impl Value for FileName {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }
 

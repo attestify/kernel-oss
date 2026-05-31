@@ -9,6 +9,11 @@ pub struct Activities {
 }
 
 impl Activities {
+    /// Returns the activities in this collection.
+    pub fn list(&self) -> &[Activity] {
+        &self.list
+    }
+
     /// Add a ['Activity'] to an existing list of activities.
     ///
     /// # Arguments

@@ -1,4 +1,5 @@
 use crate::error::{Error, Kind};
+use crate::values::value::Value;
 use std::fmt::Display;
 use std::string::ToString;
 
@@ -26,6 +27,26 @@ pub struct NRN {
 }
 
 impl NRN {
+    /// Returns the full NRN string.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
+    /// Returns the NRN scheme.
+    pub fn scheme(&self) -> &str {
+        &self.scheme
+    }
+
+    /// Returns the namespace identifier for the NRN.
+    pub fn nid(&self) -> &NapeNID {
+        &self.nid
+    }
+
+    /// Returns the namespace-specific string parts for the NRN.
+    pub fn nss(&self) -> &[NSS] {
+        &self.nss
+    }
+
     /// Create a new NRN instance
     ///
     /// # Arguments
@@ -107,6 +128,14 @@ impl NRN {
     }
 }
 
+impl Value for NRN {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
+    }
+}
+
 /// An [`NapeNID`] is an enumeration of the different types of resources that can be identified within an [`NRN`] namespace.  The [`ALLOWED_NRN_NID_LIST`] contains the list of [`NID`]s that are allowed.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum NapeNID {
@@ -150,6 +179,11 @@ pub struct NID {
     pub value: String,
 }
 impl NID {
+    /// Returns the namespace identifier value.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
     pub fn new(nid_input: &str) -> Result<NID, Error> {
         if nid_input.is_empty() {
             return Err(Error::for_user(
@@ -196,6 +230,14 @@ impl NID {
         })
     }
 }
+
+impl Value for NID {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
+    }
+}
 impl Display for NID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.value)
@@ -208,6 +250,11 @@ pub struct NSS {
     pub value: String,
 }
 impl NSS {
+    /// Returns the namespace-specific string value.
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
     /// Create a new NSS instance
     ///
     /// # Arguments
@@ -242,5 +289,13 @@ impl NSS {
         Ok(NSS {
             value: String::from(input),
         })
+    }
+}
+
+impl Value for NSS {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }

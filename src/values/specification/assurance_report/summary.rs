@@ -13,6 +13,41 @@ pub struct Summary {
 }
 
 impl Summary {
+    /// Returns the number of activities in the summarized report.
+    pub fn activity_count(&self) -> u32 {
+        self.activity_count
+    }
+
+    /// Returns the number of actions in the summarized report.
+    pub fn action_count(&self) -> u32 {
+        self.action_count
+    }
+
+    /// Returns the number of actions that ran.
+    pub fn actions_run(&self) -> u32 {
+        self.actions_run
+    }
+
+    /// Returns the number of passing actions.
+    pub fn pass(&self) -> u32 {
+        self.pass
+    }
+
+    /// Returns the number of failing actions.
+    pub fn fail(&self) -> u32 {
+        self.fail
+    }
+
+    /// Returns the number of inconclusive actions.
+    pub fn inconclusive(&self) -> u32 {
+        self.inconclusive
+    }
+
+    /// Returns the summarized outcome.
+    pub fn outcome(&self) -> &Outcome {
+        &self.outcome
+    }
+
     /// Create a new [`Summary`] from a list of [`Activities`].
     ///
     /// # Arguments

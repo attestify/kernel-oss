@@ -18,6 +18,31 @@ pub struct AssuranceProcedure {
 }
 
 impl AssuranceProcedure {
+    /// Returns the API version for this assurance procedure.
+    pub fn api_version(&self) -> &APIVersion {
+        &self.api_version
+    }
+
+    /// Returns the specification kind.
+    pub fn kind(&self) -> &Kind {
+        &self.kind
+    }
+
+    /// Returns the procedure information.
+    pub fn procedure(&self) -> &Procedure {
+        &self.procedure
+    }
+
+    /// Returns the configured activities.
+    pub fn activities(&self) -> &Activities {
+        &self.activities
+    }
+
+    /// Returns the configured artifacts.
+    pub fn artifacts(&self) -> &Artifacts {
+        &self.artifacts
+    }
+
     pub fn builder() -> AssuranceProcedureBuilder {
         AssuranceProcedureBuilder::new()
     }

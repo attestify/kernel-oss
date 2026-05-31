@@ -34,6 +34,21 @@ pub struct Error {
 }
 
 impl Error {
+    /// Returns the audience that should handle this error.
+    pub fn audience(&self) -> Audience {
+        self.audience
+    }
+
+    /// Returns the high-level category for this error.
+    pub fn kind(&self) -> Kind {
+        self.kind
+    }
+
+    /// Returns the human-readable error message.
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
     /// Create a new `Error` with the given audience, kind and message.
     ///
     /// `message` accepts any type that implements `Into<String>` for ergonomic callers.

@@ -11,6 +11,21 @@ pub struct Procedure {
 }
 
 impl Procedure {
+    /// Returns the procedure NRN.
+    pub fn nrn(&self) -> &NRN {
+        &self.nrn
+    }
+
+    /// Returns the short description.
+    pub fn short(&self) -> &ShortDescription {
+        &self.short
+    }
+
+    /// Returns the long description.
+    pub fn description(&self) -> &Description {
+        &self.description
+    }
+
     pub fn new(nrn: &str, short_description: &str, long_description: &str) -> Result<Self, Error> {
         let clean_nrn = NRN::new(nrn).map_err(|e| customize_error(e.message.as_str()))?;
         let clean_short = ShortDescription::try_from(short_description).map_err(|e| {

@@ -1,3 +1,5 @@
+use crate::values::value::Value;
+
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Line {
     value: String,
@@ -73,6 +75,14 @@ impl Line {
                 .trim()
                 .to_string(),
         }
+    }
+}
+
+impl Value for Line {
+    type ValueType = str;
+
+    fn value(&self) -> &Self::ValueType {
+        self.value.as_str()
     }
 }
 
