@@ -51,7 +51,7 @@ Mostly out of scope until this crate adds those layers:
 
 4. Gateway contracts
    - Current gateway contracts use operation-specific methods and type aliases.
-   - Standards expect `*GW` traits, explicit request builder/request/response types, and one `execute(...)` method.
+   - Standards expect `*GW` traits, explicit request/response types, and one `execute(request)` method.
    - Action: handle after value-object and construction cleanup because this is likely the most disruptive API change.
 
 5. Test standard
@@ -101,25 +101,34 @@ Already specified:
 
 - `UseCase`
   - Source: `01-rust-use-case-specification.md`
-  - Shape: associated `RequestBuilder`, `Request`, and `Response` types with `execute(...) -> Result<Response, Error>`.
-  - Status: the spec defines the abstract shared shape, while examples still emphasize domain-specific seam traits such as `RegisterUserUC`.
+  - Shape: associated `Request` and `Response` types with either synchronous `execute(request: Request) -> Result<Response, Error>` or asynchronous `execute(request: Request) -> ResponseFuture<Response>`.
+  - Status: the spec now defines shared `UseCase` and `AsyncUseCase` traits. Domain-specific `*UC` traits are marker supertraits over the shared trait with concrete associated type bindings.
 
 - `Gateway`
   - Source: `02-rust-gateway-specification.md`
-  - Shape: associated `RequestBuilder`, `Request`, and `Response` types with `execute(...) -> Result<Response, Error>`.
-  - Status: the spec defines the abstract shared shape, while examples still emphasize domain-specific seam traits such as `RegisterUserGW`.
+  - Shape: associated `Request` and `Response` types with either synchronous `execute(request: Request) -> Result<Response, Error>` or asynchronous `execute(request: Request) -> ResponseFuture<Response>`.
+  - Status: the spec now defines shared `Gateway` and `AsyncGateway` traits. Domain-specific `*GW` traits are marker supertraits over the shared trait with concrete associated type bindings.
 
-Possible specification gaps to resolve:
+Resolved specification gaps:
 
-- The use case and gateway specs show a reusable abstract trait shape, but do not state where a shared trait should live in the kernel crate.
-- The use case and gateway specs say request builders build verified request types through `try_build()`, but they do not define a shared `TryBuild<T>` or `RequestBuilder` trait that can be used as a bound.
-- If we want generic trait parameters instead of associated types, the use case and gateway specs should be updated. The current specs use associated types.
+- The use case and gateway specs now state the shared trait direction and preserve domain-specific `*UC` / `*GW` marker seams.
+- The async seam rule now requires a normal `fn execute(...) -> ResponseFuture<...>` signature rather than public `async fn`.
+- The specs now state that sync and async execution are separate traits, not two methods on one trait.
+- The standards now say every public bounded object should clearly satisfy an architectural role.
+- Request builders are now treated as external construction concerns. Shared use case and gateway seams receive a finalized `Request`; they do not expose or accept a `RequestBuilder`.
+
+Remaining specification gaps to resolve:
+
+- The kernel implementation needs to settle the final module locations and exported names for shared use case, gateway, and response-future traits after the recent file move.
 
 Engineering direction for the kernel:
 
 - Prefer associated types for `UseCase` and `Gateway` unless a concrete need appears for one type to implement the same trait repeatedly with different request/response pairs.
 - Keep domain-specific `*UC` and `*GW` seam traits aligned with the shared kernel traits.
+- Keep request builders outside use case and gateway execution. Builders may construct verified request objects, but `execute` receives only the finalized request.
 - Add shared kernel traits first, then implement them gradually.
+- Use `Response = ()` for void-style use cases or gateways that succeed without a payload.
+- Do not create an empty response object unless the empty response has real domain meaning.
 
 ## Next Task Set, Foundational Shared Traits
 
@@ -136,15 +145,103 @@ Engineering direction for the kernel:
    - First implementation candidates should wait until we identify which kernel types are truly entities rather than value objects.
 
 3. Add shared synchronous `UseCase` and `Gateway` traits.
-   - Proposed use case location: `src/core/traits/mod.rs` or a new use-case-oriented module if one is introduced.
-   - Proposed gateway location: `src/gateways/mod.rs` or `src/gateways/traits.rs`.
-   - Shape: associated `RequestBuilder`, `Request`, and `Response`, with `execute`.
-   - Do not retrofit all current gateways immediately; first add the common trait definitions and then evaluate existing gateway traits one at a time.
+   - Current use case location after file move: `src/usecase/mod.rs`.
+   - Current gateway location after file move: `src/gateways/mod.rs`.
+   - Shape: associated `Request` and `Response`, with `execute(request: Request)`.
+   - Sync traits: `UseCase` and `Gateway`.
+   - Async traits: `AsyncUseCase` and `AsyncGateway`.
+   - Async future alias: shared `ResponseFuture` in `src/core/traits/mod.rs`.
+   - Status: shared trait layout compiles and formats. Void-style responses are verified with `Response = ()`.
 
-4. Decide whether to add a shared `TryBuild<T>` trait.
-   - This is not explicitly specified today.
-   - It would let `UseCase` and `Gateway` encode that their `RequestBuilder` produces their `Request`.
-   - If we add it, update the Rust specifications first or alongside the kernel implementation.
+4. Keep request builders as construction-only collaborators.
+   - Builders may expose `try_build()` and produce verified request types.
+   - Shared `UseCase`, `AsyncUseCase`, `Gateway`, and `AsyncGateway` traits must not accept builder types.
+   - Callers build the request before crossing the use case or gateway seam.
+
+## Temporary Stop, 2026-05-31
+
+Stop here before retrofitting existing value objects, entities, use cases, or gateways.
+
+Current checkpoint:
+
+- Engineering standards were updated for:
+  - associated-type `Value`
+  - primitive/fundamental value return guidance
+  - shared sync/async use case traits
+  - shared sync/async gateway traits
+  - request-only `execute(request)` seams, with builders kept outside execution
+  - marker-supertrait `*UC` and `*GW` seams
+  - explicit `ResponseFuture` async seams instead of public `async fn`
+  - public bounded object architectural role classification
+- Kernel implementation work completed or started:
+  - callable accessors were added while preserving public fields
+  - shared `Value` trait was added and implemented for the first value-object set
+  - shared use case and gateway trait work was started
+  - a new `src/usecase` directory was introduced
+  - use case and gateway traits were moved into `src/usecase/mod.rs` and `src/gateways/mod.rs`
+
+Current caution:
+
+- Do not start retrofitting existing gateway traits until the shared trait module layout is verified.
+- Shared trait module layout is now verified, but gateway retrofits should still be handled one at a time.
+- Existing gateway APIs are already in use by consumers.
+- Do not replace or remove existing public gateway traits/type aliases in this pass.
+- Introduce updated shared-trait-compatible APIs side by side, then mark the old APIs with `#[deprecated(...)]` so consumers get compiler warnings and can migrate intentionally.
+
+Pickup steps:
+
+1. Decide whether `UseCase` / `AsyncUseCase` should remain in `src/usecase/mod.rs` or move to `src/usecase/use_case.rs` with re-exports from `src/usecase/mod.rs`.
+2. Decide whether `Gateway` / `AsyncGateway` should remain in `src/gateways/mod.rs` or move to `src/gateways/gateway.rs` with re-exports from `src/gateways/mod.rs`.
+3. Define the compatibility migration pattern before touching any existing gateway:
+   - keep the current public API in place for source compatibility
+   - add the new shared-trait-compatible API in a separate module or path
+   - allow the new API to reuse the same semantic name in that separate module/path
+   - mark the old API with `#[deprecated(note = "...")]`
+   - make the deprecation note point to the replacement module/path
+   - add tests that prove the new API works before deprecating the old one
+4. Evaluate existing gateways one at a time:
+   - `IdentityGateway`
+   - `UTCTimestampGateway`
+   - `FileDataGateway`
+   - `RetrieveDirectoryPath`
+   - `Logger`
+5. For each existing gateway, add the new API side by side before marking the old API deprecated.
+6. Do not remove deprecated APIs until a later breaking-release plan explicitly schedules removal.
+
+Compatibility migration rule:
+
+```rust
+#[deprecated(
+    note = "Use gateways::identity_v2::IdentityGateway, which implements the shared Gateway seam."
+)]
+pub trait IdentityGateway {
+    // existing operation-specific API remains available temporarily
+}
+```
+
+Replacement APIs should live in a separate module or path so consumers can switch imports explicitly without losing the old API immediately.
+
+### 2026-05-31, Pickup Progress
+
+Verified and cleaned the shared use case and gateway trait layout.
+
+Decisions:
+
+- Collapse separate `UCResponseFuture` and `GWResponseFuture` aliases into one shared `ResponseFuture`.
+- Keep `UseCase` and `AsyncUseCase` in `src/usecase/mod.rs` for now.
+- Keep `Gateway` and `AsyncGateway` in `src/gateways/mod.rs` for now.
+- Use case and gateway `execute` functions receive `Request` directly. They no longer expose or accept `RequestBuilder`.
+- Use `Response = ()` for void-style use cases and gateways.
+
+Verification:
+
+- `cargo fmt --check`
+- `cargo test`
+
+Result:
+
+- 298 unit tests passed.
+- 11 doctests passed.
 
 ## Completed Work
 
