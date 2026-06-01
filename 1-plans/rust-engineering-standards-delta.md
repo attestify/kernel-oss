@@ -143,7 +143,7 @@ Engineering direction for the kernel:
 - Keep domain-specific `*UC` and `*GW` seam traits aligned with the shared kernel traits.
 - Keep request builders outside use case and gateway execution. Builders may construct verified request objects, but `execute` receives only the finalized request.
 - Add shared kernel traits first, then implement them gradually.
-- Use `Response = ()` for void-style use cases or gateways that succeed without a payload.
+- Use `Response = ()` for use cases or gateways that succeed without a payload; execution still returns `Result<(), Error>`.
 - Do not create an empty response object unless the empty response has real domain meaning.
 
 ## Next Task Set, Foundational Shared Traits
@@ -169,7 +169,7 @@ Engineering direction for the kernel:
    - Sync traits: `UseCase` and `Gateway`.
    - Async traits: `AsyncUseCase` and `AsyncGateway`.
    - Async future alias: shared `ResponseFuture` in `src/core/traits/mod.rs`.
-   - Status: shared trait layout compiles and formats. Void-style responses are verified with `Response = ()`.
+   - Status: shared trait layout compiles and formats. No-payload success responses are verified with `Response = ()`.
 
 4. Keep request builders as construction-only collaborators.
    - Builders may expose `try_build()` and produce verified request types.
@@ -208,8 +208,8 @@ Current caution:
 
 Pickup steps:
 
-1. Decide whether `UseCase` / `AsyncUseCase` should remain in `src/usecase/mod.rs` or move to `src/usecase/use_case.rs` with re-exports from `src/usecase/mod.rs`.
-2. Decide whether `Gateway` / `AsyncGateway` should remain in `src/gateway/mod.rs` or move to `src/gateway/gateway.rs` with re-exports from `src/gateway/mod.rs`.
+1. Complete: keep `UseCase` / `AsyncUseCase` in `src/usecase/mod.rs` for now.
+2. Complete: keep `Gateway` / `AsyncGateway` in `src/gateway/mod.rs` for now.
 3. Define the compatibility migration pattern before touching any existing gateway:
    - keep the current public API in place for source compatibility
    - add the new shared-trait-compatible API in a separate module or path
@@ -261,7 +261,7 @@ Decisions:
 - Keep `UseCase` and `AsyncUseCase` in `src/usecase/mod.rs` for now.
 - Keep `Gateway` and `AsyncGateway` in `src/gateway/mod.rs` for now.
 - Use case and gateway `execute` functions receive `Request` directly. They no longer expose or accept `RequestBuilder`.
-- Use `Response = ()` for void-style use cases and gateways.
+- Use `Response = ()` for no-payload success use cases and gateways; the seam still returns `Result<(), Error>`.
 - Add `gateway::new_identity::NewIdentityGW` as the first side-by-side standards-aligned gateway retrofit.
 - Model `NewIdentityGW` as a synchronous gateway seam for requesting a newly generated identity.
 - Model `NewIdentityGatewayRequest` as a void-by-construction request object with no request builder.
@@ -436,10 +436,80 @@ Result:
 - The `async fn` search returned no matches.
 - `cargo rustdoc --examples` still reports existing broken intra-doc link warnings from library docs outside these examples.
 
+### 2026-06-01, Current Decision Checkpoint
+
+Status: recorded.
+
+Decisions:
+
+1. Shared seam traits stay in their current module roots for now:
+   - `UseCase` and `AsyncUseCase` remain in `src/usecase/mod.rs`
+   - `Gateway` and `AsyncGateway` remain in `src/gateway/mod.rs`
+   - `ResponseFuture` remains shared from `src/core/traits/mod.rs`
+2. Domain-specific `*UC` and `*GW` traits remain empty marker supertraits over the shared role traits.
+3. Concrete implementations put `execute` on the shared role impl:
+   - sync use cases implement `UseCase`
+   - async use cases implement `AsyncUseCase`
+   - sync gateways implement `Gateway`
+   - async gateways implement `AsyncGateway`
+4. Examples and standards should call seams with fully qualified shared-trait execution and inline marker casts when demonstrating the domain seam:
+   - `UseCase::execute(&use_case as &dyn SomeUC, request)`
+   - `AsyncUseCase::execute(&use_case as &dyn SomeUC, request)`
+   - `Gateway::execute(&gateway as &dyn SomeGW, request)`
+   - `AsyncGateway::execute(&gateway as &dyn SomeGW, request)`
+5. The inline `as &dyn ...` cast is intentional because it makes the marker seam compiler-visible without introducing a separate variable or heap allocation.
+6. Async standalone examples may include an isolated example runner such as `example_runtime::run_ready`, but production application code should replace it with the real runtime or executor.
+7. Composition examples should stay focused on the primary flow and avoid secondary call paths that read like tests; optional builder patterns belong in standards or focused examples.
+8. Use case and gateway implementations should store only dependency links expressed through traits. Request data belongs in request objects, response data belongs in response payloads, and error information belongs in `Error`.
+
+Next implementation direction:
+
+1. Complete: add the unit success payload example using `Response = ()`.
+2. After examples, continue side-by-side gateway retrofits one gateway at a time.
+3. Keep the broader `ULID` module move and algorithms extraction as separate follow-up plans.
+
+### 2026-06-01, Unit Success Payload Example
+
+Status: complete.
+
+Added `examples/unit_success_payload.rs` to show:
+
+- `Response = ()` as a no-payload success payload, not a void execution response
+- sync use case and gateway seams that still return `Result<(), Error>`
+- explicit `Ok(())` on successful use case and gateway execution
+- explicit `Err(Error)` on gateway failure
+- failure propagation from gateway to use case through `Result<(), Error>`
+- named request types and builders for non-void requests
+- gateway success and failure modeled through substituted dependency implementations, not request or error state stored on the gateway
+- fully qualified `UseCase::execute` and `Gateway::execute` calls with inline `as &dyn *UC` / `as &dyn *GW` marker-seam casts
+
+Updated Rust standards:
+
+- `01-rust-use-case-specification.md`
+  - Added `()` as an allowed success payload when a use case succeeds without returned data.
+  - Clarified that this still means `Result<(), Error>` for sync use cases and a future resolving to `Result<(), Error>` for async use cases.
+  - Clarified that empty custom response objects should not be created solely to avoid `Response = ()`.
+  - Clarified that this does not change the named unit-like request rule for void requests.
+  - Added a state ownership rule: use case fields are dependency links only; request, response, and error information must not be stored on the use case implementation.
+- `02-rust-gateway-specification.md`
+  - Added the same unit success payload guidance for gateways.
+  - Added a gateway no-payload success pattern returning `Ok(())`.
+  - Added a state ownership rule: gateway fields are dependency links only; request, response, and error information must not be stored on the gateway implementation.
+  - Updated gateway dependency examples to use trait-object dependency links such as `Arc<dyn AuthProviderClient>`.
+
+Verification:
+
+- `cargo fmt`
+- `cargo fmt --check`
+- `cargo check --examples`
+- `cargo run --example unit_success_payload`
+- `cargo rustdoc --examples`
+- `git diff --check`
+- `git -C ../../specifications/engineering-standards diff --check`
+
 Next examples to add:
 
-1. Void response example using `Response = ()`.
-2. Existing gateway retrofit examples for `UTCTimestampGateway`, `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger` as each retrofit is started.
+1. Existing gateway retrofit examples for `UTCTimestampGateway`, `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger` as each retrofit is started.
 
 ## Completed Work
 
