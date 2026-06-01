@@ -461,6 +461,7 @@ Decisions:
 6. Async standalone examples may include an isolated example runner such as `example_runtime::run_ready`, but production application code should replace it with the real runtime or executor.
 7. Composition examples should stay focused on the primary flow and avoid secondary call paths that read like tests; optional builder patterns belong in standards or focused examples.
 8. Use case and gateway implementations should store only dependency links expressed through traits. Request data belongs in request objects, response data belongs in response payloads, and error information belongs in `Error`.
+9. Composition examples should show dependency wiring explicitly at the composition point. Do not hide gateway and use case builder construction behind example-local helpers such as `build_use_case(...)`.
 
 Next implementation direction:
 
@@ -481,6 +482,7 @@ Added `examples/unit_success_payload.rs` to show:
 - failure propagation from gateway to use case through `Result<(), Error>`
 - named request types and builders for non-void requests
 - gateway success and failure modeled through substituted dependency implementations, not request or error state stored on the gateway
+- explicit inline gateway and use case builder composition without an example-local `build_use_case(...)` helper
 - fully qualified `UseCase::execute` and `Gateway::execute` calls with inline `as &dyn *UC` / `as &dyn *GW` marker-seam casts
 
 Updated Rust standards:
@@ -506,10 +508,112 @@ Verification:
 - `cargo rustdoc --examples`
 - `git diff --check`
 - `git -C ../../specifications/engineering-standards diff --check`
+- `rg -n "build_use_case|fn build_.*use_case|build use case" examples ../../specifications/engineering-standards/7-specifications/rust`
 
-Next examples to add:
+### 2026-06-01, Plan/Decision/Action Update
 
-1. Existing gateway retrofit examples for `UTCTimestampGateway`, `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger` as each retrofit is started.
+Status: recorded.
+
+Decisions:
+
+1. The `build_use_case(...)` helper shape is not a standards pattern.
+2. Standards examples should expose composition directly:
+   - build the gateway implementation
+   - store it behind the gateway seam trait
+   - inject it into the use case builder
+   - execute through the fully qualified shared trait call and inline marker-seam cast
+3. Example-local helpers may still exist for ordinary fixtures or repeated primitive values, but not for hiding the use case/gateway composition pattern being taught.
+
+Actions completed:
+
+1. Removed `build_use_case(...)` from `examples/unit_success_payload.rs`.
+2. Inlined both success and failure composition paths in `main`.
+3. Searched examples and Rust standards for `build_use_case`-style helper usage; no matches remain.
+4. Re-ran example verification after the cleanup.
+
+Next tasks:
+
+1. Complete: start the next side-by-side gateway retrofit with `UTCTimestampGateway`.
+2. Continue later with `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger`, one gateway at a time.
+
+### 2026-06-01, UTC Timestamp Gateway Retrofit
+
+Status: complete.
+
+Decisions:
+
+1. The replacement shared-trait seam is `CurrentUTCTimestampGW`.
+2. The request is `CurrentUTCTimestampGatewayRequest`, a void-by-construction named request object.
+3. The response remains the existing `UTCTimestamp` value object.
+4. The old `UTCTimestampGateway` trait remains in place for compatibility and is deprecated with a note pointing to the new shared `Gateway` seam.
+5. Tests for the new gateway seam must follow the Rust testing standard:
+   - test function names end in `_success` or `_error`
+   - no `.unwrap()`
+   - `.expect(...)` is allowed only for fixture setup that is not the behavior under test
+   - gateway execution uses the fully qualified shared trait call with an inline `as &dyn *GW` marker-seam cast
+
+Actions completed:
+
+1. Added `src/gateway/current_utc_timestamp/mod.rs`.
+2. Added `CurrentUTCTimestampGatewayRequest`.
+3. Added `CurrentUTCTimestampGW: Gateway<Request = CurrentUTCTimestampGatewayRequest, Response = UTCTimestamp>`.
+4. Exported the new module from `src/gateway/mod.rs`.
+5. Deprecated the old `UTCTimestampGateway` compatibility trait.
+6. Added a standards-aligned unit test in `src/gateway/current_utc_timestamp/tests.rs`.
+
+Verification:
+
+- `cargo fmt`
+- `cargo fmt --check`
+- `cargo test current_utc_timestamp`
+- `cargo check --examples`
+- `cargo test`
+- `git diff --check`
+
+Next tasks:
+
+1. Start the next side-by-side gateway retrofit.
+2. Recommended next candidate: `RetrieveDirectoryPath`, because it is a simple function-type gateway with one primitive input and one primitive response.
+3. Continue later with `FileDataGateway` and `Logger`.
+
+### 2026-06-01, Test Documentation and Traceability Standards
+
+Status: complete.
+
+Decisions:
+
+1. Tests are verification artifacts and should carry explicit documentation.
+2. Rust test modules should start with `//!` documentation that identifies:
+   - bounded unit under test
+   - public interfaces verified
+   - logical paths covered
+   - supplied requirement validation points, or an explicit statement that none are currently supplied
+3. Rust test functions should use `///` documentation that identifies:
+   - `Requirement validation:` label with a supplied identifier, or a statement that no requirement validation point is currently supplied
+   - public interface or seam exercised
+   - logical path tested
+   - expected observable result
+4. Test names remain behavior-focused and must still end in `_success`, `_success_async`, `_error`, or `_error_async`.
+5. Requirement validation identifiers should live in documentation, not in Rust function names.
+6. Logical paths are extracted from implementation behavior; requirement validation points must be supplied from an external requirement or verification artifact and must not be invented from logical paths.
+7. Existing legacy tests were not mass-migrated in this pass; the new traceability shape was applied to the standards-aligned gateway/use case tests touched by this work.
+
+Actions completed:
+
+1. Updated the Rust testing standard with a test documentation and traceability rule.
+2. Updated the Rust reference testing template with module-level `//!` docs and per-test `/// Requirement validation:` docs.
+3. Updated the Rust reference testing slice with the same traceability shape.
+4. Updated the standards-aligned shared gateway, shared use case, new identity gateway, and current UTC timestamp gateway tests with module-level and per-test documentation.
+5. Updated the shared gateway/use case sync success tests to use `is_ok!` for the behavior result instead of direct `assert!(result.is_ok())`.
+6. Re-audited only test files already present in the uncommitted kernel status and tightened the shared async gateway/use case tests so the `ResponseFuture` resolves to `Ok(())` instead of only checking that a future is returned.
+7. Replaced invented placeholder validation identifiers in the uncommitted tests and standards examples with explicit statements that no requirement validation points are currently supplied.
+
+Verification:
+
+- `cargo fmt`
+- `cargo fmt --check`
+- `cargo test`
+- `cargo check --examples`
 
 ## Completed Work
 

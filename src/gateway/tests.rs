@@ -1,6 +1,27 @@
+//! Verifies the shared gateway execution roles.
+//!
+//! Bounded unit under test:
+//! - `Gateway`
+//! - `AsyncGateway`
+//! - `ResponseFuture`
+//!
+//! Public interfaces verified:
+//! - `Gateway::execute(request)`
+//! - `AsyncGateway::execute(request)`
+//!
+//! Logical paths covered:
+//! - synchronous gateway execution supports `Response = ()`
+//! - asynchronous gateway execution resolves a `ResponseFuture` for `Response = ()`
+//!
+//! Requirement validation points:
+//! - No requirement validation points are currently supplied.
+
 use crate::core::traits::ResponseFuture;
 use crate::error::Error;
 use crate::gateway::{AsyncGateway, Gateway};
+use std::sync::Arc;
+use std::task::{Context, Poll, Wake};
+use test_framework_oss::is_ok;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 struct VoidGatewayRequest;
@@ -27,16 +48,45 @@ impl AsyncGateway for VoidAsyncGateway {
     }
 }
 
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that a synchronous gateway implementation can use `Response = ()`
+/// while still returning a bounded `Result<(), Error>` through `execute`.
 #[test]
 fn sync_gateway_allows_unit_response_success() {
     let gateway = VoidGateway;
 
-    assert!(gateway.execute(VoidGatewayRequest).is_ok());
+    let result = Gateway::execute(&gateway, VoidGatewayRequest);
+
+    is_ok!(result);
 }
 
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that an asynchronous gateway implementation can use `Response = ()`
+/// while returning the shared `ResponseFuture` type from `execute` that resolves
+/// to a bounded `Result<(), Error>`.
 #[test]
 fn async_gateway_allows_unit_response_success() {
     let gateway = VoidAsyncGateway;
 
-    let _future: ResponseFuture<'_, ()> = gateway.execute(VoidGatewayRequest);
+    let result = try_run_ready(AsyncGateway::execute(&gateway, VoidGatewayRequest));
+
+    is_ok!(result);
+}
+
+struct NoopWake;
+
+impl Wake for NoopWake {
+    fn wake(self: Arc<Self>) {}
+}
+
+fn try_run_ready<Response>(mut future: ResponseFuture<'_, Response>) -> Result<Response, Error> {
+    let waker = std::task::Waker::from(Arc::new(NoopWake));
+    let mut context = Context::from_waker(&waker);
+
+    match future.as_mut().poll(&mut context) {
+        Poll::Ready(result) => result,
+        Poll::Pending => panic!("Expected gateway response future to be ready for verification."),
+    }
 }
