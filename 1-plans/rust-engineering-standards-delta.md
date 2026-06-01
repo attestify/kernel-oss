@@ -287,12 +287,13 @@ Completed:
 - Added `examples/value_object_and_entity.rs` to show:
   - value objects implementing `Value`
   - value return types using fundamental Rust values (`str`, `u128`)
-  - an entity implementing the shared `Entity` trait
+  - an entity implementing the shared `Entity` trait with `ULID` as the direct entity identity
 - Added `examples/gateway_usecase_composition.rs` to show:
   - a named void gateway request object
   - a domain-specific `*GW` marker seam over the shared `Gateway` trait
   - a domain-specific `*UC` marker seam over the shared `UseCase` trait
   - request builder usage outside the use case boundary
+  - `ULID` used directly as the entity identity without a user-specific identity wrapper
   - direct bounded response return instead of wrapping one bounded entity in a ceremony response object
 - Documented the examples using the Rust documentation standard:
   - module-level example purpose and run command
@@ -306,11 +307,139 @@ Verification:
 - `cargo check --examples`
 - `cargo rustdoc --examples`
 
+### 2026-06-01, Example Standards Audit Actions
+
+Status: complete.
+
+Actions:
+
+1. Complete: replace derived entity equality with identity-only equality for example entities.
+2. Complete: add `Display` for the example `EmailAddress` value object.
+3. Complete: expose `RegisterUserRequest::builder()` as the non-void request construction entrypoint.
+4. Complete: add a bounded accessor on `RegisterUserRequest` and avoid using a consuming extractor as the primary request surface.
+5. Complete: move request-builder validation into `validate_*` helper methods.
+6. Complete: align request-builder error text with the required deterministic message pattern.
+7. Complete: add builder-first construction for the `RegisterUser` use case implementation.
+8. Complete: add builder-first construction for the `StaticNewIdentityGateway` gateway implementation.
+9. Complete: update example documentation to reflect the standard-aligned construction paths and entity equality semantics.
+10. Complete: update execution calls to use fully qualified shared-trait calls with inline marker-seam casts where seam visibility matters.
+11. Complete: re-run example verification with formatting, example checks, rustdoc, and example execution.
+
+Verification:
+
+- `cargo fmt --check`
+- `cargo check --examples`
+- `cargo rustdoc --examples`
+- `cargo run --example value_object_and_entity`
+- `cargo run --example gateway_usecase_composition`
+
+Result:
+
+- All commands passed.
+- `cargo rustdoc --examples` still reports existing broken intra-doc link warnings from library docs outside these examples.
+
+### 2026-06-01, Request Builder Primitive Input Direction
+
+Status: complete.
+
+Actions:
+
+1. Complete: update `RegisterUserRequestBuilder` so the primary request-side setter accepts raw string-like email input.
+2. Complete: keep an explicit convenience setter for callers that already have a valid `EmailAddress`.
+3. Complete: validate missing, empty, and whitespace-only raw email input in the request builder.
+4. Complete: finalize raw email input into `EmailAddress` during `try_build()`.
+5. Complete: propagate `EmailAddress` construction errors from `try_build()` so invalid request input returns a bounded user-facing error before the use case seam is crossed.
+6. Complete: update the example call site to pass raw email text through `RegisterUserRequest::builder().email_address(...)`.
+7. Complete: re-run example verification.
+
+Verification:
+
+- `cargo fmt --check`
+- `cargo check --examples`
+- `cargo rustdoc --examples`
+- `cargo run --example gateway_usecase_composition`
+
+Result:
+
+- All commands passed.
+- `cargo rustdoc --examples` still reports existing broken intra-doc link warnings from library docs outside these examples.
+
+### 2026-06-01, Multi-Input Builder Standards Update
+
+Status: complete.
+
+Updated Rust standards:
+
+- `12-rust-builder-pattern.md`
+  - Added an optional recommended internal enum pattern for one logical builder field that accepts multiple input forms.
+  - Added naming guidance for primitive-first, valid-value-first, and response-builder variants.
+  - Standardized alternate setter names on `raw_<field>` for primitive input and `valid_<field>` for already valid Kernel or Domain objects.
+- `01-rust-use-case-specification.md`
+  - Clarified that use case request builders should usually expose primitive input setters first for caller-provided application-edge input.
+  - Clarified that valid value-object setters may be provided as explicitly named alternatives.
+  - Clarified custom use case response builder input-form guidance, with already valid Kernel or Domain objects as the preferred primary setter form.
+  - Clarified that examples and tests should prefer fully qualified `UseCase::execute` / `AsyncUseCase::execute` calls with inline `as &dyn *UC` casts when making seam execution explicit.
+  - Clarified that sync and async use case implementations put `execute` on the shared role impl and use an empty domain marker `*UC` impl.
+  - Documented why bare `dyn *UC` locals do not compile and why omitting the marker cast can leave the marker trait unused from the compiler's perspective.
+- `02-rust-gateway-specification.md`
+  - Clarified that gateway request builders should usually prefer already valid value objects or entities, while allowing explicit primitive alternatives.
+  - Clarified that gateway response builders may make primitive provider data and already valid values first-class when translating into bounded response contracts.
+  - Clarified that examples and tests should prefer fully qualified `Gateway::execute` / `AsyncGateway::execute` calls with inline `as &dyn *GW` casts when making seam execution explicit.
+  - Clarified that sync and async gateway implementations put `execute` on the shared role impl and use an empty domain marker `*GW` impl.
+  - Documented why bare `dyn *GW` locals do not compile and why omitting the marker cast can leave the marker trait unused from the compiler's perspective.
+
+Verification:
+
+- `cargo fmt --check`
+- `cargo check --examples`
+- `cargo run --example value_object_and_entity`
+- `cargo run --example gateway_usecase_composition`
+- `cargo rustdoc --examples`
+- `git diff --check`
+- `git -C ../../specifications/engineering-standards diff --check`
+
+Result:
+
+- All commands passed.
+- `cargo rustdoc --examples` still reports existing broken intra-doc link warnings from library docs outside these examples.
+
+### 2026-06-01, Async Gateway/Use Case Example
+
+Status: complete.
+
+Added `examples/async_gateway_usecase_composition.rs` to show:
+
+- shared `AsyncUseCase` and `AsyncGateway` traits with explicit `ResponseFuture` return values
+- domain-specific `*UC` and `*GW` marker seams over the shared async traits
+- normal `execute(...)` methods that return boxed response futures without exposing public `async fn`
+- async use case composition over an async gateway
+- fully qualified `AsyncUseCase::execute` usage in `main` with an inline `as &dyn LoadRegisteredUserUC` marker-seam cast and without a boxed use case trait object
+- fully qualified `AsyncGateway::execute` usage inside the use case implementation with an inline `as &dyn FindRegisteredUserGW` marker-seam cast
+- use case request construction from primitive input before crossing the use case seam
+- gateway request construction from an already valid value object inside the use case
+- direct entity response return with `ULID` as the entity identity
+- example-only `run_ready` support isolated in an `example_runtime` module with guidance to replace it with an application runtime
+
+Verification:
+
+- `cargo fmt`
+- `cargo fmt --check`
+- `cargo check --examples`
+- `cargo run --example async_gateway_usecase_composition`
+- `cargo rustdoc --examples`
+- `rg -n "async fn" examples/async_gateway_usecase_composition.rs src/usecase/mod.rs src/gateway/mod.rs`
+- `git diff --check`
+
+Result:
+
+- All commands passed.
+- The `async fn` search returned no matches.
+- `cargo rustdoc --examples` still reports existing broken intra-doc link warnings from library docs outside these examples.
+
 Next examples to add:
 
-1. Async gateway/use case example using explicit `ResponseFuture` and no public `async fn`.
-2. Void response example using `Response = ()`.
-3. Existing gateway retrofit examples for `UTCTimestampGateway`, `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger` as each retrofit is started.
+1. Void response example using `Response = ()`.
+2. Existing gateway retrofit examples for `UTCTimestampGateway`, `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger` as each retrofit is started.
 
 ## Completed Work
 

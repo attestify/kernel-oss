@@ -2,7 +2,7 @@
 //!
 //! This example shows how a value object implements [`Value`] with a
 //! fundamental Rust value type and how an entity implements [`Entity`] with a
-//! bounded identity value object.
+//! direct [`ULID`] identity.
 //!
 //! Run this example with:
 //!
@@ -14,6 +14,7 @@ use kernel_oss::core::traits::Entity;
 use kernel_oss::error::{Error, Kind};
 use kernel_oss::ulid::ULID;
 use kernel_oss::values::Value;
+use std::fmt;
 
 /// Represents a validated email address value object.
 ///
@@ -70,42 +71,20 @@ impl Value for EmailAddress {
     }
 }
 
-/// Represents a user identity value object.
-///
-/// The canonical value is exposed as a `u128` through [`Value`], matching the
-/// primitive value carried by [`ULID`].
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct UserId {
-    value: ULID,
-}
-
-impl UserId {
-    /// Creates a [`UserId`] from an existing [`ULID`].
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The bounded [`ULID`] value that identifies the user.
-    fn new(value: ULID) -> Self {
-        Self { value }
+impl fmt::Display for EmailAddress {
+    /// Formats the normalized email address text.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
-impl Value for UserId {
-    type ValueType = u128;
-
-    /// Returns the primitive `u128` identity value.
-    fn value(&self) -> &Self::ValueType {
-        <ULID as Value>::value(&self.value)
-    }
-}
-
-/// Represents a user entity identified by [`UserId`].
+/// Represents a user entity identified directly by [`ULID`].
 ///
 /// The entity owns its identity and email address. Its stable identity is
-/// exposed through the shared [`Entity`] trait.
-#[derive(Clone, Debug, Eq, PartialEq)]
+/// exposed through the shared [`Entity`] trait. Equality is identity-based.
+#[derive(Clone, Debug)]
 struct User {
-    id: UserId,
+    id: ULID,
     email: EmailAddress,
 }
 
@@ -116,7 +95,7 @@ impl User {
     ///
     /// * `id` - The stable identity for the user entity.
     /// * `email` - The validated email address for the user.
-    fn new(id: UserId, email: EmailAddress) -> Self {
+    fn new(id: ULID, email: EmailAddress) -> Self {
         Self { id, email }
     }
 
@@ -127,13 +106,22 @@ impl User {
 }
 
 impl Entity for User {
-    type IdType = UserId;
+    type IdType = ULID;
 
     /// Returns the stable user identity.
     fn id(&self) -> &Self::IdType {
         &self.id
     }
 }
+
+impl PartialEq for User {
+    /// Compares users by stable identity.
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for User {}
 
 /// Runs the value object and entity example.
 ///
@@ -143,12 +131,16 @@ impl Entity for User {
 /// - the example email address is empty or contains only whitespace
 /// - the example email address does not contain `@`
 fn main() -> Result<(), Error> {
-    let id = UserId::new(ULID::from_parts(1, 7));
+    let id = ULID::from_parts(1, 7);
     let email = EmailAddress::try_new("OWNER@example.com")?;
     let user = User::new(id, email);
+    let changed_email = EmailAddress::try_new("new-owner@example.com")?;
+    let same_user = User::new(id, changed_email);
 
     assert_eq!(user.email().value(), "owner@example.com");
+    assert_eq!(user.id(), &id);
     assert_eq!(user.id().value(), id.value());
+    assert_eq!(user, same_user);
 
     Ok(())
 }

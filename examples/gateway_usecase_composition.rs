@@ -18,6 +18,7 @@ use kernel_oss::gateway::new_identity::{NewIdentityGW, NewIdentityGatewayRequest
 use kernel_oss::ulid::ULID;
 use kernel_oss::usecase::UseCase;
 use kernel_oss::values::Value;
+use std::fmt;
 use std::sync::Arc;
 
 /// Represents a validated email address value object.
@@ -75,42 +76,22 @@ impl Value for EmailAddress {
     }
 }
 
-/// Represents a user identity value object.
-///
-/// The canonical value is exposed as a `u128` through [`Value`], matching the
-/// primitive value carried by [`ULID`].
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct UserId {
-    value: ULID,
-}
-
-impl UserId {
-    /// Creates a [`UserId`] from an existing [`ULID`].
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The bounded [`ULID`] value that identifies the user.
-    fn new(value: ULID) -> Self {
-        Self { value }
-    }
-}
-
-impl Value for UserId {
-    type ValueType = u128;
-
-    /// Returns the primitive `u128` identity value.
-    fn value(&self) -> &Self::ValueType {
-        <ULID as Value>::value(&self.value)
+impl fmt::Display for EmailAddress {
+    /// Formats the normalized email address text.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
 /// Represents the registered user returned by the use case.
 ///
 /// The registered user is the successful bounded response for the example use
-/// case, so no separate response wrapper is needed.
-#[derive(Clone, Debug, Eq, PartialEq)]
+/// case, so no separate response wrapper is needed. Its identity is a direct
+/// [`ULID`] rather than a user-specific identity wrapper. Equality is
+/// identity-based.
+#[derive(Clone, Debug)]
 struct RegisteredUser {
-    id: UserId,
+    id: ULID,
     email: EmailAddress,
 }
 
@@ -121,7 +102,7 @@ impl RegisteredUser {
     ///
     /// * `id` - The stable identity for the registered user entity.
     /// * `email` - The validated email address for the registered user.
-    fn new(id: UserId, email: EmailAddress) -> Self {
+    fn new(id: ULID, email: EmailAddress) -> Self {
         Self { id, email }
     }
 
@@ -132,7 +113,7 @@ impl RegisteredUser {
 }
 
 impl Entity for RegisteredUser {
-    type IdType = UserId;
+    type IdType = ULID;
 
     /// Returns the stable registered user identity.
     fn id(&self) -> &Self::IdType {
@@ -140,48 +121,64 @@ impl Entity for RegisteredUser {
     }
 }
 
+impl PartialEq for RegisteredUser {
+    /// Compares registered users by stable identity.
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for RegisteredUser {}
+
 /// Represents the built request accepted by [`RegisterUserUC`].
 ///
-/// This is a non-void request object, so callers construct it with
-/// [`RegisterUserRequestBuilder`] before calling the use case.
+/// This is a non-void request object, so callers start construction with
+/// [`RegisterUserRequest::builder`] and finalize the request before calling
+/// the use case.
 #[derive(Debug)]
 struct RegisterUserRequest {
-    email: EmailAddress,
+    email_address: EmailAddress,
 }
 
 impl RegisterUserRequest {
-    /// Consumes the request and returns the validated email address.
-    fn into_email(self) -> EmailAddress {
-        self.email
+    /// Starts construction for a [`RegisterUserRequest`].
+    ///
+    /// # Returns
+    ///
+    /// Returns a default [`RegisterUserRequestBuilder`] for collecting and
+    /// validating request input.
+    fn builder() -> RegisterUserRequestBuilder {
+        RegisterUserRequestBuilder::default()
+    }
+
+    /// Returns the validated email address carried by the request.
+    fn email_address(&self) -> &EmailAddress {
+        &self.email_address
     }
 }
 
 /// Builds a [`RegisterUserRequest`] for the register-user use case seam.
 ///
-/// The builder owns construction of the non-void request object. The use case
-/// receives only the built request.
+/// The builder accepts raw request input, validates it during
+/// [`RegisterUserRequestBuilder::try_build`], and returns only a finalized
+/// request to the use case.
 #[derive(Debug, Default)]
 struct RegisterUserRequestBuilder {
-    email: Option<EmailAddress>,
+    email_address: Option<String>,
 }
 
 impl RegisterUserRequestBuilder {
-    /// Returns a new [`RegisterUserRequestBuilder`].
-    fn new() -> Self {
-        Self::default()
-    }
-
-    /// Sets the validated email address for the request.
+    /// Sets the raw email address text for the request.
     ///
     /// # Arguments
     ///
-    /// * `email` - The validated email address required by the request.
+    /// * `email_address` - The raw email address text required by the request.
     ///
     /// # Returns
     ///
-    /// Returns the builder with the email address set.
-    fn with_email(mut self, email: EmailAddress) -> Self {
-        self.email = Some(email);
+    /// Returns the builder with the raw email address text set.
+    fn email_address(mut self, email_address: impl Into<String>) -> Self {
+        self.email_address = Some(email_address.into());
         self
     }
 
@@ -196,12 +193,37 @@ impl RegisterUserRequestBuilder {
     ///
     /// Returns an error if:
     /// - the email address was not provided
-    fn try_build(self) -> Result<RegisterUserRequest, Error> {
-        let email = self.email.ok_or_else(|| {
-            Error::for_user(Kind::InvalidInput, "register user email is required")
+    /// - the raw email address is empty or contains only whitespace
+    /// - the raw email address does not contain `@`
+    fn try_build(mut self) -> Result<RegisterUserRequest, Error> {
+        let email_address = self.validate_email_address()?;
+
+        Ok(RegisterUserRequest { email_address })
+    }
+
+    fn validate_email_address(&mut self) -> Result<EmailAddress, Error> {
+        let email_address = self.email_address.take().ok_or_else(|| {
+            Error::for_user(
+                Kind::InvalidInput,
+                "A register user email address is required, but none was provided.",
+            )
         })?;
 
-        Ok(RegisterUserRequest { email })
+        if email_address.is_empty() {
+            return Err(Error::for_user(
+                Kind::InvalidInput,
+                "The register user email address provided is empty, provide a non-empty register user email address.",
+            ));
+        }
+
+        if email_address.trim().is_empty() {
+            return Err(Error::for_user(
+                Kind::InvalidInput,
+                "The register user email address provided contains only whitespace, provide a non-empty register user email address.",
+            ));
+        }
+
+        EmailAddress::try_new(email_address)
     }
 }
 
@@ -216,25 +238,77 @@ trait RegisterUserUC: UseCase<Request = RegisterUserRequest, Response = Register
 /// Implements the register-user use case.
 ///
 /// The use case depends on [`NewIdentityGW`] to obtain a new identity and then
-/// composes the successful [`RegisteredUser`] response.
-struct RegisterUserUseCase {
+/// composes the successful [`RegisteredUser`] response. Construct it through
+/// [`RegisterUser::builder`] so required dependencies are verified before use.
+struct RegisterUser {
     new_identity_gateway: Arc<dyn NewIdentityGW>,
 }
 
-impl RegisterUserUseCase {
-    /// Creates a [`RegisterUserUseCase`] with the required gateway dependency.
+impl RegisterUser {
+    /// Starts construction for a [`RegisterUser`] use case.
     ///
-    /// # Arguments
+    /// # Returns
     ///
-    /// * `new_identity_gateway` - The gateway seam used to request new user identities.
-    fn new(new_identity_gateway: Arc<dyn NewIdentityGW>) -> Self {
-        Self {
-            new_identity_gateway,
-        }
+    /// Returns a default [`RegisterUserBuilder`] for collecting and validating
+    /// required use case dependencies.
+    fn builder() -> RegisterUserBuilder {
+        RegisterUserBuilder::default()
     }
 }
 
-impl UseCase for RegisterUserUseCase {
+/// Builds a [`RegisterUser`] use case implementation.
+///
+/// The builder verifies that the required new-identity gateway dependency is
+/// provided before the use case is constructed.
+#[derive(Default)]
+struct RegisterUserBuilder {
+    new_identity_gateway: Option<Arc<dyn NewIdentityGW>>,
+}
+
+impl RegisterUserBuilder {
+    /// Sets the gateway seam used to request new user identities.
+    ///
+    /// # Arguments
+    ///
+    /// * `new_identity_gateway` - The gateway seam required by the use case.
+    ///
+    /// # Returns
+    ///
+    /// Returns the builder with the new-identity gateway set.
+    fn new_identity_gateway(mut self, new_identity_gateway: Arc<dyn NewIdentityGW>) -> Self {
+        self.new_identity_gateway = Some(new_identity_gateway);
+        self
+    }
+
+    /// Validates the builder state and constructs a [`RegisterUser`].
+    ///
+    /// # Returns
+    ///
+    /// Returns a [`RegisterUser`] containing the required gateway dependency.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - the new-identity gateway dependency was not provided
+    fn try_build(mut self) -> Result<RegisterUser, Error> {
+        let new_identity_gateway = self.validate_new_identity_gateway()?;
+
+        Ok(RegisterUser {
+            new_identity_gateway,
+        })
+    }
+
+    fn validate_new_identity_gateway(&mut self) -> Result<Arc<dyn NewIdentityGW>, Error> {
+        self.new_identity_gateway.take().ok_or_else(|| {
+            Error::for_user(
+                Kind::InvalidInput,
+                "A new identity gateway is required, but none was provided.",
+            )
+        })
+    }
+}
+
+impl UseCase for RegisterUser {
     type Request = RegisterUserRequest;
     type Response = RegisteredUser;
 
@@ -253,35 +327,86 @@ impl UseCase for RegisterUserUseCase {
     /// Returns an error if:
     /// - the new identity gateway fails to return an identity
     fn execute(&self, request: Self::Request) -> Result<Self::Response, Error> {
-        let identity = self
-            .new_identity_gateway
-            .execute(NewIdentityGatewayRequest)?;
+        let email_address = request.email_address().clone();
+        let identity = Gateway::execute(
+            self.new_identity_gateway.as_ref() as &dyn NewIdentityGW,
+            NewIdentityGatewayRequest,
+        )?;
 
-        Ok(RegisteredUser::new(
-            UserId::new(identity),
-            request.into_email(),
-        ))
+        Ok(RegisteredUser::new(identity, email_address))
     }
 }
 
-impl RegisterUserUC for RegisterUserUseCase {}
+impl RegisterUserUC for RegisterUser {}
 
 /// Provides a deterministic new-identity gateway for the example.
 ///
 /// This gateway implements [`NewIdentityGW`] by returning a configured
-/// [`ULID`], which keeps the example deterministic.
+/// [`ULID`], which keeps the example deterministic. Construct it through
+/// [`StaticNewIdentityGateway::builder`] so required configuration is verified.
 struct StaticNewIdentityGateway {
     identity: ULID,
 }
 
 impl StaticNewIdentityGateway {
-    /// Creates a [`StaticNewIdentityGateway`] that returns the provided identity.
+    /// Starts construction for a [`StaticNewIdentityGateway`].
+    ///
+    /// # Returns
+    ///
+    /// Returns a default [`StaticNewIdentityGatewayBuilder`] for collecting and
+    /// validating gateway configuration.
+    fn builder() -> StaticNewIdentityGatewayBuilder {
+        StaticNewIdentityGatewayBuilder::default()
+    }
+}
+
+/// Builds a deterministic [`StaticNewIdentityGateway`].
+///
+/// The builder verifies that the identity returned by the gateway is provided.
+#[derive(Default)]
+struct StaticNewIdentityGatewayBuilder {
+    identity: Option<ULID>,
+}
+
+impl StaticNewIdentityGatewayBuilder {
+    /// Sets the identity returned by the gateway.
     ///
     /// # Arguments
     ///
     /// * `identity` - The [`ULID`] returned by the gateway.
-    fn new(identity: ULID) -> Self {
-        Self { identity }
+    ///
+    /// # Returns
+    ///
+    /// Returns the builder with the identity set.
+    fn identity(mut self, identity: ULID) -> Self {
+        self.identity = Some(identity);
+        self
+    }
+
+    /// Validates the builder state and constructs a [`StaticNewIdentityGateway`].
+    ///
+    /// # Returns
+    ///
+    /// Returns a [`StaticNewIdentityGateway`] configured with the provided
+    /// identity.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - the static identity was not provided
+    fn try_build(mut self) -> Result<StaticNewIdentityGateway, Error> {
+        let identity = self.validate_identity()?;
+
+        Ok(StaticNewIdentityGateway { identity })
+    }
+
+    fn validate_identity(&mut self) -> Result<ULID, Error> {
+        self.identity.take().ok_or_else(|| {
+            Error::for_user(
+                Kind::InvalidInput,
+                "A static identity is required, but none was provided.",
+            )
+        })
     }
 }
 
@@ -320,21 +445,24 @@ impl NewIdentityGW for StaticNewIdentityGateway {}
 /// - the new identity gateway fails to return an identity
 fn main() -> Result<(), Error> {
     let generated_identity = ULID::from_parts(1, 42);
-    let new_identity_gateway = Arc::new(StaticNewIdentityGateway::new(generated_identity));
-    let use_case: Box<dyn RegisterUserUC> =
-        Box::new(RegisterUserUseCase::new(new_identity_gateway));
-
-    let request = RegisterUserRequestBuilder::new()
-        .with_email(EmailAddress::try_new("OWNER@example.com")?)
+    let new_identity_gateway: Arc<dyn NewIdentityGW> = Arc::new(
+        StaticNewIdentityGateway::builder()
+            .identity(generated_identity)
+            .try_build()?,
+    );
+    let use_case = RegisterUser::builder()
+        .new_identity_gateway(new_identity_gateway)
         .try_build()?;
 
-    let user = use_case.execute(request)?;
+    let request = RegisterUserRequest::builder()
+        .email_address("OWNER@example.com")
+        .try_build()?;
+
+    let user = UseCase::execute(&use_case as &dyn RegisterUserUC, request)?;
 
     assert_eq!(user.email().value(), "owner@example.com");
-    assert_eq!(
-        user.id().value(),
-        <ULID as Value>::value(&generated_identity)
-    );
+    assert_eq!(user.id(), &generated_identity);
+    assert_eq!(user.id().value(), generated_identity.value());
 
     Ok(())
 }
