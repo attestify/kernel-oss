@@ -2,9 +2,11 @@ pub mod directory_list;
 pub mod file_data_gateway;
 pub mod identity;
 pub mod logger;
+pub mod new_identity;
 
+#[cfg(test)]
+mod tests;
 pub mod utc_timestamp;
-#[cfg(test)] mod tests;
 
 use crate::core::traits::ResponseFuture;
 use crate::error::Error;
@@ -32,4 +34,3 @@ pub trait AsyncGateway: Send + Sync {
     /// Executes the gateway and returns an explicit response future.
     fn execute<'a>(&'a self, request: Self::Request) -> ResponseFuture<'a, Self::Response>;
 }
-

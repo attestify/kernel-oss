@@ -146,7 +146,7 @@ Engineering direction for the kernel:
 
 3. Add shared synchronous `UseCase` and `Gateway` traits.
    - Current use case location after file move: `src/usecase/mod.rs`.
-   - Current gateway location after file move: `src/gateways/mod.rs`.
+   - Current gateway location after file move: `src/gateway/mod.rs`.
    - Shape: associated `Request` and `Response`, with `execute(request: Request)`.
    - Sync traits: `UseCase` and `Gateway`.
    - Async traits: `AsyncUseCase` and `AsyncGateway`.
@@ -178,7 +178,7 @@ Current checkpoint:
   - shared `Value` trait was added and implemented for the first value-object set
   - shared use case and gateway trait work was started
   - a new `src/usecase` directory was introduced
-  - use case and gateway traits were moved into `src/usecase/mod.rs` and `src/gateways/mod.rs`
+  - use case and gateway traits were moved into `src/usecase/mod.rs` and `src/gateway/mod.rs`
 
 Current caution:
 
@@ -191,7 +191,7 @@ Current caution:
 Pickup steps:
 
 1. Decide whether `UseCase` / `AsyncUseCase` should remain in `src/usecase/mod.rs` or move to `src/usecase/use_case.rs` with re-exports from `src/usecase/mod.rs`.
-2. Decide whether `Gateway` / `AsyncGateway` should remain in `src/gateways/mod.rs` or move to `src/gateways/gateway.rs` with re-exports from `src/gateways/mod.rs`.
+2. Decide whether `Gateway` / `AsyncGateway` should remain in `src/gateway/mod.rs` or move to `src/gateway/gateway.rs` with re-exports from `src/gateway/mod.rs`.
 3. Define the compatibility migration pattern before touching any existing gateway:
    - keep the current public API in place for source compatibility
    - add the new shared-trait-compatible API in a separate module or path
@@ -200,7 +200,7 @@ Pickup steps:
    - make the deprecation note point to the replacement module/path
    - add tests that prove the new API works before deprecating the old one
 4. Evaluate existing gateways one at a time:
-   - `IdentityGateway`
+   - `IdentityGateway` - first side-by-side retrofit complete as `NewIdentityGW` in `src/gateway/new_identity`
    - `UTCTimestampGateway`
    - `FileDataGateway`
    - `RetrieveDirectoryPath`
@@ -212,7 +212,7 @@ Compatibility migration rule:
 
 ```rust
 #[deprecated(
-    note = "Use gateways::identity_v2::IdentityGateway, which implements the shared Gateway seam."
+    note = "Use gateway::new_identity::NewIdentityGW, which implements the shared Gateway seam."
 )]
 pub trait IdentityGateway {
     // existing operation-specific API remains available temporarily
@@ -229,9 +229,14 @@ Decisions:
 
 - Collapse separate `UCResponseFuture` and `GWResponseFuture` aliases into one shared `ResponseFuture`.
 - Keep `UseCase` and `AsyncUseCase` in `src/usecase/mod.rs` for now.
-- Keep `Gateway` and `AsyncGateway` in `src/gateways/mod.rs` for now.
+- Keep `Gateway` and `AsyncGateway` in `src/gateway/mod.rs` for now.
 - Use case and gateway `execute` functions receive `Request` directly. They no longer expose or accept `RequestBuilder`.
 - Use `Response = ()` for void-style use cases and gateways.
+- Add `gateway::new_identity::NewIdentityGW` as the first side-by-side standards-aligned gateway retrofit.
+- Model `NewIdentityGW` as a synchronous gateway seam for requesting a newly generated identity.
+- Model `NewIdentityGatewayRequest` as a void-by-construction request object with no request builder.
+- Use `ULID` directly as the `NewIdentityGW` success response because the gateway returns one existing bounded Kernel value object.
+- Mark the legacy `gateway::identity::IdentityGateway` trait deprecated with a note pointing to `gateway::new_identity::NewIdentityGW`.
 
 Verification:
 
@@ -240,7 +245,7 @@ Verification:
 
 Result:
 
-- 298 unit tests passed.
+- 300 unit tests passed.
 - 11 doctests passed.
 
 ## Completed Work
