@@ -72,16 +72,32 @@ Mostly out of scope until this crate adds those layers:
    - `cargo clippy --all-targets -- -D warnings` fails.
    - Action: address mechanical clippy issues after API decisions that may remove some code.
 
+9. Algorithms domain boundary
+   - `src/algorithms` currently lives inside the kernel crate.
+   - This behavior should be extracted into its own algorithms domain project instead of remaining in the kernel.
+   - Action: create a separate domain project for algorithms, then migrate the existing algorithm behavior into standards-aligned value objects, entities, use cases, and gateways as appropriate.
+   - Compatibility caution: if current algorithm APIs are consumed externally, introduce replacement APIs side by side and deprecate old kernel APIs before removal.
+   - Status: planned; no code changes started for this extraction.
+
+10. ULID value-object module boundary
+    - `src/ulid` currently lives as a top-level kernel module.
+    - `ULID` is a bounded value object and already implements the shared `Value` trait.
+    - Action: move `ULID` into the `values` module tree, likely under `src/values/ulid`.
+    - Compatibility caution: keep the existing `kernel_oss::ulid::ULID` path as a temporary re-export or compatibility shim before removal.
+    - Status: planned; no code changes started for this move.
+
 ## Suggested Order
 
 1. Add missing accessors while keeping public fields temporarily.
 2. Add foundational shared traits and implement them on the obvious kernel types.
-3. Add `try_new` / `try_build` aliases beside existing APIs.
-4. Remove production `.unwrap()` / `.expect(...)` where behavior can stay unchanged.
-5. Migrate tests to standard names and no `.unwrap()`.
-6. Make public field privacy decisions.
-7. Refactor gateway contracts.
-8. Bring docs and clippy to enforceable state.
+3. Move `ULID` into the `values` module tree with a compatibility re-export.
+4. Add `try_new` / `try_build` aliases beside existing APIs.
+5. Remove production `.unwrap()` / `.expect(...)` where behavior can stay unchanged.
+6. Migrate tests to standard names and no `.unwrap()`.
+7. Make public field privacy decisions.
+8. Refactor gateway contracts.
+9. Plan and start extraction of `src/algorithms` into its own algorithms domain project.
+10. Bring docs and clippy to enforceable state.
 
 ## Specification Check, Shared Traits
 
@@ -138,6 +154,7 @@ Engineering direction for the kernel:
    - First implementation candidates: `Name`, `Description`, `ShortDescription`, `SubjectId`, `FilePath`, `FileName`, `NID`, `NSS`, `Line`, and `Block`.
    - Caution: some current types have inherent `value()` methods that return owned values. Decide whether to preserve those while implementing the trait through fully-qualified calls, or adjust the public API in a compatibility-safe sequence.
    - Status: complete for the first implementation set, plus `ULID`, `DirectoryName`, and `NRN`.
+   - Follow-up: move `ULID` from the top-level `src/ulid` module into the `values` module tree, while keeping a temporary compatibility export for existing callers.
 
 2. Add a shared `Entity` trait.
    - Proposed location: `src/core/traits/mod.rs` or `src/core/traits/entity.rs`.
@@ -208,6 +225,18 @@ Pickup steps:
    - `Logger`
 5. For each existing gateway, add the new API side by side before marking the old API deprecated.
 6. Do not remove deprecated APIs until a later breaking-release plan explicitly schedules removal.
+7. Create an algorithms extraction plan:
+   - identify every public API under `src/algorithms`
+   - classify each algorithm type as a value object, entity, use case, gateway, or implementation detail
+   - create a separate algorithms domain project
+   - move domain behavior into standards-aligned `*UC` and `*GW` seams where behavior crosses a boundary
+   - keep compatibility shims or deprecations in the kernel until consumers can migrate
+8. Create a ULID module move plan:
+   - move the current `src/ulid` implementation into `src/values/ulid`
+   - update internal imports to use the new value-object module path
+   - keep `kernel_oss::ulid::ULID` temporarily available as a compatibility re-export
+   - add deprecation guidance if the compatibility path remains as a public module
+   - update examples and documentation to prefer the new `values::ulid::ULID` path
 
 Compatibility migration rule:
 
