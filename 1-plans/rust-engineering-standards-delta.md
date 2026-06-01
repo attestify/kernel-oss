@@ -143,6 +143,7 @@ Engineering direction for the kernel:
    - Proposed location: `src/core/traits/mod.rs` or `src/core/traits/entity.rs`.
    - Shape: associated `IdType` and `id(&self) -> &Self::IdType`.
    - First implementation candidates should wait until we identify which kernel types are truly entities rather than value objects.
+   - Status: shared trait added to `src/core/traits/mod.rs`; first usage is compiler-checked through the Rust examples.
 
 3. Add shared synchronous `UseCase` and `Gateway` traits.
    - Current use case location after file move: `src/usecase/mod.rs`.
@@ -247,6 +248,40 @@ Result:
 
 - 300 unit tests passed.
 - 11 doctests passed.
+
+### 2026-05-31, Examples Progress
+
+Started Cargo-checked Rust examples under `examples/`.
+
+Completed:
+
+- Added `examples/value_object_and_entity.rs` to show:
+  - value objects implementing `Value`
+  - value return types using fundamental Rust values (`str`, `u128`)
+  - an entity implementing the shared `Entity` trait
+- Added `examples/gateway_usecase_composition.rs` to show:
+  - a named void gateway request object
+  - a domain-specific `*GW` marker seam over the shared `Gateway` trait
+  - a domain-specific `*UC` marker seam over the shared `UseCase` trait
+  - request builder usage outside the use case boundary
+  - direct bounded response return instead of wrapping one bounded entity in a ceremony response object
+- Documented the examples using the Rust documentation standard:
+  - module-level example purpose and run command
+  - type-level role documentation
+  - argument and return documentation for constructors, builders, and seam methods
+  - explicit `# Errors` sections for fallible example paths
+
+Verification:
+
+- `cargo fmt --check`
+- `cargo check --examples`
+- `cargo rustdoc --examples`
+
+Next examples to add:
+
+1. Async gateway/use case example using explicit `ResponseFuture` and no public `async fn`.
+2. Void response example using `Response = ()`.
+3. Existing gateway retrofit examples for `UTCTimestampGateway`, `FileDataGateway`, `RetrieveDirectoryPath`, and `Logger` as each retrofit is started.
 
 ## Completed Work
 
