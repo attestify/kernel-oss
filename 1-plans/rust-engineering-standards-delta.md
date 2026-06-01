@@ -615,6 +615,54 @@ Verification:
 - `cargo test`
 - `cargo check --examples`
 
+### 2026-06-01, Updated Restart Checkpoint
+
+Status: recorded.
+
+Current verified baseline:
+
+- The `kernel-oss` worktree is clean on `main`.
+- `cargo test` passes with 301 unit tests and 11 doctests.
+- `cargo fmt --check` passes.
+- `cargo check --examples` passes.
+- The adjacent `specifications/engineering-standards` worktree is clean.
+
+Completed since the earlier stop point:
+
+- Shared sync and async seam examples were aligned with the current standards.
+- The unit success payload example was added to show `Response = ()` with explicit `Result<(), Error>` behavior.
+- The UTC timestamp gateway side-by-side retrofit was completed as `CurrentUTCTimestampGW`.
+- Standards-aligned test documentation and traceability rules were applied to the touched seam tests.
+
+Current shared seam baseline:
+
+- `UseCase` and `AsyncUseCase` remain in `src/usecase/mod.rs`.
+- `Gateway` and `AsyncGateway` remain in `src/gateway/mod.rs`.
+- `ResponseFuture` remains shared from `src/core/traits/mod.rs`.
+- Existing compatibility seams now completed:
+  - `IdentityGateway` -> `gateway::new_identity::NewIdentityGW`
+  - `UTCTimestampGateway` -> `gateway::current_utc_timestamp::CurrentUTCTimestampGW`
+
+Updated pickup order:
+
+1. Start the next side-by-side gateway retrofit with `RetrieveDirectoryPath`.
+2. After that, retrofit `FileDataGateway`.
+3. Treat `Logger` as a separate design step before implementation because its current shape is a multi-operation trait rather than a single-operation seam.
+4. Keep the broader `ULID` module move and `src/algorithms` extraction as separate follow-up plans after the remaining small gateway retrofits.
+
+Reasoning for the next starting point:
+
+- `RetrieveDirectoryPath` is currently only a function type alias with one primitive input and one primitive output.
+- It is the smallest remaining gateway candidate and should let the compatibility migration pattern be repeated with low disruption before touching `FileDataGateway` or `Logger`.
+
+Expected `RetrieveDirectoryPath` retrofit shape:
+
+- Add a new side-by-side gateway module, likely `src/gateway/retrieve_directory_path`.
+- Introduce a named request object rather than passing a bare `&str`.
+- Define a marker seam trait over the shared `Gateway` trait.
+- Keep the old `RetrieveDirectoryPath` function alias temporarily for compatibility.
+- Add standards-aligned tests before deprecating the old alias.
+
 ## Completed Work
 
 ### 2026-05-31, Accessor Surface
