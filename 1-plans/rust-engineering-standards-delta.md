@@ -258,13 +258,13 @@ Verified and cleaned the shared use case and gateway trait layout.
 Decisions:
 
 - Collapse separate `UCResponseFuture` and `GWResponseFuture` aliases into one shared `ResponseFuture`.
-- Keep `UseCase` and `AsyncUseCase` in `src/usecase/mod.rs` for now.
-- Keep `Gateway` and `AsyncGateway` in `src/gateway/mod.rs` for now.
-- Use case and gateway `execute` functions receive `Request` directly. They no longer expose or accept `RequestBuilder`.
+- Keep the shared use case traits in `src/usecase/mod.rs` for now.
+- Keep the shared gateway traits in `src/gateway/mod.rs` for now.
+- Request-bearing use case and gateway `execute` functions receive `Request` directly. They no longer expose or accept `RequestBuilder`.
+- True no-input seams use dedicated `VoidUseCase` / `AsyncVoidUseCase` and `VoidGateway` / `AsyncVoidGateway` traits rather than placeholder request objects.
 - Use `Response = ()` for no-payload success use cases and gateways; the seam still returns `Result<(), Error>`.
 - Add `gateway::new_identity::NewIdentityGW` as the first side-by-side standards-aligned gateway retrofit.
 - Model `NewIdentityGW` as a synchronous gateway seam for requesting a newly generated identity.
-- Model `NewIdentityGatewayRequest` as a void-by-construction request object with no request builder.
 - Use `ULID` directly as the `NewIdentityGW` success response because the gateway returns one existing bounded Kernel value object.
 - Mark the legacy `gateway::identity::IdentityGateway` trait deprecated with a note pointing to `gateway::new_identity::NewIdentityGW`.
 
@@ -275,7 +275,7 @@ Verification:
 
 Result:
 
-- 300 unit tests passed.
+- 305 unit tests passed.
 - 11 doctests passed.
 
 ### 2026-05-31, Examples Progress
@@ -289,7 +289,7 @@ Completed:
   - value return types using fundamental Rust values (`str`, `u128`)
   - an entity implementing the shared `Entity` trait with `ULID` as the direct entity identity
 - Added `examples/gateway_usecase_composition.rs` to show:
-  - a named void gateway request object
+  - a dedicated no-input gateway seam through `VoidGateway`
   - a domain-specific `*GW` marker seam over the shared `Gateway` trait
   - a domain-specific `*UC` marker seam over the shared `UseCase` trait
   - request builder usage outside the use case boundary
@@ -443,8 +443,8 @@ Status: recorded.
 Decisions:
 
 1. Shared seam traits stay in their current module roots for now:
-   - `UseCase` and `AsyncUseCase` remain in `src/usecase/mod.rs`
-   - `Gateway` and `AsyncGateway` remain in `src/gateway/mod.rs`
+   - `VoidUseCase`, `UseCase`, `AsyncVoidUseCase`, and `AsyncUseCase` remain in `src/usecase/mod.rs`
+   - `VoidGateway`, `Gateway`, `AsyncVoidGateway`, and `AsyncGateway` remain in `src/gateway/mod.rs`
    - `ResponseFuture` remains shared from `src/core/traits/mod.rs`
 2. Domain-specific `*UC` and `*GW` traits remain empty marker supertraits over the shared role traits.
 3. Concrete implementations put `execute` on the shared role impl:
@@ -543,7 +543,7 @@ Status: complete.
 Decisions:
 
 1. The replacement shared-trait seam is `CurrentUTCTimestampGW`.
-2. The request is `CurrentUTCTimestampGatewayRequest`, a void-by-construction named request object.
+2. The seam is no-input and therefore uses `VoidGateway` rather than a placeholder request object.
 3. The response remains the existing `UTCTimestamp` value object.
 4. The old `UTCTimestampGateway` trait remains in place for compatibility and is deprecated with a note pointing to the new shared `Gateway` seam.
 5. Tests for the new gateway seam must follow the Rust testing standard:
@@ -555,11 +555,10 @@ Decisions:
 Actions completed:
 
 1. Added `src/gateway/current_utc_timestamp/mod.rs`.
-2. Added `CurrentUTCTimestampGatewayRequest`.
-3. Added `CurrentUTCTimestampGW: Gateway<Request = CurrentUTCTimestampGatewayRequest, Response = UTCTimestamp>`.
-4. Exported the new module from `src/gateway/mod.rs`.
-5. Deprecated the old `UTCTimestampGateway` compatibility trait.
-6. Added a standards-aligned unit test in `src/gateway/current_utc_timestamp/tests.rs`.
+2. Added `CurrentUTCTimestampGW: VoidGateway<Response = UTCTimestamp>`.
+3. Exported the new module from `src/gateway/mod.rs`.
+4. Deprecated the old `UTCTimestampGateway` compatibility trait.
+5. Added a standards-aligned unit test in `src/gateway/current_utc_timestamp/tests.rs`.
 
 Verification:
 

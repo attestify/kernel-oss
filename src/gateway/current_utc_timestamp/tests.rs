@@ -2,10 +2,9 @@
 //!
 //! Bounded unit under test:
 //! - `CurrentUTCTimestampGW`
-//! - `CurrentUTCTimestampGatewayRequest`
 //!
 //! Public interfaces verified:
-//! - `Gateway::execute(&gateway as &dyn CurrentUTCTimestampGW, request)`
+//! - `VoidGateway::execute(&gateway as &dyn CurrentUTCTimestampGW)`
 //!
 //! Logical paths covered:
 //! - successful execution returns the current UTC timestamp
@@ -14,10 +13,8 @@
 //! - No requirement validation points are currently supplied.
 
 use crate::error::Error;
-use crate::gateway::Gateway;
-use crate::gateway::current_utc_timestamp::{
-    CurrentUTCTimestampGW, CurrentUTCTimestampGatewayRequest,
-};
+use crate::gateway::VoidGateway;
+use crate::gateway::current_utc_timestamp::CurrentUTCTimestampGW;
 use crate::values::datetime::utc_timestamp::UTCTimestamp;
 use test_framework_oss::is_ok;
 
@@ -25,11 +22,10 @@ struct StaticCurrentUTCTimestampGateway {
     timestamp: UTCTimestamp,
 }
 
-impl Gateway for StaticCurrentUTCTimestampGateway {
-    type Request = CurrentUTCTimestampGatewayRequest;
+impl VoidGateway for StaticCurrentUTCTimestampGateway {
     type Response = UTCTimestamp;
 
-    fn execute(&self, _request: Self::Request) -> Result<Self::Response, Error> {
+    fn execute(&self) -> Result<Self::Response, Error> {
         Ok(self.timestamp)
     }
 }
@@ -48,10 +44,7 @@ fn execute_through_marker_seam_returns_current_utc_timestamp_success() {
         timestamp: expected,
     };
 
-    let result = Gateway::execute(
-        &gateway as &dyn CurrentUTCTimestampGW,
-        CurrentUTCTimestampGatewayRequest,
-    );
+    let result = VoidGateway::execute(&gateway as &dyn CurrentUTCTimestampGW);
 
     let actual = is_ok!(result);
     assert_eq!(expected, actual);

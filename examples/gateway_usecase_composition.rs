@@ -13,8 +13,8 @@
 
 use kernel_oss::core::traits::Entity;
 use kernel_oss::error::{Error, Kind};
-use kernel_oss::gateway::Gateway;
-use kernel_oss::gateway::new_identity::{NewIdentityGW, NewIdentityGatewayRequest};
+use kernel_oss::gateway::VoidGateway;
+use kernel_oss::gateway::new_identity::NewIdentityGW;
 use kernel_oss::ulid::ULID;
 use kernel_oss::usecase::UseCase;
 use kernel_oss::values::Value;
@@ -328,10 +328,8 @@ impl UseCase for RegisterUser {
     /// - the new identity gateway fails to return an identity
     fn execute(&self, request: Self::Request) -> Result<Self::Response, Error> {
         let email_address = request.email_address().clone();
-        let identity = Gateway::execute(
-            self.new_identity_gateway.as_ref() as &dyn NewIdentityGW,
-            NewIdentityGatewayRequest,
-        )?;
+        let identity =
+            VoidGateway::execute(self.new_identity_gateway.as_ref() as &dyn NewIdentityGW)?;
 
         Ok(RegisteredUser::new(identity, email_address))
     }
@@ -410,15 +408,10 @@ impl StaticNewIdentityGatewayBuilder {
     }
 }
 
-impl Gateway for StaticNewIdentityGateway {
-    type Request = NewIdentityGatewayRequest;
+impl VoidGateway for StaticNewIdentityGateway {
     type Response = ULID;
 
-    /// Executes the new-identity gateway with a named void request object.
-    ///
-    /// # Arguments
-    ///
-    /// * `_request` - The explicit void-by-construction gateway request object.
+    /// Executes the new-identity gateway without a request object.
     ///
     /// # Returns
     ///
@@ -427,7 +420,7 @@ impl Gateway for StaticNewIdentityGateway {
     /// # Errors
     ///
     /// This deterministic example implementation does not return an error.
-    fn execute(&self, _request: Self::Request) -> Result<Self::Response, Error> {
+    fn execute(&self) -> Result<Self::Response, Error> {
         Ok(self.identity)
     }
 }

@@ -12,6 +12,15 @@ pub mod utc_timestamp;
 use crate::core::traits::ResponseFuture;
 use crate::error::Error;
 
+/// Defines the shared synchronous execution role for a no-input gateway seam.
+pub trait VoidGateway: Send + Sync {
+    /// Successful gateway response.
+    type Response;
+
+    /// Executes the gateway without a request object.
+    fn execute(&self) -> Result<Self::Response, Error>;
+}
+
 /// Defines the shared synchronous execution role for a gateway seam.
 pub trait Gateway: Send + Sync {
     /// Verified request accepted at the public gateway boundary.
@@ -22,6 +31,15 @@ pub trait Gateway: Send + Sync {
 
     /// Executes the gateway with the provided request.
     fn execute(&self, request: Self::Request) -> Result<Self::Response, Error>;
+}
+
+/// Defines the shared asynchronous execution role for a no-input gateway seam.
+pub trait AsyncVoidGateway: Send + Sync {
+    /// Successful gateway response.
+    type Response;
+
+    /// Executes the gateway and returns an explicit response future.
+    fn execute<'a>(&'a self) -> ResponseFuture<'a, Self::Response>;
 }
 
 /// Defines the shared asynchronous execution role for a gateway seam.

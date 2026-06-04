@@ -1,16 +1,22 @@
 //! Verifies the shared gateway execution roles.
 //!
 //! Bounded unit under test:
+//! - `VoidGateway`
 //! - `Gateway`
+//! - `AsyncVoidGateway`
 //! - `AsyncGateway`
 //! - `ResponseFuture`
 //!
 //! Public interfaces verified:
+//! - `VoidGateway::execute()`
 //! - `Gateway::execute(request)`
+//! - `AsyncVoidGateway::execute()`
 //! - `AsyncGateway::execute(request)`
 //!
 //! Logical paths covered:
+//! - synchronous no-input gateway execution supports `Response = ()`
 //! - synchronous gateway execution supports `Response = ()`
+//! - asynchronous no-input gateway execution resolves a `ResponseFuture` for `Response = ()`
 //! - asynchronous gateway execution resolves a `ResponseFuture` for `Response = ()`
 //!
 //! Requirement validation points:
@@ -18,32 +24,27 @@
 
 use crate::core::traits::ResponseFuture;
 use crate::error::Error;
-use crate::gateway::{AsyncGateway, Gateway};
+use crate::gateway::{AsyncGateway, AsyncVoidGateway, Gateway, VoidGateway};
 use std::sync::Arc;
 use std::task::{Context, Poll, Wake};
 use test_framework_oss::is_ok;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-struct VoidGatewayRequest;
+struct NoInputGateway;
 
-struct VoidGateway;
-
-impl Gateway for VoidGateway {
-    type Request = VoidGatewayRequest;
+impl VoidGateway for NoInputGateway {
     type Response = ();
 
-    fn execute(&self, _request: Self::Request) -> Result<Self::Response, Error> {
+    fn execute(&self) -> Result<Self::Response, Error> {
         Ok(())
     }
 }
 
-struct VoidAsyncGateway;
+struct NoInputAsyncGateway;
 
-impl AsyncGateway for VoidAsyncGateway {
-    type Request = VoidGatewayRequest;
+impl AsyncVoidGateway for NoInputAsyncGateway {
     type Response = ();
 
-    fn execute<'a>(&'a self, _request: Self::Request) -> ResponseFuture<'a, Self::Response> {
+    fn execute<'a>(&'a self) -> ResponseFuture<'a, Self::Response> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -54,9 +55,9 @@ impl AsyncGateway for VoidAsyncGateway {
 /// while still returning a bounded `Result<(), Error>` through `execute`.
 #[test]
 fn sync_gateway_allows_unit_response_success() {
-    let gateway = VoidGateway;
+    let gateway = NoInputGateway;
 
-    let result = Gateway::execute(&gateway, VoidGatewayRequest);
+    let result = VoidGateway::execute(&gateway);
 
     is_ok!(result);
 }
@@ -68,9 +69,62 @@ fn sync_gateway_allows_unit_response_success() {
 /// to a bounded `Result<(), Error>`.
 #[test]
 fn async_gateway_allows_unit_response_success() {
-    let gateway = VoidAsyncGateway;
+    let gateway = NoInputAsyncGateway;
 
-    let result = try_run_ready(AsyncGateway::execute(&gateway, VoidGatewayRequest));
+    let result = try_run_ready(AsyncVoidGateway::execute(&gateway));
+
+    is_ok!(result);
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+struct ExampleRequest;
+
+struct RequestGateway;
+
+impl Gateway for RequestGateway {
+    type Request = ExampleRequest;
+    type Response = ();
+
+    fn execute(&self, _request: Self::Request) -> Result<Self::Response, Error> {
+        Ok(())
+    }
+}
+
+struct RequestAsyncGateway;
+
+impl AsyncGateway for RequestAsyncGateway {
+    type Request = ExampleRequest;
+    type Response = ();
+
+    fn execute<'a>(&'a self, _request: Self::Request) -> ResponseFuture<'a, Self::Response> {
+        Box::pin(async { Ok(()) })
+    }
+}
+
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that a synchronous request-bearing gateway implementation can use
+/// `Response = ()` while still returning a bounded `Result<(), Error>` through
+/// `execute`.
+#[test]
+fn sync_request_gateway_allows_unit_response_success() {
+    let gateway = RequestGateway;
+
+    let result = Gateway::execute(&gateway, ExampleRequest);
+
+    is_ok!(result);
+}
+
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that an asynchronous request-bearing gateway implementation can use
+/// `Response = ()` while returning the shared `ResponseFuture` type from
+/// `execute` that resolves to a bounded `Result<(), Error>`.
+#[test]
+fn async_request_gateway_allows_unit_response_success() {
+    let gateway = RequestAsyncGateway;
+
+    let result = try_run_ready(AsyncGateway::execute(&gateway, ExampleRequest));
 
     is_ok!(result);
 }
