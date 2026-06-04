@@ -5,3 +5,4 @@ This directory tracks implementation plans, standards-alignment work, and follow
 Current plans:
 
 - [Rust engineering standards delta](./rust-engineering-standards-delta.md)
+- [Current handoff and next steps](./current-handoff.md)

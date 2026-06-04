@@ -664,6 +664,110 @@ Expected `RetrieveDirectoryPath` retrofit shape:
 
 ## Completed Work
 
+### 2026-06-04, Void Seam Direction Change
+
+Status: complete.
+
+Decisions:
+
+1. True no-input use cases and gateways should not use placeholder request objects.
+2. The shared kernel seam surface now distinguishes:
+   - request-bearing sync seams: `UseCase` and `Gateway`
+   - request-bearing async seams: `AsyncUseCase` and `AsyncGateway`
+   - no-input sync seams: `VoidUseCase` and `VoidGateway`
+   - no-input async seams: `AsyncVoidUseCase` and `AsyncVoidGateway`
+3. Domain-specific marker seams for no-input capabilities should inherit from the void shared traits rather than from request-bearing traits with empty request types.
+4. This change applies to both kernel implementation and engineering standards guidance.
+
+Actions completed:
+
+1. Added `VoidUseCase` and `AsyncVoidUseCase` to `src/usecase/mod.rs`.
+2. Added `VoidGateway` and `AsyncVoidGateway` to `src/gateway/mod.rs`.
+3. Updated the shared use case and gateway tests to verify both no-input and request-bearing seam variants.
+4. Retrofitted `gateway::new_identity::NewIdentityGW` to use `VoidGateway<Response = ULID>`.
+5. Retrofitted `gateway::current_utc_timestamp::CurrentUTCTimestampGW` to use `VoidGateway<Response = UTCTimestamp>`.
+6. Updated `examples/gateway_usecase_composition.rs` to execute the new identity seam through `VoidGateway::execute(...)`.
+7. Updated the local engineering-standards delta notes to reflect the new void seam direction.
+8. Updated the engineering standards so true no-input seams use dedicated void traits rather than placeholder request objects.
+
+Verification:
+
+- `cargo fmt --all`
+- `cargo test`
+
+Result:
+
+- 305 unit tests passed.
+- 11 doctests passed.
+
+### 2026-06-04, Async Kernel No-Input Gateway Marker Seams
+
+Status: complete.
+
+Decisions:
+
+1. Kernel-level foundational gateway seams should normally expose both sync and async marker seam options when the capability can reasonably be consumed from either execution model.
+2. The sync and async variants must remain separate traits; do not place both sync and async `execute` methods on the same marker seam trait.
+3. `NewIdentityGW` and `CurrentUTCTimestampGW` therefore each need paired async marker seams.
+
+Actions completed:
+
+1. Added `AsyncNewIdentityGW: AsyncVoidGateway<Response = ULID>` in `src/gateway/new_identity/mod.rs`.
+2. Added `AsyncCurrentUTCTimestampGW: AsyncVoidGateway<Response = UTCTimestamp>` in `src/gateway/current_utc_timestamp/mod.rs`.
+3. Added async standards-aligned tests for both marker seams.
+4. Updated the engineering standards to state that Kernel-owned or other foundational shared seams should normally provide paired sync and async seam variants when both execution models are reasonable.
+
+Verification:
+
+- `cargo fmt --all`
+- `cargo test`
+
+Result:
+
+- 307 unit tests passed.
+- 11 doctests passed.
+
+### 2026-06-04, Updated Restart Checkpoint
+
+Status: recorded.
+
+Current verified baseline:
+
+- The `kernel-oss` worktree contains local uncommitted changes for the shared void seam work, async kernel seam additions, and plan/handoff updates.
+- `cargo fmt --all` passes.
+- `cargo test` passes with 307 unit tests and 11 doctests.
+- The current side-by-side compatibility seams completed in this repo are:
+  - `IdentityGateway` -> `gateway::new_identity::NewIdentityGW` and `gateway::new_identity::AsyncNewIdentityGW`
+  - `UTCTimestampGateway` -> `gateway::current_utc_timestamp::CurrentUTCTimestampGW` and `gateway::current_utc_timestamp::AsyncCurrentUTCTimestampGW`
+
+Current shared seam baseline:
+
+- `VoidUseCase`, `UseCase`, `AsyncVoidUseCase`, and `AsyncUseCase` remain in `src/usecase/mod.rs`.
+- `VoidGateway`, `Gateway`, `AsyncVoidGateway`, and `AsyncGateway` remain in `src/gateway/mod.rs`.
+- `ResponseFuture` remains shared from `src/core/traits/mod.rs`.
+- True no-input seams should use the dedicated void traits rather than placeholder request objects.
+
+Next recommended implementation order:
+
+1. Retrofit `RetrieveDirectoryPath` in `src/gateway/directory_list/mod.rs` side by side with:
+   - a new request-bearing sync seam
+   - a paired request-bearing async seam if the foundational capability should remain available to async flows
+   - compatibility preservation for the current function alias
+2. Retrofit `FileDataGateway` in `src/gateway/file_data_gateway/mod.rs` using the same compatibility pattern.
+3. Treat `Logger` in `src/gateway/logger/mod.rs` as a separate design step before implementation because it is a multi-operation trait and does not currently fit the one-command seam model.
+4. After the remaining small gateway retrofits, return to:
+   - the `ULID` module move into `src/values`
+   - the `src/algorithms` extraction plan
+   - broader test cleanup, rustdoc, and clippy enforcement work
+
+Recommended `RetrieveDirectoryPath` retrofit shape:
+
+1. Add a side-by-side module such as `src/gateway/retrieve_directory_path`.
+2. Define a finalized request object instead of passing bare `&str`.
+3. Define marker seams over `Gateway` and `AsyncGateway` with the same request and response contract.
+4. Keep the old `RetrieveDirectoryPath` function alias temporarily for compatibility.
+5. Add standards-aligned sync and async seam tests before deprecating the old alias.
+
 ### 2026-05-31, Accessor Surface
 
 Added callable accessors for bounded public types that still expose public fields.
