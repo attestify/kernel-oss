@@ -2,7 +2,7 @@
 
 [package]
 name = "kernel_oss"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2024"
 description = "Shared Attestify kernel traits, values, errors, and gateway/use case seams."
 license-file = "LICENSE"
