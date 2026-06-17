@@ -46,6 +46,12 @@ fn check_length_of_block() {
 }
 
 #[test]
+fn check_block_is_empty() {
+    assert!(Block::default().is_empty());
+    assert!(!Block::new("hello").is_empty());
+}
+
+#[test]
 fn check_block_value() {
     assert_eq!(Block::new("hello line").value(), "hello line")
 }

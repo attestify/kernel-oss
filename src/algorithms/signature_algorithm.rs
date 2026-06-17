@@ -2,8 +2,7 @@ use crate::error::{Error, Kind};
 use std::fmt::{Display, Formatter};
 
 /// The [`SIGNATURE_TYPES`] contains the list of signature algorithms that are supported by the system and their human-readable string representations.
-pub const SIGNATURE_TYPES: &'static [(SignatureType, &'static str)] =
-    &[(SignatureType::SHA256, "SHA256")];
+pub const SIGNATURE_TYPES: &[(SignatureType, &str)] = &[(SignatureType::SHA256, "SHA256")];
 
 /// The [`SignatureAlgorithm`] defines a function type that takes a byte sequence and generates a cryptographic signature of the data. This is generally used when creating a cryptographic signature for a file, although it can be for any data.
 ///
@@ -17,7 +16,7 @@ pub const SIGNATURE_TYPES: &'static [(SignatureType, &'static str)] =
 ///
 /// ## Errors
 ///
-/// All errors returned from the function must be for the [`Audience::System`] and below are the two [`Kind`]s of errors that can be returned:
+/// All errors returned from the function must be for the [`Audience::System`](crate::error::Audience::System) and below are the two [`Kind`]s of errors that can be returned:
 ///  *  [`Kind::InvalidInput`] - The `&Vec<u8>` argument is an empty vector.
 ///  * [`Kind::ProcessingFailure`] - The signature algorithm failed to sign the data.
 ///
@@ -26,10 +25,12 @@ pub type SignatureAlgorithm = fn(&Vec<u8>) -> Result<Signature, Error>;
 /// The [`SignatureType`] enum defines the cryptographic signature algorithms that can be used to sign a file.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum SignatureType {
+    /// SHA-256 signatures.
     SHA256,
 }
 
 impl SignatureType {
+    /// Parses a signature type from its string representation.
     pub fn from(algo: &str) -> Result<SignatureType, Error> {
         for (algo_enum, human_readable_algo) in SIGNATURE_TYPES {
             if algo == *human_readable_algo {
@@ -50,15 +51,16 @@ impl SignatureType {
 
 impl Display for SignatureType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Ok(for (algo, algo_str) in SIGNATURE_TYPES {
+        for (algo, algo_str) in SIGNATURE_TYPES {
             if self == algo {
                 return write!(f, "{}", algo_str);
             }
-        })
+        }
+        Ok(())
     }
 }
 
-/// The [`Signature`] struct represents a cryptographic signature of a file and the algorithm used to generate the signature.
+/// The [`Signature`] struct represents a cryptographic signature and the algorithm used to generate it.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Signature {
     signature_type: SignatureType,
@@ -79,7 +81,7 @@ impl Signature {
     ///
     /// ## Errors
     ///
-    /// An error is returned if the signature is an empty string. and this error  is for the [`Audience::System`] and is of [`Kind::InvalidInput`].
+    /// An error is returned if the signature is an empty string. and this error  is for the [`Audience::System`](crate::error::Audience::System) and is of [`Kind::InvalidInput`].
     ///
     pub fn try_new(sig_type: SignatureType, signature: &str) -> Result<Signature, Error> {
         if signature.is_empty() {
@@ -95,36 +97,38 @@ impl Signature {
         })
     }
 
-    /// Create a new [`Signature`] instance from a string representation of the signature that is stated as ALGO[signature]
+    /// Create a new [`Signature`] instance from a string representation of the signature that is stated as `ALGO[signature]`.
     pub fn try_from(signature_input: &str) -> Result<Signature, Error> {
         let signature = extract_and_validate_signature(signature_input)?;
         let signature_type = extract_and_validate_signature_type(signature_input)?;
         Self::try_new(signature_type, &signature)
     }
 
-    /// Get a clone of the signature string
-    pub fn to_string(&self) -> String {
-        self.signature.clone()
-    }
-
-    // Get a reference to the signature string
+    /// Returns the signature string as a borrowed slice.
     pub fn as_str(&self) -> &str {
         &self.signature
     }
 
     /// Get a clone of the signature string for the structure signature
     ///
-    /// The structure signature is the signature string that is in the format of ALGO[signature]
+    /// The structure signature is the signature string that is in the format of `ALGO[signature]`.
     pub fn structure_signature(&self) -> String {
         format!("{}[{}]", self.signature_type, self.signature)
     }
 
-    /// Get a clone for the string value for the signature algorithm
+    /// Returns the signature algorithm.
     pub fn signature_type(&self) -> &SignatureType {
         &self.signature_type
     }
 }
 
+impl Display for Signature {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.signature)
+    }
+}
+
+/// Extracts the signature algorithm from a structured signature string.
 pub fn extract_and_validate_signature_type(signature_input: &str) -> Result<SignatureType, Error> {
     let first_bracket = signature_input.find('[').ok_or(
         Error::for_system(Kind::InvalidInput, format!("The signature '{}' is not in the correct format, the first bracket is missing. The correct format is ALGO[signature-data] where ALGO is the signature algorithm (for example SHA256), and 'signature-data' is the signature itself.", signature_input))
@@ -137,6 +141,7 @@ pub fn extract_and_validate_signature_type(signature_input: &str) -> Result<Sign
     Ok(valid_signature_type)
 }
 
+/// Extracts the signature payload from a structured signature string.
 fn extract_and_validate_signature(signature_input: &str) -> Result<String, Error> {
     let start = signature_input.find('[')
         .ok_or(Error::for_system(Kind::InvalidInput,

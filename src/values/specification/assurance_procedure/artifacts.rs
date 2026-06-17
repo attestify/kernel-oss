@@ -1,17 +1,20 @@
 use crate::error::{Error, Kind};
 use crate::values::specification::assurance_procedure::artifact::Artifact;
 
+/// A collection of assurance procedure artifacts.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Artifacts {
+    /// The artifact list.
     artifacts: Vec<Artifact>,
 }
 
 impl Artifacts {
+    /// Adds an artifact by name, description, and metadata.
     pub fn add(
         self,
         name: &str,
         description: &str,
-        expected_metadata: &Vec<(String, String)>,
+        expected_metadata: &[(String, String)],
     ) -> Result<Artifacts, Error> {
         if self
             .artifacts
@@ -32,6 +35,7 @@ impl Artifacts {
         Ok(new_artifacts)
     }
 
+    /// Merges an existing artifact into the collection.
     pub fn merge(self, artifact: &Artifact) -> Result<Artifacts, Error> {
         if self
             .artifacts
@@ -51,6 +55,7 @@ impl Artifacts {
         Ok(new_artifacts)
     }
 
+    /// Returns the number of artifacts.
     pub fn count(self) -> usize {
         self.artifacts.len()
     }
@@ -59,7 +64,7 @@ impl Artifacts {
 fn validate_artifact(
     name: &str,
     description: &str,
-    expected_metadata: &Vec<(String, String)>,
+    expected_metadata: &[(String, String)],
 ) -> Result<Artifact, Error> {
     Artifact::new(name, description, expected_metadata).map_err(|error| {
         Error::for_user(

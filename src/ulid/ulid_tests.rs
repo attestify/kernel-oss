@@ -27,7 +27,7 @@ fn test_increment() {
 
 #[test]
 fn test_increment_overflow() {
-    let ulid = ULID(u128::max_value());
+    let ulid = ULID(u128::MAX);
     assert!(ulid.increment().is_none());
 }
 

@@ -1,3 +1,5 @@
+//! Repository link value and builder.
+
 use crate::error::{Error, Kind};
 use crate::values::uri::url::URL;
 use std::fmt;
@@ -9,6 +11,7 @@ use std::fmt;
 ///  * This allows url inputs values such as **localhost** to be valid.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct RepositoryLink {
+    /// Parsed repository URL.
     url: URL,
 }
 
@@ -19,38 +22,48 @@ impl fmt::Display for RepositoryLink {
 }
 
 impl RepositoryLink {
+    /// Starts a repository link builder.
     pub fn builder() -> RepositoryLinkBuilder {
         RepositoryLinkBuilder::default()
     }
 
+    /// Returns the parsed URL.
     pub fn url(&self) -> &URL {
         &self.url
     }
 }
 
+/// Builds a [`RepositoryLink`].
 #[derive(Debug, Default, Clone)]
 pub struct RepositoryLinkBuilder {
+    /// Allowed URL schemes.
     allowed_schema: Vec<String>,
+    /// Default URL scheme.
     default_scheme: Option<String>,
+    /// Repository link text.
     repo_link: Option<String>,
 }
 
 impl RepositoryLinkBuilder {
+    /// Sets the list of allowed URL schemes.
     pub fn allowed_schema(mut self, schema: Vec<String>) -> Self {
         self.allowed_schema = schema;
         self
     }
 
+    /// Sets the default URL scheme to apply when one is missing.
     pub fn default_scheme(mut self, scheme: impl Into<String>) -> Self {
         self.default_scheme = Some(scheme.into());
         self
     }
 
+    /// Sets the repository link text to parse and validate.
     pub fn repo_link(mut self, link: impl Into<String>) -> Self {
         self.repo_link = Some(link.into());
         self
     }
 
+    /// Validates the builder and creates a repository link.
     pub fn build(&mut self) -> Result<RepositoryLink, Error> {
         let allowed_schema = self.verify_allowed_schema()?;
         let default_schema = self.verify_default_scheme(&allowed_schema)?;
@@ -78,7 +91,7 @@ impl RepositoryLinkBuilder {
         Ok(self.allowed_schema.clone())
     }
 
-    fn verify_default_scheme(&mut self, allowed_schema: &Vec<String>) -> Result<String, Error> {
+    fn verify_default_scheme(&mut self, allowed_schema: &[String]) -> Result<String, Error> {
         let default_scheme = self.default_scheme.take().ok_or_else(|| {
             Error::for_user(
                 Kind::InvalidInput,
@@ -109,7 +122,7 @@ impl RepositoryLinkBuilder {
 
     fn verify_repo_link(
         &mut self,
-        allowed_schema: &Vec<String>,
+        allowed_schema: &[String],
         default_schema: &str,
     ) -> Result<String, Error> {
         let existing_link = self.repo_link.take().ok_or_else(|| {
@@ -129,12 +142,12 @@ impl RepositoryLinkBuilder {
         self.verify_repo_link_not_malformed(&existing_link)?;
 
         let repo_link_with_scheme =
-            self.apply_default_scheme_to_repo_link(&existing_link, &default_schema);
+            self.apply_default_scheme_to_repo_link(&existing_link, default_schema);
 
         self.verify_repo_link_scheme_is_allowed(
-            &repo_link_with_scheme,
-            &allowed_schema,
-            &default_schema,
+            repo_link_with_scheme.as_str(),
+            allowed_schema,
+            default_schema,
         )?;
 
         Ok(repo_link_with_scheme)
@@ -145,7 +158,7 @@ impl RepositoryLinkBuilder {
         if repo_link
             .chars()
             .next()
-            .map_or(false, |c| c.is_alphanumeric())
+            .is_some_and(|c| c.is_alphanumeric())
         {
             // Proceed to apply default scheme
             Ok(())
@@ -156,7 +169,7 @@ impl RepositoryLinkBuilder {
                 return Err(Error::for_system(
                     Kind::InvalidInput,
                     format!(
-                        "The repository link [{}] is malformed. It must either start with contain a scheme separator '://' \
+                        "The repository link [{}] is malformed. It must either start with a scheme separator '://' \
             or be formatted as [scheme]://[host] per for the RFC 3986 specification.",
                         repo_link
                     ),
@@ -184,11 +197,11 @@ impl RepositoryLinkBuilder {
 
     fn verify_repo_link_scheme_is_allowed(
         &self,
-        verified_repo_link: &String,
+        verified_repo_link: &str,
         allowed_schemes: &[String],
         default_scheme: &str,
     ) -> Result<(), Error> {
-        let repo_link_schema = self.extract_repo_link_schema(&verified_repo_link);
+        let repo_link_schema = self.extract_repo_link_schema(verified_repo_link);
         if allowed_schemes.contains(&repo_link_schema) {
             Ok(())
         } else {

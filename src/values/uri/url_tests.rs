@@ -19,9 +19,8 @@ fn create_new_url() {
             assert_eq!(url.fragment, "the-fragment")
         }
         Err(error) => {
-            assert!(
-                false,
-                "An error was returned.  Did not expect an error: [{0}]",
+            panic!(
+                "An error was returned. Did not expect an error: [{0}]",
                 error.message
             )
         }
@@ -43,9 +42,8 @@ fn create_new_url_only_scheme_and_host() {
             assert_eq!(url.fragment, "")
         }
         Err(error) => {
-            assert!(
-                false,
-                "An error was returned.  Did not expect an error: [{0}]",
+            panic!(
+                "An error was returned. Did not expect an error: [{0}]",
                 error.message
             )
         }
@@ -68,22 +66,19 @@ fn create_new_url_multiple_queries() {
             assert_eq!(url.path, "/some/path");
             assert_eq!(url.query_string, "query1=value1&query2=value2");
             assert_eq!(url.query_count(), 2);
-            assert_eq!(
-                true,
+            assert!(
                 url.queries
                     .contains(&("query1".to_string(), "value1".to_string()))
             );
-            assert_eq!(
-                true,
+            assert!(
                 url.queries
                     .contains(&("query2".to_string(), "value2".to_string()))
             );
             assert_eq!(url.fragment, "fragment")
         }
         Err(error) => {
-            assert!(
-                false,
-                "An error was returned.  Did not expect an error: [{0}]",
+            panic!(
+                "An error was returned. Did not expect an error: [{0}]",
                 error.message
             )
         }
@@ -95,10 +90,7 @@ fn create_from_bad_url_input() {
     let url_result = URL::new("Some-Bad-Input");
     match url_result {
         Ok(_url) => {
-            assert!(
-                false,
-                "Was expecting an error, but the URL::new(...) processed successfully."
-            );
+            panic!("Was expecting an error, but the URL::new(...) processed successfully.");
         }
         Err(error) => {
             assert_eq!(error.kind, Kind::InvalidInput);

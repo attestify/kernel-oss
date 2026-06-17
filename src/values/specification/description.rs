@@ -1,9 +1,12 @@
+//! Specification long-description value.
+
 use crate::error::{Error, Kind};
 use crate::values::Value;
 
 /// The [`Description`] struct represents a long form text describing something.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Description {
+    /// Canonical description text.
     pub value: String,
 }
 
@@ -21,11 +24,11 @@ impl Description {
     ///
     /// # Returns
     ///
-    /// A Result containing either a [`Description`] instance or an [`Error`].
+    /// A `Result` containing either a [`Description`] instance or an [`Error`].
     ///
     /// ## Errors
     ///
-    /// An [`Error`] of [`Kind::InvalidInput`] for [`Audience::User`] will be returned if the value is empty.
+    /// An [`Error`] of [`Kind::InvalidInput`] for [`Audience::User`](crate::error::Audience::User) will be returned if the value is empty.
     ///
     /// # Mutations
     /// * all leading whitespace, tabs, new lines, and carriage returns are removed

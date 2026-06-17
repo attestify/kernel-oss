@@ -1,5 +1,8 @@
+//! Attestify specification value objects and versioned models.
+
 pub mod assurance_procedure;
 pub mod assurance_report;
+/// Shared specification traits.
 pub mod traits;
 pub mod v1_0_0;
 

@@ -5,6 +5,7 @@ use crate::values::specification::description::Description;
 use crate::values::specification::name::Name;
 use crate::values::specification::outcome::Outcome;
 
+/// An assurance report action with signed test and evidence files.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Action {
     name: Name,
@@ -18,38 +19,38 @@ impl Action {
     /// Create a new instance of the [`ActionBuilder`].
     ///
     /// This is the only way to instantiate a new [`Action`] instance.
+    /// Creates a new builder for an assurance report action.
     pub fn builder() -> ActionBuilder {
         ActionBuilder::new()
     }
 
-    /// Return a reference to the [`Name`] of the action.
+    /// Returns the action name.
     pub fn name(&self) -> &Name {
         &self.name
     }
 
-    /// Return a reference to the [`Outcome`] of the action.
+    /// Returns the action outcome.
     pub fn outcome(&self) -> &Outcome {
         &self.outcome
     }
 
-    /// Return a reference to the reason ( a [`Description`] struct) of the action.
+    /// Returns the action reason.
     pub fn reason(&self) -> &Description {
         &self.reason
     }
 
-    /// Return a reference to the test file (a [`SignedFile`] struct) of the action.
+    /// Returns the signed test file.
     pub fn test_file(&self) -> &SignedFile {
         &self.test_file
     }
 
-    /// Return a reference to the evidence file (a [`SignedFile`] struct) of the action.
+    /// Returns the signed evidence file.
     pub fn evidence_file(&self) -> &SignedFile {
         &self.evidence_file
     }
 }
 
-/// The [`ActionBuilder`] struct is used to create a new instance of the [`Action`] struct.  This builder applies all the validation logic to the data that is used to create the [`Action`] instance.
-///
+/// Builder for [`Action`].
 pub struct ActionBuilder {
     name: Option<Name>, // note - if this is not provided, then the name must be provided
     name_str: Option<String>,
@@ -65,15 +66,8 @@ pub struct ActionBuilder {
     evidence_file_signature_str: Option<String>,
 }
 
-///
-/// The [`ActionBuilder`] struct is used to create a new instance of the [`Action`] struct.  This builder applies all the validation logic to the data that is used to create the [`Action`] instance.
-///
-/// # Design Decision
-///
-/// Any method that stars with *use_* will take precedent over its counterpart because the *use_* methods accept valid instances of the data that is being used to build the [`Action`] instance.
-///
 impl ActionBuilder {
-    /// Create a new instance of the [`ActionBuilder`].
+    /// Creates a new instance of the [`ActionBuilder`].
     pub fn new() -> Self {
         Self {
             name: None,
@@ -91,43 +85,43 @@ impl ActionBuilder {
         }
     }
 
-    /// Use an existing ['Name'] instance to set the name of the action.
+    /// Uses an existing [`Name`] instance to set the action name.
     pub fn use_name(mut self, name: &Name) -> Self {
         self.name = Some(name.clone());
         self
     }
 
-    /// Use a string to set the name of the action.
+    /// Uses a string to set the action name.
     pub fn name(mut self, name: &str) -> Self {
         self.name_str = Some(name.to_string());
         self
     }
 
-    /// Use an existing['Outcome'] instance to set the outcome of the action.
+    /// Uses an existing [`Outcome`] instance to set the action outcome.
     pub fn use_outcome(mut self, outcome: &Outcome) -> Self {
         self.outcome = Some(outcome.clone());
         self
     }
 
-    /// Use a string to set the outcome of the action.
+    /// Uses a string to set the action outcome.
     pub fn outcome(mut self, outcome: &str) -> Self {
         self.outcome_str = Some(outcome.to_string());
         self
     }
 
-    /// Use an existing ['Description'] instance to set the reason of the action.
+    /// Uses an existing [`Description`] instance to set the action reason.
     pub fn use_reason(mut self, reason: &Description) -> Self {
         self.reason = Some(reason.clone());
         self
     }
 
-    /// Use a string to set the reason of the action.
+    /// Uses a string to set the action reason.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason_str = Some(reason.to_string());
         self
     }
 
-    /// Use an existing ['SignedFile'] instance to set the test file of the action.
+    /// Uses an existing [`SignedFile`] instance to set the test file.
     ///
     ///  If data is provided via this method, this data will take priority over any data provided via the test_file_path and test_file_signature methods when building the [`Action`] instance.
     pub fn use_test_file_signature(mut self, test_file: &SignedFile) -> Self {
@@ -135,7 +129,7 @@ impl ActionBuilder {
         self
     }
 
-    /// Use a string to set the test file path.
+    /// Uses a string to set the test file path.
     ///
     /// This method is commonly used when consuming data directly from a file or datastore, and is used in conjunction with the test_file_signature method.
     pub fn test_file_path(mut self, path: &str) -> Self {
@@ -143,7 +137,7 @@ impl ActionBuilder {
         self
     }
 
-    /// Provide the signature for the test file as a string
+    /// Uses a string to set the test file signature.
     ///
     ///  This method is commonly used when consuming data directly from a file or datastore., and is used in conjunction with the test_file_path method.
     pub fn test_file_signature(mut self, signature: &str) -> Self {
@@ -151,7 +145,7 @@ impl ActionBuilder {
         self
     }
 
-    /// Use an existing ['SignedFile'] instance to set the evidence file of the action.
+    /// Uses an existing [`SignedFile`] instance to set the evidence file.
     ///
     /// This method is used when building an [`Action`] instance from an existing [`SignedFile`] instance.
     ///
@@ -161,7 +155,7 @@ impl ActionBuilder {
         self
     }
 
-    /// Use a string to set the evidence file path of the action.
+    /// Uses a string to set the evidence file path.
     ///
     /// This method is commonly used when consuming data directly from a file or datastore, and is used in conjunction with the evidence_file_signature method.
     pub fn evidence_file_path(mut self, file_path: &str) -> Self {
@@ -169,7 +163,7 @@ impl ActionBuilder {
         self
     }
 
-    /// Provide the signature for the evidence file as a string
+    /// Uses a string to set the evidence file signature.
     ///
     /// This method is commonly used when consuming data directly from a file or datastore, and is used in conjunction with the evidence_file_path method.
     pub fn evidence_file_signature(mut self, signature: &str) -> Self {
@@ -177,6 +171,7 @@ impl ActionBuilder {
         self
     }
 
+    /// Validates the builder and creates an [`Action`].
     pub fn try_build(self) -> Result<Action, Error> {
         let valid_name = self.validate_name()?;
         let valid_outcome = self.validate_outcome()?;
@@ -344,5 +339,11 @@ impl ActionBuilder {
                 })
             }
         }
+    }
+}
+
+impl Default for ActionBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -37,7 +37,7 @@ fn add_activity_success() {
         .try_build()
         .unwrap();
 
-    let updated_activity = activity.add(action);
+    let updated_activity = activity.append_action(action);
 
     assert_eq!(updated_activity.action_count(), 1);
     assert_eq!(updated_activity.actions[0].name.value, "action-1");

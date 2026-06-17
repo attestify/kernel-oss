@@ -1,3 +1,8 @@
+//! Bounded error type and classifications used by kernel seams and values.
+//!
+//! Use [`Error`] for public fallible APIs so callers can distinguish
+//! user-facing input errors from system or operational failures.
+
 #[cfg(test)]
 mod tests;
 
@@ -28,8 +33,11 @@ mod tests;
 /// - `Display` is implemented to format the `message` only (suitable for end-user display).
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Error {
+    /// Audience classification for the error.
     pub audience: Audience,
+    /// Coarse error category.
     pub kind: Kind,
+    /// Human-readable error message.
     pub message: String,
 }
 
@@ -115,7 +123,9 @@ impl std::fmt::Display for Error {
 /// - Do not rely on any ordering of variants; use equality or pattern matching as needed.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Audience {
+    /// Intended for end users.
     User,
+    /// Intended for system or operational handling.
     System,
 }
 
@@ -134,18 +144,18 @@ pub enum Kind {
     ExceedsMax,
     /// A value is below the minimum allowed length.
     BelowMin,
-    /// An entity was not found.
+    /// A requested item was not found.
     NotFound,
     /// The supplied input does not meet the required constraints.
     InvalidInput,
-    /// Generally used as the default for a match statement when all other Kinds have been exhausted.
+    /// A catch-all for unexpected cases.
     Unexpected,
-    /// A gateway execution error occurred when executing a gateway adapter implementation.
+    /// A gateway execution error occurred.
     GatewayError,
-    /// A usecase execution error occurred when executing a usecase configuration.
+    /// A use case execution error occurred.
     UsecaseError,
-    /// A permission denied error occurred when a user does not have required permissions.
+    /// Permission was denied.
     PermissionDenied,
-    /// When some type of local (in-memory) data processing failure occurs.
+    /// A local processing failure occurred.
     ProcessingFailure,
 }

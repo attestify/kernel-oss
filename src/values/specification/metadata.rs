@@ -1,3 +1,5 @@
+//! Specification metadata key-value store.
+
 use crate::error::{Error, Kind};
 use crate::values::specification::description::Description;
 use crate::values::specification::name::Name;
@@ -12,6 +14,7 @@ pub const VALUE_MAX: usize = 256;
 /// The [`MetaData`] struct is a simple key-value store for NAPE Metadata for any type of NAPE Specification.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct MetaData {
+    /// Ordered metadata entries.
     pub data: Vec<(Name, Description)>,
 }
 

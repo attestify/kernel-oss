@@ -1,12 +1,14 @@
 use crate::error::{Audience, Kind};
-use crate::values::specification::assurance_report::additional_information::AdditionalInformation;
+use crate::values::specification::assurance_report::additional_information::{
+    AdditionalInformation, AdditionalInformationBuilder,
+};
 use test_framework_oss::is_ok;
 use test_framework_oss::kernel_error_contains;
 
 #[test]
 fn add_success() {
     let result = AdditionalInformation::builder()
-        .add("This is a test")
+        .append("This is a test")
         .try_build();
 
     is_ok!(&result);
@@ -17,10 +19,22 @@ fn add_success() {
 }
 
 #[test]
+fn default_builder_success() {
+    let result = AdditionalInformationBuilder::default()
+        .append("This is a test")
+        .try_build();
+
+    is_ok!(&result);
+
+    let additional_info = result.unwrap();
+    assert_eq!(additional_info.count(), 1);
+}
+
+#[test]
 fn add_duplicate_success() {
     let result = AdditionalInformation::builder()
-        .add("This is a test")
-        .add("This is a test")
+        .append("This is a test")
+        .append("This is a test")
         .try_build();
 
     is_ok!(&result);
@@ -32,7 +46,7 @@ fn add_duplicate_success() {
 
 #[test]
 fn add_error() {
-    let result = AdditionalInformation::builder().add(" ").try_build();
+    let result = AdditionalInformation::builder().append(" ").try_build();
 
     kernel_error_contains!(
         &result,

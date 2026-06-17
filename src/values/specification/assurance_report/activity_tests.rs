@@ -2,7 +2,7 @@ use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;
 use crate::error::{Audience, Kind};
 use crate::values::specification::assurance_report::action::Action;
-use crate::values::specification::assurance_report::activity::Activity;
+use crate::values::specification::assurance_report::activity::{Activity, Builder};
 use crate::values::specification::assurance_report::signed_file::SignedFile;
 use crate::values::specification::name::Name;
 use crate::values::specification::outcome::Outcome;
@@ -11,6 +11,16 @@ use test_framework_oss::kernel_error_starts_with;
 #[test]
 fn builder_success() {
     let activity = Activity::builder()
+        .name("activity-name")
+        .try_build()
+        .unwrap();
+    assert_eq!(activity.name(), &Name::try_from("activity-name").unwrap());
+    assert_eq!(activity.count(), 0);
+}
+
+#[test]
+fn default_builder_success() {
+    let activity = Builder::default()
         .name("activity-name")
         .try_build()
         .unwrap();
@@ -47,7 +57,7 @@ fn add_action_success() {
 
     let activity = Activity::builder()
         .name("activity-name")
-        .add(&action)
+        .append_action(&action)
         .try_build()
         .unwrap();
 
@@ -145,16 +155,16 @@ fn add_many_actions_success() {
 
     let activity = Activity::builder()
         .name("activity-name")
-        .add(&action_1)
-        .add(&action_2)
-        .add(&action_3)
-        .add(&action_4)
-        .add(&action_5)
-        .add(&action_6)
-        .add(&action_7)
-        .add(&action_8)
-        .add(&action_9)
-        .add(&action_10)
+        .append_action(&action_1)
+        .append_action(&action_2)
+        .append_action(&action_3)
+        .append_action(&action_4)
+        .append_action(&action_5)
+        .append_action(&action_6)
+        .append_action(&action_7)
+        .append_action(&action_8)
+        .append_action(&action_9)
+        .append_action(&action_10)
         .try_build()
         .unwrap();
 
@@ -217,8 +227,8 @@ fn duplicate_action_error() {
 
     let result = Activity::builder()
         .name("activity-name")
-        .add(&action)
-        .add(&dup_action)
+        .append_action(&action)
+        .append_action(&dup_action)
         .try_build();
 
     kernel_error_starts_with!(

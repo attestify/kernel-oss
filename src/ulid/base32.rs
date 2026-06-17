@@ -1,6 +1,8 @@
+//! Crockford Base32 encoding and decoding support for ULIDs.
+
 use core::fmt;
 
-/// Length of a string-encoded [ULID]
+/// Length of a string-encoded [`ULID`](crate::ulid::ULID).
 pub const ULID_LEN: usize = 26;
 
 pub(crate) const ALPHABET: &[u8; 32] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -50,6 +52,7 @@ pub fn encode_to_array(mut value: u128, buffer: &mut [u8; ULID_LEN]) {
     }
 }
 
+/// Encode a `u128` value to a Crockford Base32 string.
 pub fn encode(value: u128) -> String {
     let mut buffer: [u8; ULID_LEN] = [0; ULID_LEN];
 
@@ -79,6 +82,7 @@ impl fmt::Display for DecodeError {
     }
 }
 
+/// Decode a Crockford Base32 string into a `u128` value.
 pub const fn decode(encoded: &str) -> Result<u128, DecodeError> {
     if encoded.len() != ULID_LEN {
         return Err(DecodeError::InvalidLength);

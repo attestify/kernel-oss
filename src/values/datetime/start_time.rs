@@ -1,8 +1,11 @@
 use crate::error::{Error, Kind};
+use std::fmt::{Display, Formatter};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+/// A millisecond start-time value.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct StartTime {
+    /// The timestamp in milliseconds.
     pub time: u128,
 }
 
@@ -49,7 +52,7 @@ impl StartTime {
     /// # Returns
     ///
     /// * A [`Result<StartTime, Error>`] containing the [`StartTime`] struct if the time is greater than 0, or an [`Error`] if the time is less than or equal to 0.
-    /// * The Error will be of [`Kind::InvalidInput`] for  [`Audience::User`].
+    /// * The Error will be of [`Kind::InvalidInput`] for  [`Audience::User`](crate::error::Audience::User).
     ///
     pub fn try_from(time: u128) -> Result<Self, Error> {
         if time == 0 {
@@ -60,12 +63,11 @@ impl StartTime {
         }
         Ok(Self { time })
     }
+}
 
-    /// # Overview
-    /// Converts the [`StartTime`] struct to a string.
-    ///
-    pub fn to_string(&self) -> String {
-        self.time.to_string()
+impl Display for StartTime {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.time)
     }
 }
 

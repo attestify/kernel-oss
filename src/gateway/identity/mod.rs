@@ -1,3 +1,8 @@
+//! Legacy identity gateway compatibility surface.
+//!
+//! Prefer [`crate::gateway::new_identity::NewIdentityGW`] and
+//! [`crate::gateway::new_identity::AsyncNewIdentityGW`] in new code.
+
 use crate::error::Error;
 use crate::ulid::ULID;
 
@@ -16,6 +21,7 @@ pub trait IdentityGateway: IdentityGatewayClone + Sync + Send {
 ///
 #[allow(deprecated)]
 pub trait IdentityGatewayClone {
+    /// Clones the gateway trait object into a boxed trait object.
     fn clone_box(&self) -> Box<dyn IdentityGateway>;
 }
 

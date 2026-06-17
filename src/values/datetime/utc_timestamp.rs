@@ -1,3 +1,5 @@
+//! UTC timestamp bounded value.
+
 use crate::error::Error;
 use crate::error::Kind::InvalidInput;
 
@@ -54,18 +56,22 @@ use crate::error::Kind::InvalidInput;
 /// - Unit tests exist to validate edge cases: `u64::MAX` milliseconds, very large `ns` that trigger millisecond capping, `ns` values that cause second cast/wrap, sub-millisecond inputs, and truncation semantics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UTCTimestamp {
+    /// Canonical timestamp in nanoseconds.
     timestamp: u128,
 }
 
 impl UTCTimestamp {
+    /// Starts a UTC timestamp builder.
     pub fn builder() -> UTCTimestampBuilder {
         UTCTimestampBuilder::default()
     }
 
+    /// Returns the timestamp as nanoseconds.
     pub fn as_nano(&self) -> u128 {
         self.timestamp
     }
 
+    /// Returns the timestamp as milliseconds.
     pub fn as_milli(&self) -> u64 {
         let millis = self.timestamp / 1_000_000;
         if millis > u64::MAX as u128 {
@@ -75,13 +81,16 @@ impl UTCTimestamp {
         }
     }
 
+    /// Returns the timestamp as seconds.
     pub fn as_sec(&self) -> u64 {
         (self.timestamp / 1_000_000_000) as u64
     }
 }
 
+/// Builds a [`UTCTimestamp`].
 #[derive(Debug, Clone, Default)]
 pub struct UTCTimestampBuilder {
+    /// Raw timestamp input in nanoseconds.
     timestamp: Option<u128>,
 }
 
@@ -99,6 +108,7 @@ impl UTCTimestampBuilder {
         self
     }
 
+    /// Validates the builder and creates a timestamp value.
     pub fn build(self) -> Result<UTCTimestamp, Error> {
         validate_value(self.timestamp)
     }

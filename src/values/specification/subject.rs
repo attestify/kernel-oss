@@ -1,10 +1,15 @@
+//! Specification subject value.
+
 use crate::error::{Error, Kind};
-use crate::values::nrn::nrn::NRN;
+use crate::values::nrn::NRN;
 use crate::values::specification::subject_id::SubjectId;
 
+/// A specification subject combining an NRN and subject identifier.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Subject {
+    /// Namespace resource name for the subject.
     pub nrn: NRN,
+    /// Subject identifier.
     pub id: SubjectId,
 }
 

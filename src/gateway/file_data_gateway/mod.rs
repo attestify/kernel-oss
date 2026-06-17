@@ -1,3 +1,8 @@
+//! Legacy file-data gateway compatibility surface.
+//!
+//! Prefer [`crate::gateway::file_data::FileDataGW`] and
+//! [`crate::gateway::file_data::AsyncFileDataGW`] in new code.
+
 use crate::error::Error;
 
 /// # Overview

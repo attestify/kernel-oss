@@ -1,4 +1,4 @@
-//! Shared gateway seam for writing log entries.
+//! Standards-aligned logging gateway seam.
 //!
 //! Logging is modeled as one command capability: write a log entry. The log
 //! level is request data, not a separate architectural seam. This keeps the

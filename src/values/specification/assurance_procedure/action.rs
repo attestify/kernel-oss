@@ -4,12 +4,18 @@ use crate::values::specification::file_path::FilePath;
 use crate::values::specification::name::Name;
 use crate::values::specification::short_description::ShortDescription;
 
+/// An assurance procedure action with test and evidence file paths.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Action {
+    /// The action name.
     pub name: Name,
+    /// The short summary for the action.
     pub short: ShortDescription,
+    /// The long-form description for the action.
     pub description: Description,
+    /// The path to the test file.
     pub test: FilePath,
+    /// The path to the evidence file.
     pub evidence: FilePath,
 }
 
@@ -39,11 +45,13 @@ impl Action {
         &self.evidence
     }
 
+    /// Creates a new builder for an assurance procedure action.
     pub fn builder() -> ActionBuilder {
         ActionBuilder::new()
     }
 }
 
+/// Builder for [`Action`].
 pub struct ActionBuilder {
     name: Option<String>,
     short: Option<String>,
@@ -53,6 +61,7 @@ pub struct ActionBuilder {
 }
 
 impl ActionBuilder {
+    /// Creates a new empty builder.
     pub fn new() -> ActionBuilder {
         ActionBuilder {
             name: None,
@@ -63,31 +72,37 @@ impl ActionBuilder {
         }
     }
 
+    /// Sets the action name from a string.
     pub fn name(mut self, name: &str) -> ActionBuilder {
         self.name = Some(name.to_string());
         self
     }
 
+    /// Sets the short description from a string.
     pub fn short_description(mut self, short: &str) -> ActionBuilder {
         self.short = Some(short.to_string());
         self
     }
 
+    /// Sets the long description from a string.
     pub fn long_description(mut self, description: &str) -> ActionBuilder {
         self.description = Some(description.to_string());
         self
     }
 
+    /// Sets the test file path from a string.
     pub fn test_file_path(mut self, test: &str) -> ActionBuilder {
         self.test = Some(test.to_string());
         self
     }
 
+    /// Sets the evidence file path from a string.
     pub fn evidence_file_path(mut self, evidence: &str) -> ActionBuilder {
         self.evidence = Some(evidence.to_string());
         self
     }
 
+    /// Validates the builder and creates an [`Action`].
     pub fn try_build(self) -> Result<Action, Error> {
         let valid_name = self.build_name()?;
         let valid_short = self.build_short_description()?;
@@ -163,6 +178,12 @@ impl ActionBuilder {
                 evidence, error.message
             ))
         })
+    }
+}
+
+impl Default for ActionBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

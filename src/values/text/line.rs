@@ -1,7 +1,11 @@
+//! Single-line bounded text value.
+
 use crate::values::Value;
 
+/// Single-line bounded text.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Line {
+    /// Canonical line text.
     value: String,
 }
 
@@ -57,10 +61,17 @@ impl Line {
         Line { value: s.into() }.sanitize()
     }
 
+    /// Returns the length in bytes.
     pub fn len(&self) -> usize {
         self.value.len()
     }
 
+    /// Returns `true` when the line is empty.
+    pub fn is_empty(&self) -> bool {
+        self.value.is_empty()
+    }
+
+    /// Returns the owned line text.
     pub fn value(&self) -> String {
         self.value.clone()
     }

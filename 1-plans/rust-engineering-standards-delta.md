@@ -41,6 +41,15 @@ The logger seam decision is closed:
 - `error` is optional structured failure context.
 - `level` is request data, not a separate trait method.
 
+The first documentation catalog pass is complete:
+
+- `docs/kernel-catalog.md` is the consumer-facing reuse catalog.
+- `docs/documentation-audit.md` tracks documentation maintenance and future additions.
+- `README.md` links to the catalog and audit.
+- `/docs/**` is packaged with the crate.
+- `cargo rustdoc --lib` passes without broken intra-doc link warnings.
+- `cargo rustdoc --lib -- -D missing_docs` now passes across the public crate API.
+
 ## Active Deltas
 
 1. ULID value-object module boundary
@@ -81,13 +90,15 @@ The logger seam decision is closed:
    - Prefer explicit setup expectations over plain `.unwrap()` in tests.
 
 8. Documentation
-   - `cargo rustdoc --lib -- -D missing_docs` still fails broadly.
-   - Broken intra-doc links remain.
-   - Add public API docs incrementally after API shape decisions settle.
+   - `docs/kernel-catalog.md` exists and should be kept current as the human-readable reuse catalog.
+   - `docs/documentation-audit.md` tracks documentation maintenance and future public API additions.
+   - `cargo rustdoc --lib -- -D missing_docs` now passes.
+   - Broken intra-doc links were cleaned up in the first catalog pass.
+   - Keep public API docs current when adding or changing exported items.
 
 9. Clippy
-   - `cargo clippy --all-targets -- -D warnings` still fails broadly.
-   - Address mechanical warnings after the remaining API movement decisions.
+   - `cargo clippy --all-targets -- -D warnings` now passes cleanly.
+   - Keep it that way after future public API and module-layout changes.
 
 ## Recommended Active Order
 
@@ -98,7 +109,7 @@ The logger seam decision is closed:
 5. Remove recoverable production `.unwrap()` / `.expect(...)` usage.
 6. Continue test naming and setup cleanup.
 7. Decide public field privacy in a breaking-change plan.
-8. Bring rustdoc and clippy to enforceable state.
+8. Keep rustdoc green and bring clippy to enforceable state.
 
 ## Verification Baseline
 
@@ -107,6 +118,7 @@ At the last full release check:
 - `cargo fmt --all --check` passed.
 - `cargo test` passed.
 - `cargo check --examples` passed.
+- `cargo rustdoc --lib` passed.
 - The release examples passed.
 - Test count was 324 unit tests plus 11 doctests.
 

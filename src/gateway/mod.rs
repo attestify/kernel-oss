@@ -1,3 +1,10 @@
+//! Shared gateway role traits and kernel gateway compatibility modules.
+//!
+//! Use [`VoidGateway`] / [`AsyncVoidGateway`] for true no-input gateway seams.
+//! Use [`Gateway`] / [`AsyncGateway`] when a finalized request crosses the
+//! gateway boundary. Domain-specific `*GW` traits should stay as thin marker
+//! supertraits over these shared roles.
+
 pub mod current_utc_timestamp;
 pub mod directory_list;
 pub mod file_data;

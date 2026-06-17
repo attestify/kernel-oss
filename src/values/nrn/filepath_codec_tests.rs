@@ -1,5 +1,5 @@
+use crate::values::nrn::NRN;
 use crate::values::nrn::filepath_codec::{decode_from_directory_name, encode_as_directory_name};
-use crate::values::nrn::nrn::NRN;
 
 #[test]
 fn encode_success() {

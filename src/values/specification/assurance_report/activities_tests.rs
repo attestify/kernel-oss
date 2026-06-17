@@ -2,7 +2,7 @@ use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;
 use crate::error::{Audience, Kind};
 use crate::values::specification::assurance_report::action::Action;
-use crate::values::specification::assurance_report::activities::Activities;
+use crate::values::specification::assurance_report::activities::{Activities, Builder};
 use crate::values::specification::assurance_report::activity::Activity;
 use crate::values::specification::assurance_report::signed_file::SignedFile;
 use crate::values::specification::name::Name;
@@ -19,14 +19,21 @@ fn success() {
 }
 
 #[test]
+fn default_builder_success() {
+    let activities = Builder::default().try_build().unwrap();
+    assert_eq!(activities.list().len(), 0);
+    assert_eq!(activities.action_count(), 0);
+}
+
+#[test]
 fn add_single_activity_success() {
     let action1 = generate_testing_action("action-1");
     let action2 = generate_testing_action("action-2");
 
     let activity = Activity::builder()
         .name("some-activity")
-        .add(&action1)
-        .add(&action2)
+        .append_action(&action1)
+        .append_action(&action2)
         .try_build()
         .unwrap();
 
@@ -53,14 +60,14 @@ fn add_activity_with_existing_activity_name_success() {
 
     let activity1 = Activity::builder()
         .name("activity-1")
-        .add(&action1)
-        .add(&action2)
+        .append_action(&action1)
+        .append_action(&action2)
         .try_build()
         .unwrap();
     let activity2 = Activity::builder()
         .name("activity-1")
-        .add(&action3)
-        .add(&action4)
+        .append_action(&action3)
+        .append_action(&action4)
         .try_build()
         .unwrap();
     let activities = Activities::builder()
@@ -81,14 +88,14 @@ fn add_activity_with_same_name_actions_error() {
 
     let activity1 = Activity::builder()
         .name("activity-1")
-        .add(&action1)
-        .add(&action2)
+        .append_action(&action1)
+        .append_action(&action2)
         .try_build()
         .unwrap();
     let activity2 = Activity::builder()
         .name("activity-1")
-        .add(&action3)
-        .add(&action1)
+        .append_action(&action3)
+        .append_action(&action1)
         .try_build()
         .unwrap();
 

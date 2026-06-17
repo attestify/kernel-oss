@@ -44,6 +44,15 @@ The logger design decision is closed for this release:
 - `WriteLogEntryRequest::error` is optional structured failure context.
 - `LogLevel` is request data, not a separate operation.
 
+The first documentation catalog pass is complete:
+
+- `docs/kernel-catalog.md` is the human-readable reuse catalog for consumers.
+- `docs/documentation-audit.md` tracks remaining rustdoc cleanup.
+- `README.md` links to both documentation files.
+- `/docs/**` is included in the crate package.
+- `cargo rustdoc --lib` passes without broken intra-doc link warnings.
+- `cargo rustdoc --lib -- -D missing_docs` now passes for the public crate API.
+
 Compatibility rule:
 
 - Keep deprecated public APIs until a breaking-change plan explicitly schedules removal.
@@ -56,6 +65,7 @@ At the last full release check:
 - `cargo fmt --all --check` passed.
 - `cargo test` passed.
 - `cargo check --examples` passed.
+- `cargo rustdoc --lib` passed.
 - The release examples passed.
 - Test count was 324 unit tests plus 11 doctests.
 
@@ -73,7 +83,8 @@ cargo publish --dry-run --allow-dirty
 These are still real standards deltas, but they do not block the current seam/gateway compatibility release unless the team decides to raise the release bar:
 
 - `cargo clippy --all-targets -- -D warnings` still fails broadly.
-- `cargo rustdoc --lib -- -D missing_docs` still fails broadly.
+- `cargo clippy --all-targets -- -D warnings` now passes cleanly.
+- `cargo rustdoc --lib -- -D missing_docs` now passes.
 - Some bounded public types still expose public fields for compatibility.
 - Several fallible constructors and builders still need `try_new` / `try_build` migration work.
 - Some existing builders still borrow `self` during finalization.
@@ -98,7 +109,7 @@ Plan and implement the `ULID` module move:
    - Keep current `src/algorithms` APIs until replacements and compatibility guidance exist.
 2. Add `try_new` / `try_build` compatibility surfaces and migrate internal call sites.
 3. Remove recoverable production `.unwrap()` / `.expect(...)` usage.
-4. Continue test cleanup, rustdoc cleanup, and clippy cleanup.
+4. Continue test cleanup and rustdoc cleanup.
 
 ## Archived Completed Work
 

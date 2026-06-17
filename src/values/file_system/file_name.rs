@@ -1,14 +1,18 @@
+//! File-system file-name value and builder.
+
 use crate::error::{Error, Kind};
 use crate::values::Value;
 
 // A value representing the file name for a file on the virtual file system.
+/// Bounded file name text.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FileName {
+    /// Canonical file name text.
     value: String,
 }
 
 impl FileName {
-    /// Create a new instance of a [FileNameBuilder] to create a [FileName] instance.
+    /// Create a new instance of a [`FileNameBuilder`] to create a [`FileName`] instance.
     pub fn builder() -> FileNameBuilder {
         FileNameBuilder::default()
     }
@@ -27,9 +31,10 @@ impl Value for FileName {
     }
 }
 
-/// Use to build a valid instance of a [FileName]
+/// Use to build a valid instance of a [`FileName`].
 #[derive(Clone, Default)]
 pub struct FileNameBuilder {
+    /// Raw file-name input.
     value: Option<String>,
 }
 
@@ -60,9 +65,9 @@ fn validate_name(value: Option<String>) -> Result<String, Error> {
     }
 
     if !name.chars().next().unwrap().is_ascii_alphanumeric()
-        && name.chars().next().unwrap() != '-'
-        && name.chars().next().unwrap() != '.'
-        && name.chars().next().unwrap() != '_'
+        && !name.starts_with('-')
+        && !name.starts_with('.')
+        && !name.starts_with('_')
     {
         return Err(invalid_input(
             "The file name must start with a letter, number, '-', '.', or '_'.",

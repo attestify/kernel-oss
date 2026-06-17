@@ -1,3 +1,5 @@
+//! Specification procedure location value.
+
 use crate::error::{Error, Kind};
 use crate::values::specification::repository_link::RepositoryLink;
 
@@ -12,7 +14,9 @@ use crate::values::specification::repository_link::RepositoryLink;
 ///
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Procedure {
+    /// Repository location for the procedure.
     pub repository: String,
+    /// Directory path within the repository.
     pub directory: String,
 }
 
@@ -39,7 +43,7 @@ impl Procedure {
     /// # Returns
     ///
     /// - A [`Result`] containing either a [`Procedure`] instance or an [`Error`].
-    ///  - All returned errors are for the audience [`Audience::User`], and of kind [`Kind::InvalidInput`].
+    ///  - All returned errors are for the audience [`Audience::User`](crate::error::Audience::User), and of kind [`Kind::InvalidInput`].
     ///
     pub fn try_new(repository: &str, directory: &str) -> Result<Procedure, Error> {
         let valid_repo = validate_repository_link(repository)?;

@@ -99,7 +99,7 @@ fn malformed_repo_link_error() {
         Kind::InvalidInput,
         Audience::System,
         "The repository link [:/github.com/nape/processes/rust-ci] is malformed. \
-        It must either start with contain a scheme separator '://' or be formatted as \
+        It must either start with a scheme separator '://' or be formatted as \
         [scheme]://[host] per for the RFC 3986 specification."
     )
 }

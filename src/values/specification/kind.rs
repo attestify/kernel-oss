@@ -1,20 +1,26 @@
+//! Specification kind values.
+
 use crate::error;
 use crate::error::Error;
 use std::fmt::Display;
 
 /// The [`KIND_STRINGS`] contains the list of[`Kind`]s and their string representations.  This is used for validation of inputs  when converting from string to [`Kind`] enum, and when converting from [`Kind`] enum to string.
-const KIND_STRINGS: &'static [(Kind, &'static str)] = &[
+const KIND_STRINGS: &[(Kind, &str)] = &[
     (Kind::AssuranceReport, "AssuranceReport"),
     (Kind::AssuranceProcedure, "AssuranceProcedure"),
 ];
 
+/// Specification kinds used by the assurance models.
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum Kind {
+    /// Assurance procedure specification values.
     AssuranceProcedure,
+    /// Assurance report specification values.
     AssuranceReport,
 }
 
 impl Kind {
+    /// Parses a specification kind from text.
     pub fn new(kind_value: &str) -> Result<Kind, Error> {
         if kind_value.is_empty() {
             return Err(Error::for_user(
@@ -42,10 +48,11 @@ impl Kind {
 
 impl Display for Kind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Ok(for (kind_enum, kind_str) in KIND_STRINGS {
+        for (kind_enum, kind_str) in KIND_STRINGS {
             if self == kind_enum {
                 return write!(f, "{}", kind_str);
             }
-        })
+        }
+        Ok(())
     }
 }

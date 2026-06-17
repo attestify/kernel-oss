@@ -1,5 +1,5 @@
 use crate::error::{Audience, Kind};
-use crate::values::nrn::nrn::{NID, NRN, NSS, NapeNID};
+use crate::values::nrn::{NID, NRN, NSS, NapeNID};
 
 /*** NRN Tests ***/
 
@@ -109,7 +109,6 @@ fn verify_nid_exists() {
 
     assert!(sourcecode_nid.is_ok());
     assert_eq!(sourcecode_nid.unwrap(), NapeNID::SourceCode);
-    ("procedure");
 
     assert!(procedure_nid.is_ok());
     assert_eq!(procedure_nid.unwrap(), NapeNID::Procedure);

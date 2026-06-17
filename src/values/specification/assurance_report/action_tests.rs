@@ -1,7 +1,7 @@
 use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;
 use crate::error::{Audience, Kind};
-use crate::values::specification::assurance_report::action::Action;
+use crate::values::specification::assurance_report::action::{Action, ActionBuilder};
 use crate::values::specification::assurance_report::signed_file::SignedFile;
 use crate::values::specification::description::Description;
 use crate::values::specification::name::Name;
@@ -21,6 +21,34 @@ fn builder_use_only_success() {
         .use_reason(&Description::try_from("action reason").unwrap())
         .use_test_file_signature(&test_file)
         .use_evidence_file_signature(&evidence_file)
+        .try_build()
+        .unwrap();
+
+    assert_eq!(action.name(), &Name::try_from("action-name").unwrap());
+    assert_eq!(action.outcome(), &Outcome::PASS);
+    assert_eq!(
+        action.reason(),
+        &Description::try_from("action reason").unwrap()
+    );
+    assert_eq!(action.test_file(), &test_file);
+    assert_eq!(action.evidence_file(), &evidence_file);
+}
+
+#[test]
+fn default_builder_success() {
+    let test_file_sig = Signature::try_new(SHA256, "testsignature").unwrap();
+    let test_file = SignedFile::new("./some-test/file.txt", &test_file_sig).unwrap();
+    let evidence_file_sig = Signature::try_new(SHA256, "evidencesignature").unwrap();
+    let evidence_file = SignedFile::new("./some-evidence/file.txt", &evidence_file_sig).unwrap();
+
+    let action = ActionBuilder::default()
+        .name("action-name")
+        .outcome("pass")
+        .reason("action reason")
+        .test_file_path("./some-test/file.txt")
+        .test_file_signature("SHA256[testsignature]")
+        .evidence_file_path("./some-evidence/file.txt")
+        .evidence_file_signature("SHA256[evidencesignature]")
         .try_build()
         .unwrap();
 

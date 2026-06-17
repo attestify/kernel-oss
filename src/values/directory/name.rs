@@ -1,8 +1,10 @@
 use crate::values::Value;
 use crate::values::specification::name::Name;
 
+/// A lowercase directory name derived from a canonical name.
 #[derive(Clone, Debug)]
 pub struct DirectoryName {
+    /// The lowercase directory name value.
     pub value: String,
 }
 

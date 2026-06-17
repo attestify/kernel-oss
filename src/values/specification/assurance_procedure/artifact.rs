@@ -4,10 +4,14 @@ use crate::values::specification::metadata::MetaData;
 use crate::values::specification::name::Name;
 
 /// The [`Artifact`] describes an expected artifact that is associated with a ['AssuranceProcessDefinition'].
+/// An expected artifact in an assurance procedure.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Artifact {
+    /// The artifact name.
     pub name: Name,
+    /// The artifact description.
     pub description: Description,
+    /// The metadata expected for the artifact.
     pub expected_metadata: MetaData,
 }
 
@@ -46,14 +50,15 @@ impl Artifact {
     /// * If the description is invalid per the ['Description'] constraints.
     /// * If the metadata is invalid per the ['MetaData'] constraints.
     ///
+    /// Creates a validated artifact from strings and metadata.
     pub fn new(
         name: &str,
         description: &str,
-        expected_metadata: &Vec<(String, String)>,
+        expected_metadata: &[(String, String)],
     ) -> Result<Artifact, Error> {
         let validated_name = validate_name(name)?;
         let validated_description = validate_description(description)?;
-        let validated_metadata = validate_metadata(&expected_metadata)?;
+        let validated_metadata = validate_metadata(expected_metadata)?;
 
         Ok(Artifact {
             name: validated_name,
@@ -87,7 +92,7 @@ fn validate_description(desc: &str) -> Result<Description, Error> {
     })
 }
 
-fn validate_metadata(metadata: &Vec<(String, String)>) -> Result<MetaData, Error> {
+fn validate_metadata(metadata: &[(String, String)]) -> Result<MetaData, Error> {
     let mut validated_metadata = MetaData::default();
     for (key, value) in metadata {
         validated_metadata

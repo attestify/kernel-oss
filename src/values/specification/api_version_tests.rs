@@ -12,7 +12,7 @@ fn new_api_version_success() {
 
 #[test]
 fn from_str_api_version_success() {
-    let api_version = APIVersion::from_str("1.2.3").unwrap();
+    let api_version = "1.2.3".parse::<APIVersion>().unwrap();
     assert_eq!(api_version.major, 1);
     assert_eq!(api_version.minor, 2);
     assert_eq!(api_version.patch, 3);
@@ -21,7 +21,7 @@ fn from_str_api_version_success() {
 
 #[test]
 fn new_api_version_error_empty_input() {
-    let error = APIVersion::from_str("  ").unwrap_err();
+    let error = "  ".parse::<APIVersion>().unwrap_err();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(
@@ -32,7 +32,7 @@ fn new_api_version_error_empty_input() {
 
 #[test]
 fn new_api_version_error_invalid_input() {
-    let error = APIVersion::from_str("soemthing-invalid").unwrap_err();
+    let error = "soemthing-invalid".parse::<APIVersion>().unwrap_err();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(
@@ -43,7 +43,7 @@ fn new_api_version_error_invalid_input() {
 
 #[test]
 fn new_api_version_error_invalid_major() {
-    let error = APIVersion::from_str("a.2.3").unwrap_err();
+    let error = "a.2.3".parse::<APIVersion>().unwrap_err();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(
@@ -54,7 +54,7 @@ fn new_api_version_error_invalid_major() {
 
 #[test]
 fn new_api_version_error_invalid_minor() {
-    let error = APIVersion::from_str("1.b.3").unwrap_err();
+    let error = "1.b.3".parse::<APIVersion>().unwrap_err();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(
@@ -65,7 +65,7 @@ fn new_api_version_error_invalid_minor() {
 
 #[test]
 fn new_api_version_error_invalid_patch() {
-    let error = APIVersion::from_str("1.2.c").unwrap_err();
+    let error = "1.2.c".parse::<APIVersion>().unwrap_err();
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(

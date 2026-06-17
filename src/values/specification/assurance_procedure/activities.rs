@@ -2,13 +2,15 @@ use crate::error::{Error, Kind};
 use crate::values::specification::assurance_procedure::action::Action;
 use crate::values::specification::assurance_procedure::activity::Activity;
 
-/// A collection of activities specific to the [`ProcedureDefinition`](crate::values::specification::assurance_procedure::procedure_definition::AssuranceProcedure).
+/// A collection of activities specific to an assurance procedure definition.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Activities {
+    /// The activity list.
     pub list: Vec<Activity>,
 }
 
 impl Activities {
+    /// Returns the activities in this collection.
     /// Returns the activities in this collection.
     pub fn list(&self) -> &[Activity] {
         &self.list
@@ -30,6 +32,7 @@ impl Activities {
     ///
     /// Returns an error if the activity could not be added.
     ///
+    /// Adds a new activity by name and description.
     pub fn add(
         &self,
         activity_name: &str,
@@ -69,6 +72,7 @@ impl Activities {
     ///  - Given the activity already exists in the [`Activities`], all activities from the `activity` argument are added to the existing activity if the activity does not already exist.
     ///  - Given the activity does not exist in the [`Activities`], the `activity` will be added to the list of activities.
     ///
+    /// Merges an existing activity into the collection.
     pub fn merge(&self, activity: &Activity) -> Activities {
         let mut new_activities = self.clone();
 
@@ -85,7 +89,7 @@ impl Activities {
                         .iter()
                         .any(|existing_activity| existing_activity.name == activity.name)
                     {
-                        existing_activity = existing_activity.add(activity.clone());
+                        existing_activity = existing_activity.append_action(activity.clone());
                     }
                 }
                 new_activities.list[index] = existing_activity;
@@ -108,8 +112,9 @@ impl Activities {
     ///
     /// # Errors
     ///
-    /// Returns and error for [`Audience::User`] of [`Kind::InvalidInput`] if the activity you are trying to add the activity to does not exist.
+    /// Returns and error for [`Audience::User`](crate::error::Audience::User) of [`Kind::InvalidInput`] if the activity you are trying to add the activity to does not exist.
     ///
+    /// Adds an action to an existing activity by name.
     pub fn add_activity(&self, activity_name: &str, action: &Action) -> Result<Activities, Error> {
         let new_activities = self.clone();
         let position = new_activities
@@ -120,7 +125,7 @@ impl Activities {
         match position {
             Some(index) => {
                 let mut existing_activity = new_activities.list[index].clone();
-                existing_activity = existing_activity.add(action.clone());
+                existing_activity = existing_activity.append_action(action.clone());
                 Ok(self.merge(&existing_activity))
             }
             None => Err(Error::for_user(
@@ -134,6 +139,7 @@ impl Activities {
     }
 
     /// A count of all [`Action`]s across all activities.
+    /// Returns the total number of actions across all activities.
     pub fn action_count(&self) -> usize {
         self.list
             .iter()
@@ -142,6 +148,7 @@ impl Activities {
     }
 
     /// A count of all activities.
+    /// Returns the total number of activities.
     pub fn count(&self) -> usize {
         self.list.len()
     }

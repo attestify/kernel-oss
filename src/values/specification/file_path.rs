@@ -1,8 +1,13 @@
+//! Specification file path value.
+
 use crate::error::{Error, Kind};
 use crate::values::Value;
+use std::fmt::{Display, Formatter};
 
+/// Bounded specification file path text.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct FilePath {
+    /// Canonical file path text.
     value: String,
 }
 
@@ -44,12 +49,15 @@ impl FilePath {
         })
     }
 
-    pub fn to_string(&self) -> String {
-        self.value.clone()
-    }
-
+    /// Returns the path as a string slice.
     pub fn as_str(&self) -> &str {
         &self.value
+    }
+}
+
+impl Display for FilePath {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.value)
     }
 }
 

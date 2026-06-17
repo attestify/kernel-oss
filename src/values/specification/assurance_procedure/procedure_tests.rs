@@ -1,5 +1,5 @@
 use crate::error;
-use crate::values::nrn::nrn::NRN;
+use crate::values::nrn::NRN;
 use crate::values::specification::assurance_procedure::procedure::Procedure;
 use crate::values::specification::description::Description;
 use crate::values::specification::short_description::ShortDescription;

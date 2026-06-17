@@ -21,8 +21,7 @@ use crate::gateway::new_identity::{AsyncNewIdentityGW, NewIdentityGW};
 use crate::gateway::{AsyncVoidGateway, VoidGateway};
 use crate::response::ResponseFuture;
 use crate::ulid::ULID;
-use std::sync::Arc;
-use std::task::{Context, Poll, Wake};
+use std::task::{Context, Poll};
 use test_framework_oss::is_ok;
 
 struct StaticNewIdentityGateway {
@@ -104,15 +103,8 @@ fn async_execute_returns_new_identity_success() {
     assert_eq!(expected, actual);
 }
 
-struct NoopWake;
-
-impl Wake for NoopWake {
-    fn wake(self: Arc<Self>) {}
-}
-
 fn try_run_ready<Response>(mut future: ResponseFuture<'_, Response>) -> Result<Response, Error> {
-    let waker = std::task::Waker::from(Arc::new(NoopWake));
-    let mut context = Context::from_waker(&waker);
+    let mut context = Context::from_waker(std::task::Waker::noop());
 
     match future.as_mut().poll(&mut context) {
         Poll::Ready(result) => result,

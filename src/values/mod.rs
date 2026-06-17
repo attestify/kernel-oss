@@ -1,9 +1,17 @@
+//! Reusable bounded value objects and value role traits.
+//!
+//! Use [`Value`] when a type exposes one canonical bounded value. The
+//! submodules contain reusable kernel values for time, text, file-system paths,
+//! namespace resource names, URLs, and Attestify specification data.
+
+/// Copy-on-demand value helpers.
 pub mod copy_value;
 pub mod datetime;
 pub mod directory;
 pub mod file_system;
 pub mod nrn;
 pub mod specification;
+/// String bounded values.
 pub mod strings;
 pub mod text;
 pub mod uri;

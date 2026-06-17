@@ -4,7 +4,9 @@ use crate::values::specification::api_version::APIVersion;
 use crate::values::specification::assurance_procedure::activity::Activity;
 use crate::values::specification::assurance_procedure::artifact::Artifact;
 use crate::values::specification::kind::Kind;
-use crate::values::specification::v1_0_0::assurance_procedure::AssuranceProcedure;
+use crate::values::specification::v1_0_0::assurance_procedure::{
+    AssuranceProcedure, AssuranceProcedureBuilder,
+};
 
 #[test]
 fn new_builder() {
@@ -28,7 +30,24 @@ fn new_builder() {
     );
 
     let result = result.unwrap();
-    assert_eq!(result.api_version, APIVersion::from_str("1.0.0").unwrap());
+    assert_eq!(result.api_version, "1.0.0".parse::<APIVersion>().unwrap());
+    assert_eq!(result.kind, Kind::AssuranceProcedure);
+}
+
+#[test]
+fn default_builder_success() {
+    let result = AssuranceProcedureBuilder::default()
+        .api_version("1.0.0")
+        .procedure_info(
+            "nrn:sourcecode::example",
+            "A Short Desc.",
+            "This is an example procedure",
+        )
+        .add_activity(&Activity::new("procedure-1", "Short Desc", "Long Desc").unwrap())
+        .try_build()
+        .unwrap();
+
+    assert_eq!(result.api_version, "1.0.0".parse::<APIVersion>().unwrap());
     assert_eq!(result.kind, Kind::AssuranceProcedure);
 }
 
@@ -203,7 +222,7 @@ fn builder_error_add_artifact_duplicate_artifact() {
             &Artifact::new(
                 "artifact-1",
                 "Short Desc",
-                &vec![("key".to_string(), "value".to_string())],
+                &[("key".to_string(), "value".to_string())],
             )
             .unwrap(),
         )
@@ -211,7 +230,7 @@ fn builder_error_add_artifact_duplicate_artifact() {
             &Artifact::new(
                 "artifact-1",
                 "Short Desc",
-                &vec![("key".to_string(), "value".to_string())],
+                &[("key".to_string(), "value".to_string())],
             )
             .unwrap(),
         )

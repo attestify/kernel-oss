@@ -1,3 +1,5 @@
+//! Specification short-description value.
+
 use crate::error::{Error, Kind};
 use crate::values::Value;
 use crate::values::specification::description::Description;
@@ -9,6 +11,7 @@ const MAX_LENGTH: usize = 255;
 /// The [`ShortDescription`] struct represents a short description of something.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct ShortDescription {
+    /// Canonical short description text.
     pub value: String,
 }
 
@@ -30,7 +33,7 @@ impl ShortDescription {
     ///
     /// ## Errors
     ///
-    /// An [`Error`] of [`Kind::InvalidInput`] for [`Audience::User`] will be returned if:
+    /// An [`Error`] of [`Kind::InvalidInput`] for [`Audience::User`](crate::error::Audience::User) will be returned if:
     /// * the value is empty, or
     /// * if the value exceeds the maximum length of 255 characters
     ///

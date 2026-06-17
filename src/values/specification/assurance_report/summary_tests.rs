@@ -58,10 +58,10 @@ fn summary_of_success_outcome_pass() {
 
     let activity = Activity::builder()
         .name("Test-Activity")
-        .add(&action1)
-        .add(&action2)
-        .add(&action3)
-        .add(&action4)
+        .append_action(&action1)
+        .append_action(&action2)
+        .append_action(&action3)
+        .append_action(&action4)
         .try_build()
         .unwrap();
 
@@ -120,10 +120,10 @@ fn summary_of_success_outcome_inconclusive_with_at_least_one_fail() {
 
     let activity = Activity::builder()
         .name("Test-Activity")
-        .add(&action1)
-        .add(&action2)
-        .add(&action3)
-        .add(&action4)
+        .append_action(&action1)
+        .append_action(&action2)
+        .append_action(&action3)
+        .append_action(&action4)
         .try_build()
         .unwrap();
 
@@ -182,10 +182,10 @@ fn summary_of_success_outcome_inconclusive_with_at_least_one_inconclusive() {
 
     let activity = Activity::builder()
         .name("Test-Activity")
-        .add(&action1)
-        .add(&action2)
-        .add(&action3)
-        .add(&action4)
+        .append_action(&action1)
+        .append_action(&action2)
+        .append_action(&action3)
+        .append_action(&action4)
         .try_build()
         .unwrap();
 
@@ -243,10 +243,10 @@ fn summary_of_success_outcome_inconclusive_with_at_least_one_error() {
 
     let activity = Activity::builder()
         .name("Test-Activity-1")
-        .add(&action1)
-        .add(&action2)
-        .add(&action3)
-        .add(&action4)
+        .append_action(&action1)
+        .append_action(&action2)
+        .append_action(&action3)
+        .append_action(&action4)
         .try_build()
         .unwrap();
 

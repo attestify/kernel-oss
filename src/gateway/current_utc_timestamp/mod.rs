@@ -1,3 +1,9 @@
+//! Standards-aligned current UTC timestamp gateway.
+//!
+//! This module provides the shared kernel seam for retrieving the current UTC
+//! timestamp, plus the sync and async marker traits that bind the shared
+//! gateway role to that capability.
+
 #[cfg(test)]
 mod tests;
 

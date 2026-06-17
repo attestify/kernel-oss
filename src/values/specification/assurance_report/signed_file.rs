@@ -3,6 +3,7 @@ use crate::error::Error;
 use crate::values::specification::file_path::FilePath;
 use std::hash::Hash;
 
+/// A file path paired with a cryptographic signature.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SignedFile {
     file: FilePath,
@@ -10,6 +11,7 @@ pub struct SignedFile {
 }
 
 impl SignedFile {
+    /// Creates a signed file from a path and signature.
     pub fn new(file_location: &str, signature: &Signature) -> Result<Self, Error> {
         let file_path = FilePath::try_from(file_location)?;
         Ok(Self {

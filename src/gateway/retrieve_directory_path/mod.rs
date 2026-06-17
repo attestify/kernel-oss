@@ -1,3 +1,9 @@
+//! Standards-aligned retrieve-directory-path gateway.
+//!
+//! This module provides the request-bearing gateway seam for resolving a
+//! directory path from a directory key, along with the compatibility adapter
+//! for the legacy function-type API.
+
 #[cfg(test)]
 mod tests;
 

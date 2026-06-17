@@ -15,7 +15,7 @@
 //! # Design Decision (Feb. 13, 2025)
 //!
 //! - The ULID has been chosen as the standard data format for all persistable identities because time order and time-sortability is key to answer the fundamental questions of, "What was my state or behavior on/between [some dates]."
-//!  - An abstraction for the [IdentitySource] has been provided.
+//!  - An abstraction for `IdentitySource` has been provided.
 //!     - This replaces the [rand](https://github.com/rust-random/rand) crate to ensure there is direct dependency coupling within the kernel.
 
 // TODO - LEFT OFF - Get all the code ported and the test working...look at their wasm test as well.
@@ -32,7 +32,7 @@ use crate::values::Value;
 use std::fmt;
 use std::str::FromStr;
 
-/// Create a right-aligned bitmask of $len bits
+/// Creates a right-aligned bitmask with the requested number of bits.
 #[macro_export]
 macro_rules! bitmask {
     ($len:expr) => {
@@ -49,7 +49,10 @@ macro_rules! bitmask {
 /// - The first 48 provide for lexicographic sorting and the remaining 80 ensure that the identifier is unique.
 ///
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone, Copy)]
-pub struct ULID(pub u128);
+pub struct ULID(
+    /// The raw 128-bit ULID value.
+    pub u128,
+);
 
 impl ULID {
     /// The number of bits in a [ULID]'s time portion

@@ -1,12 +1,16 @@
 use crate::error::{Error, Kind};
-use crate::values::nrn::nrn::NRN;
+use crate::values::nrn::NRN;
 use crate::values::specification::description::Description;
 use crate::values::specification::short_description::ShortDescription;
 
+/// An assurance procedure definition.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Procedure {
+    /// The procedure NRN.
     pub nrn: NRN,
+    /// The short summary for the procedure.
     pub short: ShortDescription,
+    /// The long-form description for the procedure.
     pub description: Description,
 }
 
@@ -26,6 +30,7 @@ impl Procedure {
         &self.description
     }
 
+    /// Creates a validated procedure from string inputs.
     pub fn new(nrn: &str, short_description: &str, long_description: &str) -> Result<Self, Error> {
         let clean_nrn = NRN::new(nrn).map_err(|e| customize_error(e.message.as_str()))?;
         let clean_short = ShortDescription::try_from(short_description).map_err(|e| {

@@ -2,7 +2,7 @@ use crate::error::{Error, Kind};
 use crate::values::specification::description::Description;
 use std::collections::HashSet;
 
-/// The [`AdditionalInformation`] allows you to provide additional information for the [`ProcedureAssuranceReport`] that is above and beyond the reports current data specification.  The [`AdditionalInformation`] struct can be used to represent and manage a list of additional information.
+/// The [`AdditionalInformation`] allows you to provide information above and beyond the current assurance report data specification. The [`AdditionalInformation`] struct can be used to represent and manage a list of additional information.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct AdditionalInformation {
     list: Vec<Description>,
@@ -19,7 +19,7 @@ impl AdditionalInformation {
     ///
     /// Get a reference to the list of additional information.
     ///
-    pub fn list(&self) -> &Vec<Description> {
+    pub fn list(&self) -> &[Description] {
         &self.list
     }
 
@@ -31,7 +31,7 @@ impl AdditionalInformation {
     }
 }
 
-/// The [`AdditionalInformationBuilder`] struct is used to create a list of [`AdditionalInformation`] for the [`ProcedureAssuranceReport`].  This builder applies all the validation logic to the list of additional information.
+/// The [`AdditionalInformationBuilder`] struct is used to create a list of [`AdditionalInformation`] for an assurance report. This builder applies all the validation logic to the list of additional information.
 ///
 #[derive(Clone, Debug)]
 pub struct AdditionalInformationBuilder {
@@ -46,7 +46,7 @@ impl AdditionalInformationBuilder {
 
     /// # Overview
     ///
-    /// Add a statement of information to the list of additional information.
+    /// Appends a statement of information to the list of additional information.
     ///
     /// # Arguments
     ///
@@ -56,16 +56,16 @@ impl AdditionalInformationBuilder {
     ///
     /// * A `Result<Self>` is returned with a mutable reference to the current instnace of the [`AdditionalInformationBuilder`] struct.
     ///
-    pub fn add(mut self, info: &str) -> Self {
+    pub fn append(mut self, info: &str) -> Self {
         self.list.push(info.to_string());
         self
     }
 
     /// # Overview
     ///
-    /// Add a list of information to the list of additional information.
-    pub fn from(mut self, info: &Vec<String>) -> Self {
-        self.list.extend(info.clone());
+    /// Appends a list of information to the list of additional information.
+    pub fn extend(mut self, info: &[String]) -> Self {
+        self.list.extend(info.iter().cloned());
         self
     }
 
@@ -79,7 +79,7 @@ impl AdditionalInformationBuilder {
     ///
     /// # Errors
     ///
-    /// * If the list of additional information contains invalid information, an [`Error`] is returned of kind [`Kind::InvalidInput`] for the audience [`Audience::User`].
+    /// * If the list of additional information contains invalid information, an [`Error`] is returned of kind [`Kind::InvalidInput`] for the audience [`Audience::User`](crate::error::Audience::User).
     ///
     pub fn try_build(self) -> Result<AdditionalInformation, Error> {
         let valid_descriptions = self.validate_information()?;
@@ -108,5 +108,11 @@ impl AdditionalInformationBuilder {
                 }
             })
             .collect()
+    }
+}
+
+impl Default for AdditionalInformationBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }

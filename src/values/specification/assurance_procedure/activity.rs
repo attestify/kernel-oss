@@ -5,12 +5,18 @@ use crate::values::specification::file_path::FilePath;
 use crate::values::specification::name::Name;
 use crate::values::specification::short_description::ShortDescription;
 
+/// An assurance procedure activity with expected evidence and actions.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Activity {
+    /// The activity name.
     pub name: Name,
+    /// The short summary for the activity.
     pub short: ShortDescription,
+    /// The long-form description for the activity.
     pub description: Description,
+    /// The evidence file paths expected for this activity.
     pub expected_evidence: Vec<FilePath>,
+    /// The actions that belong to this activity.
     pub actions: Vec<Action>,
 }
 
@@ -50,8 +56,9 @@ impl Activity {
     ///
     /// # Returns
     ///
-    /// A new instance of the activity or a [`Error`] for [`Audience::User`] of [`Kind::InvalidInput`] for any invalid arguments.
+    /// A new instance of the activity or a [`Error`] for [`Audience::User`](crate::error::Audience::User) of [`Kind::InvalidInput`] for any invalid arguments.
     ///
+    /// Creates a new activity from the provided strings.
     pub fn new(name: &str, short_desc: &str, long_desc: &str) -> Result<Activity, Error> {
         let valid_name = Name::try_from(name).map_err(|error| {
             custom_error(format!("The name has an issue: {}", error.message).as_str())
@@ -72,8 +79,8 @@ impl Activity {
         })
     }
 
-    /// Add an action to the activity, and returns a new instance of the activity
-    pub fn add(self, action: Action) -> Activity {
+    /// Appends an action to the activity and returns a new instance.
+    pub fn append_action(self, action: Action) -> Activity {
         let new_actions = self
             .actions
             .clone()
@@ -90,7 +97,7 @@ impl Activity {
         }
     }
 
-    /// Add an expected evidence to the activity, and returns a new instance of the activity
+    /// Appends an expected evidence path and returns a new instance.
     pub fn add_expected_evidence(self, file_path: &str) -> Result<Activity, Error> {
         let clean_file_path = FilePath::try_from(file_path).map_err(|error| {
             custom_error(
@@ -118,11 +125,13 @@ impl Activity {
     }
 
     /// Returns the number of actions in the activity
+    /// Returns the number of actions in the activity.
     pub fn action_count(&self) -> usize {
         self.actions.len()
     }
 }
 
+/// Creates a user-facing error for assurance procedure activity validation.
 pub fn custom_error(message: &str) -> Error {
     Error::for_user(
         Kind::InvalidInput,

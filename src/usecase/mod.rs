@@ -1,3 +1,10 @@
+//! Shared use case role traits.
+//!
+//! Use [`VoidUseCase`] / [`AsyncVoidUseCase`] for true no-input use cases. Use
+//! [`UseCase`] / [`AsyncUseCase`] when a finalized request crosses the use case
+//! boundary. Domain-specific `*UC` traits should stay as thin marker
+//! supertraits over these shared roles.
+
 #[cfg(test)]
 mod tests;
 

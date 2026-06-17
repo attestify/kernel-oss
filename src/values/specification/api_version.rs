@@ -1,10 +1,16 @@
+//! API version value for specification models.
+
 use crate::error::{Error, Kind};
+use std::str::FromStr;
 
 /// [`APIVersion`] represents the version of the NAPE API versioning primarily for the NAPE Specifications and follows the [Semantic Versioning 2.0.0 specification](https://github.com/semver/semver)
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct APIVersion {
+    /// Major version component.
     pub major: u8,
+    /// Minor version component.
     pub minor: u8,
+    /// Patch version component.
     pub patch: u8,
 }
 
@@ -44,24 +50,17 @@ impl APIVersion {
         }
     }
 
-    /// Create a new [`APIVersion`] instance from a string
-    ///
-    /// # Arguments
-    ///
-    /// * `version` - A string representing the version in the format 'major.minor.patch'
-    ///
-    /// # Returns
-    ///
-    /// A Result containing the [`APIVersion`] if the version string is valid, otherwise an ['Error']
-    ///
-    /// ## Errors
-    ///
-    ///  An ['Error'] of ['Kind::Audience'] for ['Audience::User'] will be returned if any of the following are true:
-    ///
-    /// * The version string is empty,
-    /// * The version string is not in the format 'major.minor.patch',
-    /// * The major, minor, or patch version is not a valid number between 0 and 255.
-    pub fn from_str(version: &str) -> Result<Self, Error> {
+    /// Get the [`APIVersion`] as a string.
+    pub fn as_string(&self) -> String {
+        format!("{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+impl FromStr for APIVersion {
+    type Err = Error;
+
+    /// Parses an [`APIVersion`] from a string in `major.minor.patch` form.
+    fn from_str(version: &str) -> Result<Self, Self::Err> {
         if version.trim().is_empty() {
             return Err(invalid_input_error("You provided an empty version. Please provide a version value which conforms to the Semver specification of 'major.minor.patch'.".to_string()));
         }
@@ -83,11 +82,6 @@ impl APIVersion {
             minor,
             patch,
         })
-    }
-
-    /// Get the [`APIVersion`] as a string
-    pub fn as_string(&self) -> String {
-        format!("{}.{}.{}", self.major, self.minor, self.patch)
     }
 }
 

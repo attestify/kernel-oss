@@ -65,6 +65,20 @@ cargo run --example async_gateway_usecase_composition
 cargo run --example unit_success_payload
 ```
 
+## Catalog
+
+Use [`docs/kernel-catalog.md`](docs/kernel-catalog.md) before creating new
+domain or application types. The catalog indexes reusable kernel value objects,
+entity/use-case/gateway role traits, request and response types, gateway seams,
+compatibility migrations, and planned moves so consumers can avoid duplicating
+kernel behavior.
+
+Use [`docs/documentation-audit.md`](docs/documentation-audit.md) to track the
+remaining rustdoc cleanup needed before strict documentation enforcement.
+
+Use [`docs/clippy-audit.md`](docs/clippy-audit.md) to review the current
+clippy backlog, grouped by category and file.
+
 ## Verification
 
 ```text

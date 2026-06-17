@@ -1,5 +1,5 @@
 use crate::error::{Audience, Kind};
-use crate::values::specification::assurance_procedure::action::Action;
+use crate::values::specification::assurance_procedure::action::{Action, ActionBuilder};
 use crate::values::specification::description::Description;
 use crate::values::specification::file_path::FilePath;
 use crate::values::specification::name::Name;
@@ -25,6 +25,20 @@ fn new_success() {
     assert_eq!(result.description, Description::try_from("long").unwrap());
     assert_eq!(result.test, FilePath::try_from("test").unwrap());
     assert_eq!(result.evidence, FilePath::try_from("evidence").unwrap());
+}
+
+#[test]
+fn default_builder_success() {
+    let result = ActionBuilder::default()
+        .name("name")
+        .short_description("short")
+        .long_description("long")
+        .test_file_path("test")
+        .evidence_file_path("evidence")
+        .try_build();
+
+    is_ok!(&result);
+    assert_eq!(result.unwrap().name, Name::try_from("name").unwrap());
 }
 
 #[test]

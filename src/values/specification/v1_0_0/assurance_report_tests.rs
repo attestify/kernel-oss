@@ -73,6 +73,25 @@ fn builder_success() {
 }
 
 #[test]
+fn default_builder_success() {
+    let result = Builder::default()
+        .add_metadata("key", "value")
+        .subject_nrn("nrn:procedure:example")
+        .subject_id("somesubjectid")
+        .procedure_repository("https://some-location.com")
+        .procedure_directory("some/location")
+        .add_activity(&Activity::builder().name("activity").try_build().unwrap())
+        .additional_information("additional information")
+        .try_build();
+
+    is_ok!(&result);
+
+    let report = result.unwrap();
+    assert_eq!(report.api_version().as_string(), "1.0.0".to_string());
+    assert_eq!(report.summary().outcome, Outcome::PASS);
+}
+
+#[test]
 fn builder_multiple_metadata_activities_actions_and_additional_information_success() {
     let test_file_sig = Signature::try_new(SHA256, "the-test-file-signature").unwrap();
     let test_file = SignedFile::new("./some-location/file.txt", &test_file_sig).unwrap();
@@ -244,15 +263,15 @@ fn use_functions_override_success() {
 
     let activity1 = Activity::builder()
         .name("activity")
-        .add(&action1)
-        .add(&action2)
+        .append_action(&action1)
+        .append_action(&action2)
         .try_build()
         .unwrap();
 
     let activity2 = Activity::builder()
         .name("activity-2")
-        .add(&action3)
-        .add(&action4)
+        .append_action(&action3)
+        .append_action(&action4)
         .try_build()
         .unwrap();
 
@@ -263,8 +282,8 @@ fn use_functions_override_success() {
         .unwrap();
 
     let overriding_additional_info = AdditionalInformation::builder()
-        .add("override-additional-info")
-        .add("override-additional-info-2")
+        .append("override-additional-info")
+        .append("override-additional-info-2")
         .try_build()
         .unwrap();
 
@@ -691,7 +710,6 @@ fn builder_additional_information_empty_string_error() {
 }
 
 /** Testing Helpers */
-
 fn testing_acttion() -> Action {
     let test_file_sig = Signature::try_new(SHA256, "the-test-file-signature").unwrap();
     let test_file = SignedFile::new("./some-location/file.txt", &test_file_sig).unwrap();

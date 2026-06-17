@@ -1,3 +1,8 @@
+//! Legacy retrieve-directory-path compatibility surface.
+//!
+//! Prefer [`crate::gateway::retrieve_directory_path::RetrieveDirectoryPathGW`] and
+//! [`crate::gateway::retrieve_directory_path::AsyncRetrieveDirectoryPathGW`] in new code.
+
 use crate::error::Error;
 
 /// Retrieve the directory path based on a given directory key.

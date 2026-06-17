@@ -6,7 +6,7 @@ fn new_artifact_success() {
     let artifact = Artifact::new(
         "artifact",
         "artifact description",
-        &vec![("artifact-md-1".to_string(), "some description".to_string())],
+        &[("artifact-md-1".to_string(), "some description".to_string())],
     );
     assert!(artifact.is_ok());
 }
@@ -16,7 +16,7 @@ fn new_artifact_error_invalid_name() {
     let artifact = Artifact::new(
         "bad artifact name",
         "artifact description",
-        &vec![("artifact-md-1".to_string(), "some description".to_string())],
+        &[("artifact-md-1".to_string(), "some description".to_string())],
     );
 
     assert!(artifact.is_err());
@@ -36,7 +36,7 @@ fn test_new_artifact_error_invalid_description() {
     let artifact = Artifact::new(
         "artifact-1",
         "",
-        &vec![("artifact-md-1".to_string(), "some description".to_string())],
+        &[("artifact-md-1".to_string(), "some description".to_string())],
     );
     assert!(artifact.is_err());
     let error = artifact.unwrap_err();
@@ -54,7 +54,7 @@ fn test_new_artifact_error_invalid_metadata() {
     let artifact = Artifact::new(
         "artifact-1",
         "This is an artifact",
-        &vec![("bad key name".to_string(), "some description".to_string())],
+        &[("bad key name".to_string(), "some description".to_string())],
     );
     assert!(artifact.is_err());
     let error = artifact.unwrap_err();

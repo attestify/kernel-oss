@@ -1,7 +1,11 @@
+//! Multi-line bounded text value.
+
 use crate::values::Value;
 
+/// Multi-line bounded text.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Block {
+    /// Canonical block text.
     value: String,
 }
 
@@ -55,10 +59,17 @@ impl Block {
         Block { value: s.into() }.sanitize()
     }
 
+    /// Returns the length in bytes.
     pub fn len(&self) -> usize {
         self.value.len()
     }
 
+    /// Returns `true` when the block is empty.
+    pub fn is_empty(&self) -> bool {
+        self.value.is_empty()
+    }
+
+    /// Returns the owned block text.
     pub fn value(&self) -> String {
         self.value.clone()
     }

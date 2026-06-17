@@ -96,13 +96,13 @@ fn merge_duplicate_activities_without_duplication_success() {
 
     let activity_one = Activity::new("action-1", "Short Desc", "Long Desc")
         .unwrap()
-        .add(action_1)
-        .add(action_2);
+        .append_action(action_1)
+        .append_action(action_2);
 
     let activity_one_copy = Activity::new("action-1", "Short Desc", "Long Desc")
         .unwrap()
-        .add(copy_action_1)
-        .add(copy_action_2);
+        .append_action(copy_action_1)
+        .append_action(copy_action_2);
 
     let activities = activities.merge(&activity_one).merge(&activity_one_copy);
 

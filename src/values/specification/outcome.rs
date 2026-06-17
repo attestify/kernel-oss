@@ -1,24 +1,33 @@
+//! Specification outcome values.
+
 use crate::error;
 use crate::error::Error;
 use std::fmt::Display;
 
 /// The [`OUTCOME_STRINGS`] contains the list of [`Outcome`]s and their string representations.  This is used for validation of inputs when converting from string to [`Outcome`] enum, and when converting from [`Outcome`] enum to string.
-const OUTCOME_STRINGS: &'static [(Outcome, &'static str)] = &[
+const OUTCOME_STRINGS: &[(Outcome, &str)] = &[
     (Outcome::FAIL, "fail"),
     (Outcome::INCONCLUSIVE, "inconclusive"),
     (Outcome::PASS, "pass"),
     (Outcome::ERROR, "error"),
 ];
 
-#[derive(Debug, Clone, Eq, Hash, PartialEq)]
+/// Specification outcomes used by assurance reports and procedures.
+#[derive(Debug, Clone, Default, Eq, Hash, PartialEq)]
 pub enum Outcome {
+    /// The check failed.
     FAIL,
+    /// The check passed.
     PASS,
+    /// The check was inconclusive.
+    #[default]
     INCONCLUSIVE,
+    /// The check encountered an error.
     ERROR,
 }
 
 impl Outcome {
+    /// Parses a specification outcome from text.
     pub fn try_from(outcome_value: &str) -> Result<Outcome, Error> {
         if outcome_value.is_empty() {
             return Err(Error::for_user(
@@ -49,16 +58,11 @@ impl Outcome {
 
 impl Display for Outcome {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Ok(for (outcome_enum, outcome_str) in OUTCOME_STRINGS {
+        for (outcome_enum, outcome_str) in OUTCOME_STRINGS {
             if self == outcome_enum {
                 return write!(f, "{}", outcome_str);
             }
-        })
-    }
-}
-
-impl Default for Outcome {
-    fn default() -> Self {
-        Outcome::INCONCLUSIVE
+        }
+        Ok(())
     }
 }

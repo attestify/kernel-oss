@@ -1,14 +1,22 @@
 use crate::values::specification::assurance_report::activities::Activities;
 use crate::values::specification::outcome::Outcome;
 
+/// A derived summary of assurance report activity outcomes.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Summary {
+    /// The number of activities in the report.
     pub activity_count: u32,
+    /// The total number of actions in the report.
     pub action_count: u32,
+    /// The number of actions that ran.
     pub actions_run: u32,
+    /// The number of passing actions.
     pub pass: u32,
+    /// The number of failing actions.
     pub fail: u32,
+    /// The number of inconclusive actions.
     pub inconclusive: u32,
+    /// The overall outcome.
     pub outcome: Outcome,
 }
 
@@ -58,6 +66,7 @@ impl Summary {
     ///
     /// * A new [`Summary`] struct.
     ///
+    /// Derives a summary from the supplied activities.
     pub fn of(activities: &Activities) -> Summary {
         let (pass, fail, inconclusive, errors) = activities
             .list()

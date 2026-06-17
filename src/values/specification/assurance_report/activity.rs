@@ -3,21 +3,27 @@ use crate::values::specification::assurance_report::action::Action;
 use crate::values::specification::name::Name;
 use std::collections::HashSet;
 
+/// An assurance report activity and its actions.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Activity {
+    /// The activity name.
     pub name: Name,
+    /// The actions attached to the activity.
     pub actions: Vec<Action>,
 }
 
 impl Activity {
+    /// Returns the activity name.
     pub fn name(&self) -> &Name {
         &self.name
     }
 
+    /// Returns the activity actions.
     pub fn actions(&self) -> &Vec<Action> {
         &self.actions
     }
 
+    /// Creates a new builder for an assurance report activity.
     pub fn builder() -> Builder {
         Builder::new()
     }
@@ -28,6 +34,7 @@ impl Activity {
     }
 }
 
+/// Builder for [`Activity`].
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Builder {
     name: Option<Name>,
@@ -36,6 +43,7 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Creates a new empty builder.
     pub fn new() -> Self {
         Self {
             name: None,
@@ -44,21 +52,25 @@ impl Builder {
         }
     }
 
+    /// Sets the activity name from an existing value object.
     pub fn use_name(&mut self, name: &Name) -> &mut Self {
         self.name = Some(name.clone());
         self
     }
 
+    /// Sets the activity name from a string.
     pub fn name(&mut self, name: &str) -> &mut Self {
         self.name_str = Some(name.to_string());
         self
     }
 
-    pub fn add(&mut self, action: &Action) -> &mut Self {
+    /// Appends an action to the builder.
+    pub fn append_action(&mut self, action: &Action) -> &mut Self {
         self.actions.push(action.clone());
         self
     }
 
+    /// Validates the builder and creates an [`Activity`].
     pub fn try_build(&self) -> Result<Activity, Error> {
         let valid_name = self.validate_name()?;
         self.validate_actions(&valid_name)?;
@@ -109,5 +121,11 @@ impl Builder {
             }
         }
         Ok(())
+    }
+}
+
+impl Default for Builder {
+    fn default() -> Self {
+        Self::new()
     }
 }

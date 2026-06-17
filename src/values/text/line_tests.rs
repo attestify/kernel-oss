@@ -43,6 +43,12 @@ fn check_length_of_line() {
 }
 
 #[test]
+fn check_line_is_empty() {
+    assert!(Line::default().is_empty());
+    assert!(!Line::new("hello").is_empty());
+}
+
+#[test]
 fn check_line_value() {
     assert_eq!(Line::new("hello line").value(), "hello line")
 }

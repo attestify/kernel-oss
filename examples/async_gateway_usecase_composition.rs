@@ -482,15 +482,7 @@ mod example_runtime {
     //! would normally wait inside runtime-managed tasks.
 
     use super::{Error, Kind, ResponseFuture};
-    use std::sync::Arc;
-    use std::task::{Context, Poll, Wake, Waker};
-
-    /// Provides a no-op wake implementation for polling ready example futures.
-    struct NoopWake;
-
-    impl Wake for NoopWake {
-        fn wake(self: Arc<Self>) {}
-    }
+    use std::task::{Context, Poll, Waker};
 
     /// Polls a future that is expected to be ready immediately in this example.
     ///
@@ -510,8 +502,7 @@ mod example_runtime {
     pub(super) fn run_ready<Response>(
         mut future: ResponseFuture<'_, Response>,
     ) -> Result<Response, Error> {
-        let waker = Waker::from(Arc::new(NoopWake));
-        let mut context = Context::from_waker(&waker);
+        let mut context = Context::from_waker(Waker::noop());
 
         match future.as_mut().poll(&mut context) {
             Poll::Ready(result) => result,

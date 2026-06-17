@@ -1,3 +1,8 @@
+//! Shared response helpers for async kernel seams.
+//!
+//! Async use case and gateway traits return [`ResponseFuture`] from normal
+//! trait methods instead of exposing public `async fn` trait methods.
+
 use crate::error::Error;
 use std::future::Future;
 use std::pin::Pin;

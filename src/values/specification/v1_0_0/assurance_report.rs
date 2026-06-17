@@ -16,6 +16,7 @@ use std::any::Any;
 ///
 /// The [`AssuranceReportV1`] is a data structure that represents the NAPE Assurance Report specification v1.0.0.
 ///
+/// Version 1.0.0 assurance report value object.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct AssuranceReportV1 {
     metadata: MetaData,
@@ -37,42 +38,43 @@ impl AssuranceReport for AssuranceReportV1 {
 }
 
 impl AssuranceReportV1 {
+    /// Creates a new builder for an assurance report.
     pub fn builder() -> Builder {
         Builder::new()
     }
 
+    /// Returns the report metadata.
     pub fn metadata(&self) -> &MetaData {
         &self.metadata
     }
 
+    /// Returns the report subject.
     pub fn subject(&self) -> &Subject {
         &self.subject
     }
 
+    /// Returns the report procedure.
     pub fn procedure(&self) -> &Procedure {
         &self.procedure
     }
 
+    /// Returns the report summary.
     pub fn summary(&self) -> &Summary {
         &self.summary
     }
 
+    /// Returns the report activities.
     pub fn activities(&self) -> &Activities {
         &self.activities
     }
 
+    /// Returns the additional information collection.
     pub fn additional_info(&self) -> &AdditionalInformation {
         &self.additional_info
     }
 }
 
-/// # Overview
-/// A builder for the v1.0.0 specification of the [`AssuranceReportV1`]
-///
-///# Design Decision
-///
-/// Any method that stars with *use_* will take precedent over its counterpart because the *use_* methods accept valid instances of the data that is being used to build the [`AssuranceReportV1`] instance.
-///
+/// Builder for [`AssuranceReportV1`].
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Builder {
     metadata: Option<MetaData>,
@@ -92,6 +94,7 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Creates a new empty builder.
     pub fn new() -> Self {
         Self {
             metadata: None,
@@ -111,41 +114,49 @@ impl Builder {
         }
     }
 
+    /// Sets metadata from an existing value object.
     pub fn use_metadata(mut self, metadata: &MetaData) -> Self {
         self.metadata = Some(metadata.clone());
         self
     }
 
+    /// Sets the subject from an existing value object.
     pub fn use_subject(mut self, subject: &Subject) -> Self {
         self.subject = Some(subject.clone());
         self
     }
 
+    /// Sets the procedure from an existing value object.
     pub fn use_procedure(mut self, procedure: &Procedure) -> Self {
         self.procedure = Some(procedure.clone());
         self
     }
 
+    /// Sets the activities from an existing value object.
     pub fn use_activities(mut self, activities: &Activities) -> Self {
         self.activities = Some(activities.clone());
         self
     }
 
+    /// Sets the additional information from an existing value object.
     pub fn use_additional_information(mut self, additional_info: &AdditionalInformation) -> Self {
         self.additional_info = Some(additional_info.clone());
         self
     }
 
+    /// Adds one metadata pair.
     pub fn add_metadata(mut self, key: &str, value: &str) -> Self {
         self.metadata_vec.push((key.to_string(), value.to_string()));
         self
     }
 
-    pub fn merge_metadata(mut self, metadata: &Vec<(String, String)>) -> Self {
-        self.metadata_vec.extend(metadata.clone());
+    /// Adds many metadata pairs.
+    pub fn merge_metadata(mut self, metadata: &[(String, String)]) -> Self {
+        self.metadata_vec.extend(metadata.iter().cloned());
         self
     }
 
+    /// Inserts or updates a metadata pair by key.
     pub fn upsert_metadata(mut self, key: &str, value: &str) -> Self {
         for item in self.metadata_vec.iter_mut() {
             if item.0 == key {
@@ -158,42 +169,50 @@ impl Builder {
         self
     }
 
+    /// Sets the subject NRN from a string.
     pub fn subject_nrn(mut self, nrn: &str) -> Self {
         self.subject_nrn_str = Some(nrn.to_string());
         self
     }
 
+    /// Sets the subject ID from a string.
     pub fn subject_id(mut self, subject_id: &str) -> Self {
         self.subject_id_str = Some(subject_id.to_string());
         self
     }
 
+    /// Sets the procedure repository link from a string.
     pub fn procedure_repository(mut self, repo_link: &str) -> Self {
         self.procedure_repo_link_str = Some(repo_link.to_string());
         self
     }
 
+    /// Sets the procedure directory from a string.
     pub fn procedure_directory(mut self, directory_path: &str) -> Self {
         self.procedure_directory_str = Some(directory_path.to_string());
         self
     }
 
+    /// Adds an activity to the report.
     pub fn add_activity(mut self, activity: &Activity) -> Self {
         self.activities_vec.push(activity.clone());
         self
     }
 
+    /// Adds an action under an activity name.
     pub fn add_action(mut self, activity_name: &str, activity: &Action) -> Self {
         self.actions_vec
             .push((activity_name.to_string(), activity.clone()));
         self
     }
 
+    /// Adds one additional information statement.
     pub fn additional_information(mut self, info: &str) -> Self {
         self.additional_info_vec.push(info.to_string());
         self
     }
 
+    /// Validates the builder and creates an [`AssuranceReportV1`].
     pub fn try_build(self) -> Result<AssuranceReportV1, Error> {
         let metadata = self.build_metadata()?;
         let subject = self.build_subject()?;
@@ -214,7 +233,7 @@ impl Builder {
 
     fn build_metadata(&self) -> Result<MetaData, Error> {
         match &self.metadata {
-            Some(metadata) => return Ok(metadata.clone()),
+            Some(metadata) => Ok(metadata.clone()),
             None => {
                 let mut metadata = MetaData::default();
                 for (key, value) in self.metadata_vec.iter() {
@@ -231,7 +250,7 @@ impl Builder {
 
     fn build_subject(&self) -> Result<Subject, Error> {
         match &self.subject {
-            Some(subject) => return Ok(subject.clone()),
+            Some(subject) => Ok(subject.clone()),
             None => {
                 let nrn = self.subject_nrn_str.as_ref().ok_or(customer_error(
                     "The subject NRN is required, although it was not provided.",
@@ -254,7 +273,7 @@ impl Builder {
 
     fn build_procedure(&self) -> Result<Procedure, Error> {
         match &self.procedure {
-            Some(procedure) => return Ok(procedure.clone()),
+            Some(procedure) => Ok(procedure.clone()),
             None => {
                 let repo_link = self.procedure_repo_link_str.as_ref().ok_or(customer_error(
                     "The procedure repository link is required, but was not provided.",
@@ -277,7 +296,7 @@ impl Builder {
 
     fn build_activities(&self) -> Result<Activities, Error> {
         match &self.activities {
-            Some(activities) => return Ok(activities.clone()),
+            Some(activities) => Ok(activities.clone()),
             None => {
                 let mut builder = Activities::builder();
                 for activity in self.activities_vec.iter() {
@@ -302,15 +321,29 @@ impl Builder {
 
     fn build_additional_information(&self) -> Result<AdditionalInformation, Error> {
         match &self.additional_info {
-            Some(additional_info) => return Ok(additional_info.clone()),
+            Some(additional_info) => Ok(additional_info.clone()),
             None => {
                 let additional_info = AdditionalInformation::builder()
-                    .from(&self.additional_info_vec)
-                    .try_build().map_err(|e| customer_error(
-                        format!("There is an issue adding your Additional Information to the report. {}", e.message.as_str()).as_str()))?;
+                    .extend(&self.additional_info_vec)
+                    .try_build()
+                    .map_err(|e| {
+                        customer_error(
+                            format!(
+                                "There is an issue adding your Additional Information to the report. {}",
+                                e.message.as_str()
+                            )
+                            .as_str(),
+                        )
+                    })?;
                 Ok(additional_info)
             }
         }
+    }
+}
+
+impl Default for Builder {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

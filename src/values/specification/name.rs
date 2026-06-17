@@ -1,3 +1,5 @@
+//! Specification name value.
+
 use crate::error::{Error, Kind};
 use crate::values::Value;
 
@@ -6,6 +8,7 @@ use crate::values::Value;
 /// * `value` - The name value
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Name {
+    /// Canonical name text.
     pub value: String,
 }
 
@@ -27,7 +30,7 @@ impl Name {
     ///
     /// ## Errors
     ///
-    /// An [`Error`] of [`Kind::InvalidInput`] for [`Audience::User`] is returned if:
+    /// An [`Error`] of [`Kind::InvalidInput`] for [`Audience::User`](crate::error::Audience::User) is returned if:
     ///
     /// * the input is empty,
     /// * contains invalid characters (i.e., characters that are not alphanumeric or dashes), or

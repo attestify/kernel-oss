@@ -9,7 +9,7 @@ fn add_artifact_success() {
         .add(
             "artifact-1",
             "some artifact description",
-            &vec![("key-1".to_string(), "some value".to_string())],
+            &[("key-1".to_string(), "some value".to_string())],
         )
         .unwrap();
     assert_eq!(updated_artifacts.count(), 1);
@@ -21,7 +21,7 @@ fn test_merge_artifact() {
     let artifact = Artifact::new(
         "artifact-1",
         "some description",
-        &vec![("key-1".to_string(), "some value".to_string())],
+        &[("key-1".to_string(), "some value".to_string())],
     )
     .unwrap();
     let new_artifacts = artifacts.merge(&artifact).unwrap();
@@ -35,14 +35,14 @@ fn add_artifact_error_already_exists() {
         .add(
             "artifact-1",
             "some description",
-            &vec![("key-1".to_string(), "value-1".to_string())],
+            &[("key-1".to_string(), "value-1".to_string())],
         )
         .unwrap();
     let error = updated_artifacts
         .add(
             "artifact-1",
             "description",
-            &vec![("key".to_string(), "value".to_string())],
+            &[("key".to_string(), "value".to_string())],
         )
         .unwrap_err();
 
@@ -62,14 +62,14 @@ fn merge_artifact_error_already_exists() {
         .add(
             "artifact-1",
             "description",
-            &vec![("key".to_string(), "value".to_string())],
+            &[("key".to_string(), "value".to_string())],
         )
         .unwrap();
 
     let artifact_to_merge = Artifact::new(
         "artifact-1",
         "description",
-        &vec![("key".to_string(), "value".to_string())],
+        &[("key".to_string(), "value".to_string())],
     )
     .unwrap();
     let second_update_result = first_update.merge(&artifact_to_merge);
