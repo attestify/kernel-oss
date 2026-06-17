@@ -18,28 +18,3 @@ pub mod repository_link;
 pub mod short_description;
 pub mod subject;
 pub mod subject_id;
-
-#[cfg(test)]
-mod api_version_tests;
-#[cfg(test)]
-mod description_tests;
-#[cfg(test)]
-mod file_path_tests;
-#[cfg(test)]
-mod kind_tests;
-#[cfg(test)]
-mod metadata_tests;
-#[cfg(test)]
-mod name_tests;
-#[cfg(test)]
-mod outcome_tests;
-#[cfg(test)]
-mod procedure_tests;
-#[cfg(test)]
-mod repository_link_tests;
-#[cfg(test)]
-mod short_description_tests;
-#[cfg(test)]
-mod subject_id_tests;
-#[cfg(test)]
-mod subject_tests;

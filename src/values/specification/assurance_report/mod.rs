@@ -13,17 +13,3 @@ pub mod activity;
 pub mod signed_file;
 /// Assurance report summaries.
 pub mod summary;
-
-#[cfg(test)]
-mod action_tests;
-#[cfg(test)]
-mod additional_information_tests;
-
-#[cfg(test)]
-mod activities_tests;
-#[cfg(test)]
-mod activity_tests;
-#[cfg(test)]
-mod signed_file_tests;
-#[cfg(test)]
-mod summary_tests;

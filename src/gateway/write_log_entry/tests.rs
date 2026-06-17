@@ -167,11 +167,12 @@ fn async_execute_through_marker_seam_writes_log_entry_success() {
 }
 
 fn request_fixture(level: LogLevel) -> WriteLogEntryRequest {
-    WriteLogEntryRequest::builder()
-        .level(level)
-        .message("Application event.")
-        .try_build()
-        .expect("Expected write log entry request fixture to build.")
+    is_ok!(
+        WriteLogEntryRequest::builder()
+            .level(level)
+            .message("Application event.")
+            .try_build()
+    )
 }
 
 fn write_log_entry_fixture(request: WriteLogEntryRequest) -> Result<(), Error> {

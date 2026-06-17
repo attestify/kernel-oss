@@ -1,26 +1,36 @@
+//! Tests for NRN parsing and NID/NSS helpers.
+//!
+//! Bounded unit under test: the NRN, NID, NSS, and NapeNID value objects.
+//! Public interfaces verified: `NRN::new`, `NID::new`, `NSS::new`, `NapeNID::new`, and display
+//! formatting for NIDs.
+//! Logical paths covered: valid NRNs, scheme/NID/NSS validation failures, display conversion,
+//! and NID registry checks.
+//! Requirement validation points: standards-aligned parsing and validation behavior for the NRN
+//! domain helpers.
+
 use crate::error::{Audience, Kind};
 use crate::values::nrn::{NID, NRN, NSS, NapeNID};
+use test_framework_oss::{is_error, is_ok};
 
 /*** NRN Tests ***/
 
 #[test]
-fn nrn_from_str_success() {
+/// Requirement validation: verifies `NRN::new` parses a valid NRN value.
+fn from_str_success() {
     let result = NRN::new("nrn:sourcecode:nape:project/nape-cli");
 
-    assert!(result.is_ok());
-
-    let nrn = result.unwrap();
+    let nrn = is_ok!(result);
     assert_eq!(nrn.scheme, "nrn");
     assert_eq!(nrn.nid, NapeNID::SourceCode);
-    assert_eq!(nrn.nss[0], NSS::new("nape").unwrap());
-    assert_eq!(nrn.nss[1], NSS::new("project/nape-cli").unwrap());
+    assert_eq!(nrn.nss[0], is_ok!(NSS::new("nape")));
+    assert_eq!(nrn.nss[1], is_ok!(NSS::new("project/nape-cli")));
 }
 #[test]
-fn nrn_from_str_error_empty() {
+/// Requirement validation: verifies `NRN::new` rejects an empty NRN value.
+fn from_str_empty_error() {
     let result = NRN::new("");
 
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(
@@ -29,21 +39,22 @@ fn nrn_from_str_error_empty() {
     );
 }
 #[test]
-fn nrn_from_str_error_wrong_scheme() {
+/// Requirement validation: verifies `NRN::new` rejects an invalid scheme.
+fn from_str_wrong_scheme_error() {
     let result = NRN::new("urn:sourecode:nape::project/nape-cli");
 
-    assert!(result.is_err());
+    let error = is_error!(result);
     assert_eq!(
-        result.err().unwrap().message,
+        error.message,
         "You provided 'urn:sourecode:nape::project/nape-cli' as an NRN and the scheme 'urn'  is not valid. Must be 'nrn'"
     );
 }
 #[test]
-fn nrn_from_str_error_wrong_nid() {
+/// Requirement validation: verifies `NRN::new` rejects an unknown NID.
+fn from_str_wrong_nid_error() {
     let result = NRN::new("nrn:somewrongnid:nape::project/nape-cli");
 
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(
         error.message,
@@ -51,10 +62,10 @@ fn nrn_from_str_error_wrong_nid() {
     );
 }
 #[test]
-fn nrn_from_str_error_missing_nss() {
+/// Requirement validation: verifies `NRN::new` rejects NRNs missing NSS segments.
+fn from_str_missing_nss_error() {
     let result = NRN::new("nrn:sourcecode");
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(
         error.message,
@@ -62,10 +73,10 @@ fn nrn_from_str_error_missing_nss() {
     );
 }
 #[test]
-fn nrn_from_str_error_invalid_nss() {
+/// Requirement validation: verifies `NRN::new` rejects invalid NSS content.
+fn from_str_invalid_nss_error() {
     let result = NRN::new("nrn:sourcecode:nape:project/nape-cli:invalid nss");
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(
         error.message,
@@ -76,25 +87,27 @@ fn nrn_from_str_error_invalid_nss() {
 /** NAPE NID Tests ***/
 
 #[test]
-fn nid_display() {
+/// Requirement validation: verifies NID display formatting for the `SourceCode` variant.
+fn sourcecode_display_success() {
     let result = format!("{}", NapeNID::SourceCode);
     assert_eq!(result, "sourcecode");
     assert_eq!(result.to_string(), "sourcecode");
 }
 #[test]
-fn nid_sourcecode_display() {
+/// Requirement validation: verifies NID display formatting for the `Procedure` variant.
+fn procedure_display_success() {
     let result = format!("{}", NapeNID::Procedure);
     assert_eq!(result, "procedure");
     assert_eq!(result.to_string(), "procedure");
 }
 
 #[test]
-fn nid_does_not_exist() {
-    let nid = NID::new("does-not-exist").unwrap();
+/// Requirement validation: verifies `NapeNID::new` rejects an unknown NID.
+fn missing_nid_error() {
+    let nid = is_ok!(NID::new("does-not-exist"));
     let does_not_exist = NapeNID::new(nid);
 
-    assert!(does_not_exist.is_err());
-    let dne_error = does_not_exist.err().unwrap();
+    let dne_error = is_error!(does_not_exist);
     assert_eq!(dne_error.kind, Kind::InvalidInput);
     assert_eq!(dne_error.audience, Audience::User);
     assert_eq!(
@@ -103,38 +116,37 @@ fn nid_does_not_exist() {
     );
 }
 #[test]
-fn verify_nid_exists() {
-    let sourcecode_nid = NapeNID::new(NID::new("sourcecode").unwrap());
-    let procedure_nid = NapeNID::new(NID::new("procedure").unwrap());
+/// Requirement validation: verifies `NapeNID::new` accepts supported NIDs.
+fn supported_nid_success() {
+    let sourcecode_nid = NapeNID::new(is_ok!(NID::new("sourcecode")));
+    let procedure_nid = NapeNID::new(is_ok!(NID::new("procedure")));
 
-    assert!(sourcecode_nid.is_ok());
-    assert_eq!(sourcecode_nid.unwrap(), NapeNID::SourceCode);
-
-    assert!(procedure_nid.is_ok());
-    assert_eq!(procedure_nid.unwrap(), NapeNID::Procedure);
+    assert_eq!(is_ok!(sourcecode_nid), NapeNID::SourceCode);
+    assert_eq!(is_ok!(procedure_nid), NapeNID::Procedure);
 }
 
 /*** NID Tests ***/
 
 #[test]
+/// Requirement validation: verifies `NID::new` accepts a valid NID.
 fn new_nid_success() {
     let result = NID::new("sourcecode");
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap().value, "sourcecode");
+    let nid = is_ok!(result);
+    assert_eq!(nid.value, "sourcecode");
 }
 #[test]
-fn new_nid_error_empty() {
+/// Requirement validation: verifies `NID::new` rejects an empty string.
+fn new_nid_empty_error() {
     let result = NID::new("");
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(error.message, "The NID provided is blank.");
 }
 #[test]
-fn new_nid_error_first_char_not_alphabetical() {
+/// Requirement validation: verifies `NID::new` rejects a leading numeric character.
+fn new_nid_first_char_not_alphabetical_error() {
     let result = NID::new("1sourcecode");
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(
         error.message,
@@ -142,10 +154,10 @@ fn new_nid_error_first_char_not_alphabetical() {
     );
 }
 #[test]
-fn new_nid_error_invalid_character() {
+/// Requirement validation: verifies `NID::new` rejects invalid characters.
+fn new_nid_invalid_character_error() {
     let result = NID::new("source code");
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(
         error.message,
@@ -153,10 +165,10 @@ fn new_nid_error_invalid_character() {
     )
 }
 #[test]
-fn new_nid_greater_than_31_characters() {
+/// Requirement validation: verifies `NID::new` enforces the maximum length.
+fn new_nid_too_long_error() {
     let result = NID::new("sourcecode1234567890123456789012");
-    assert!(result.is_err());
-    let error = result.err().unwrap();
+    let error = is_error!(result);
     assert_eq!(error.kind, Kind::InvalidInput);
     assert_eq!(
         error.message,
@@ -167,25 +179,28 @@ fn new_nid_greater_than_31_characters() {
 /*** NSS Tests ***/
 
 #[test]
-fn test_nss_new() {
+/// Requirement validation: verifies `NSS::new` accepts a valid NSS value.
+fn new_nss_success() {
     let result = NSS::new("test");
-    assert!(result.is_ok());
+    is_ok!(result);
 }
 #[test]
-fn test_nss_new_with_whitespace() {
+/// Requirement validation: verifies `NSS::new` rejects whitespace.
+fn new_nss_whitespace_error() {
     let result = NSS::new("test test");
-    assert!(result.is_err());
+    let error = is_error!(result);
     assert_eq!(
-        result.err().unwrap().message,
+        error.message,
         "Input 'test test' contains whitespace character ' ' at position 4"
     );
 }
 #[test]
-fn test_nss_new_with_non_ascii() {
+/// Requirement validation: verifies `NSS::new` rejects non-ASCII input.
+fn new_nss_non_ascii_error() {
     let result = NSS::new("test😀");
-    assert!(result.is_err());
+    let error = is_error!(result);
     assert_eq!(
-        result.err().unwrap().message,
+        error.message,
         "Input 'test😀' contains non-ASCII character '😀' at position 4"
     );
 }

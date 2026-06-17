@@ -11,4 +11,6 @@ pub mod os_home_directory;
 pub mod signature_algorithm;
 
 #[cfg(test)]
+mod os_home_directory_tests;
+#[cfg(test)]
 mod signature_algorithm_tests;

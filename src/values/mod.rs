@@ -16,9 +16,6 @@ pub mod strings;
 pub mod text;
 pub mod uri;
 
-#[cfg(test)]
-mod strings_tests;
-
 /// Exposes the canonical bounded value held by a value object.
 ///
 /// Implement this trait when a value object has one primary value that defines

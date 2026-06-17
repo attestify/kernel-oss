@@ -3,6 +3,9 @@
 //! Prefer [`crate::gateway::current_utc_timestamp::CurrentUTCTimestampGW`] and
 //! [`crate::gateway::current_utc_timestamp::AsyncCurrentUTCTimestampGW`] in new code.
 
+#[cfg(test)]
+mod tests;
+
 use crate::error::Error;
 use crate::values::datetime::utc_timestamp::UTCTimestamp;
 

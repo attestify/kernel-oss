@@ -3,6 +3,9 @@
 //! Prefer [`crate::gateway::new_identity::NewIdentityGW`] and
 //! [`crate::gateway::new_identity::AsyncNewIdentityGW`] in new code.
 
+#[cfg(test)]
+mod tests;
+
 use crate::error::Error;
 use crate::ulid::ULID;
 

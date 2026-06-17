@@ -3,6 +3,9 @@
 //! Prefer [`crate::gateway::file_data::FileDataGW`] and
 //! [`crate::gateway::file_data::AsyncFileDataGW`] in new code.
 
+#[cfg(test)]
+mod tests;
+
 use crate::error::Error;
 
 /// # Overview

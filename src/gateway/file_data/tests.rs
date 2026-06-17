@@ -56,8 +56,7 @@ fn request_builder_rejects_whitespace_file_path_error() {
 /// Verifies that the request builder accepts an already validated file path.
 #[test]
 fn request_builder_accepts_valid_file_path_success() {
-    let file_path = FilePath::try_from("/tmp/evidence.txt")
-        .expect("Expected file path fixture to build for file data request verification.");
+    let file_path = is_ok!(FilePath::try_from("/tmp/evidence.txt"));
 
     let result = FileDataRequest::builder()
         .valid_file_path(file_path.clone())
@@ -101,10 +100,11 @@ fn async_execute_through_marker_seam_returns_file_data_success() {
 }
 
 fn request_fixture() -> FileDataRequest {
-    FileDataRequest::builder()
-        .file_path("/tmp/evidence.txt")
-        .try_build()
-        .expect("Expected file data request fixture to build.")
+    is_ok!(
+        FileDataRequest::builder()
+            .file_path("/tmp/evidence.txt")
+            .try_build()
+    )
 }
 
 fn file_data_fixture(file_path: &str) -> Result<Vec<u8>, Error> {

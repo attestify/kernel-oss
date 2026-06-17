@@ -85,9 +85,9 @@ The first documentation catalog pass is complete:
    - Replace recoverable paths with explicit bounded error handling.
 
 7. Test standard
-   - Tests pass, but broad test cleanup remains.
-   - Continue migrating names toward `_success`, `_error`, `_success_async`, and `_error_async`.
-   - Prefer explicit setup expectations over plain `.unwrap()` in tests.
+   - The helper-style conversion pass is complete.
+   - Next audit logical-path coverage object by object.
+   - Keep `docs/test-audit.md` focused on logical-path coverage.
 
 8. Documentation
    - `docs/kernel-catalog.md` exists and should be kept current as the human-readable reuse catalog.
@@ -96,9 +96,22 @@ The first documentation catalog pass is complete:
    - Broken intra-doc links were cleaned up in the first catalog pass.
    - Keep public API docs current when adding or changing exported items.
 
-9. Clippy
+9. Module organization
+   - `docs/module-audit.md` tracks the current module-layout deviations.
+   - The non-deferred module gaps from the initial audit pass are now addressed.
+   - `docs/module-audit.md` now tracks the remaining flat executable backlog across the kernel.
+   - `src/values/datetime/start_time/`, `src/values/datetime/utc_timestamp/`, `src/values/directory/name/`, `src/values/directory/directory_list/`, `src/values/file_system/file_name/`, `src/values/nrn/filepath_codec/`, `src/values/specification/name/`, `src/values/specification/procedure/`, `src/values/specification/assurance_procedure/action/`, `src/values/specification/assurance_procedure/activities/`, `src/values/specification/assurance_procedure/activity/`, `src/values/specification/assurance_procedure/artifact/`, `src/values/specification/assurance_procedure/artifacts/`, `src/values/specification/assurance_procedure/procedure/`, `src/values/specification/assurance_report/action/`, `src/values/specification/assurance_report/activities/`, `src/values/specification/assurance_report/activity/`, `src/values/specification/assurance_report/additional_information/`, `src/values/specification/assurance_report/signed_file/`, `src/values/specification/assurance_report/summary/`, `src/values/specification/v1_0_0/assurance_procedure/`, `src/values/specification/v1_0_0/assurance_report/`, `src/values/strings/`, `src/values/text/block/`, `src/values/text/line/`, and `src/values/uri/url/` now use the directory-module shape with colocated tests, alongside the earlier specification value conversions.
+   - `src/ulid/mod.rs` still carries roadmap commentary and should move to `src/values/ulid/` when that plan is executed.
+   - `src/algorithms/os_home_directory.rs` now has colocated tests and remains part of the flat-module backlog until it is converted into the standard directory shape.
+
+10. Clippy
    - `cargo clippy --all-targets -- -D warnings` now passes cleanly.
    - Keep it that way after future public API and module-layout changes.
+
+11. Test documentation
+   - The required test-module doc shape is complete across the current `src/**`
+     test tree.
+   - Preserve that module/test-doc standard when adding new tests.
 
 ## Recommended Active Order
 
@@ -107,9 +120,9 @@ The first documentation catalog pass is complete:
 3. Plan the algorithms/domain split without moving behavior until replacement crates are ready.
 4. Add `try_new` / `try_build` compatibility surfaces and migrate internal call sites.
 5. Remove recoverable production `.unwrap()` / `.expect(...)` usage.
-6. Continue test naming and setup cleanup.
+6. Audit test logical-path coverage and documentation.
 7. Decide public field privacy in a breaking-change plan.
-8. Keep rustdoc green and bring clippy to enforceable state.
+8. Keep rustdoc green and clippy enforceable.
 
 ## Verification Baseline
 
@@ -120,7 +133,7 @@ At the last full release check:
 - `cargo check --examples` passed.
 - `cargo rustdoc --lib` passed.
 - The release examples passed.
-- Test count was 324 unit tests plus 11 doctests.
+- Test count was 355 unit tests plus 11 doctests.
 
 Before publishing `0.2.6`, rerun:
 

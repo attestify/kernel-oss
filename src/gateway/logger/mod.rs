@@ -3,6 +3,9 @@
 //! Prefer [`crate::gateway::write_log_entry::WriteLogEntryGW`] and
 //! [`crate::gateway::write_log_entry::AsyncWriteLogEntryGW`] in new code.
 
+#[cfg(test)]
+mod tests;
+
 use crate::error::Error;
 
 #[deprecated(

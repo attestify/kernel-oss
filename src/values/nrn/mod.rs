@@ -9,8 +9,6 @@ use std::string::ToString;
 pub mod filepath_codec;
 
 #[cfg(test)]
-mod filepath_codec_tests;
-#[cfg(test)]
 mod tests;
 
 /// The NRN URI scheme.

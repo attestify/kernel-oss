@@ -76,6 +76,12 @@ kernel behavior.
 Use [`docs/documentation-audit.md`](docs/documentation-audit.md) to track the
 remaining rustdoc cleanup needed before strict documentation enforcement.
 
+Use [`docs/test-audit.md`](docs/test-audit.md) to track the current test
+surface, the logical-path audit, and documentation gaps for each object.
+
+Use [`docs/module-audit.md`](docs/module-audit.md) to track module-organization
+deviations against the Rust module standard.
+
 Use [`docs/clippy-audit.md`](docs/clippy-audit.md) to review the current
 clippy backlog, grouped by category and file.
 

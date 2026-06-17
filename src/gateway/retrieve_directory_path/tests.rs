@@ -89,10 +89,11 @@ fn async_execute_through_marker_seam_returns_directory_path_success() {
 }
 
 fn request_fixture() -> RetrieveDirectoryPathRequest {
-    RetrieveDirectoryPathRequest::builder()
-        .directory_key("evidence")
-        .try_build()
-        .expect("Expected retrieve directory path request fixture to build.")
+    is_ok!(
+        RetrieveDirectoryPathRequest::builder()
+            .directory_key("evidence")
+            .try_build()
+    )
 }
 
 fn retrieve_directory_path_fixture(directory_key: &str) -> Result<String, Error> {

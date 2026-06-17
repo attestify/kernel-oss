@@ -1,0 +1,40 @@
+use crate::algorithms::signature_algorithm::{Signature, SignatureType};
+use crate::error::Error;
+use crate::values::specification::file_path::FilePath;
+use std::hash::Hash;
+
+/// A file path paired with a cryptographic signature.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct SignedFile {
+    file: FilePath,
+    signature: Signature,
+}
+
+impl SignedFile {
+    /// Creates a signed file from a path and signature.
+    pub fn new(file_location: &str, signature: &Signature) -> Result<Self, Error> {
+        let file_path = FilePath::try_from(file_location)?;
+        Ok(Self {
+            file: file_path,
+            signature: signature.clone(),
+        })
+    }
+
+    /// Get a reference to the file path
+    pub fn file(&self) -> &FilePath {
+        &self.file
+    }
+
+    /// Get a reference to the signature
+    pub fn signature(&self) -> &Signature {
+        &self.signature
+    }
+
+    /// Get a reference to the signature type
+    pub fn signature_type(&self) -> &SignatureType {
+        self.signature.signature_type()
+    }
+}
+
+#[cfg(test)]
+mod tests;

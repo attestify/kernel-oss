@@ -92,10 +92,11 @@ fn async_execute_through_marker_seam_returns_current_utc_timestamp_success() {
 }
 
 fn current_utc_timestamp_fixture() -> UTCTimestamp {
-    UTCTimestamp::builder()
-        .use_ns(1_716_167_033_123_456_789u128)
-        .build()
-        .expect("Expected UTC timestamp fixture to build for gateway verification.")
+    is_ok!(
+        UTCTimestamp::builder()
+            .use_ns(1_716_167_033_123_456_789u128)
+            .build()
+    )
 }
 
 fn try_run_ready<Response>(mut future: ResponseFuture<'_, Response>) -> Result<Response, Error> {

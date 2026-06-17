@@ -1,12 +1,35 @@
+//! Verifies the bounded kernel error type.
+//!
+//! Bounded unit under test:
+//! - `Error`
+//!
+//! Public interfaces verified:
+//! - `Error::new`
+//! - `Error::for_user`
+//! - `Error::for_system`
+//! - `Display` and equality/hash behavior
+//!
+//! Logical paths covered:
+//! - error construction stores audience, kind, and message
+//! - convenience constructors set the expected audience
+//! - clone, equality, and hash remain consistent
+//! - hash-based lookup accepts equal errors
+//! - debug formatting remains available
+//! - empty error messages remain representable
+//!
+//! Requirement validation points:
+//! - No requirement validation points are currently supplied.
+
 use std::collections::HashSet;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use super::{Audience, Error, Kind};
 
-/// Test: new constructor, accessors and Display
-/// What: Construct an error with `Error::new` and verify fields, `is_user`/`is_system`, and `Display`.
-/// Why: Ensures basic construction and string display of the message works.
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that `Error::new` stores the supplied audience, kind, and message
+/// and keeps its display output aligned with the message.
 #[test]
 fn new_error_success() {
     let e = Error::new(Audience::User, Kind::InvalidInput, "bad input");
@@ -18,9 +41,10 @@ fn new_error_success() {
     assert_eq!(format!("{}", e), "bad input");
 }
 
-/// Test: for_user and for_system constructors
-/// What: Use the convenience constructors and validate audiences and booleans.
-/// Why: Verifies the convenience constructors set the correct audience.
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that the convenience constructors set the correct audience for
+/// user and system errors.
 #[test]
 fn convenience_constructors_set_audience_success() {
     let u = Error::for_user(Kind::NotFound, "not found");
@@ -31,9 +55,9 @@ fn convenience_constructors_set_audience_success() {
     assert_eq!(s.kind, Kind::Unexpected);
 }
 
-/// Test: Clone, Eq and Hash produce consistent results
-/// What: Clone an Error and compare equality, then hash both and compare hashes.
-/// Why: Ensures derived `Clone`, `PartialEq`/`Eq`, and `Hash` are consistent.
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that cloning an `Error` preserves equality and hash behavior.
 #[test]
 fn clone_eq_and_hash_consistency_success() {
     let a = Error::new(Audience::System, Kind::GatewayError, "gw fail");
@@ -51,9 +75,9 @@ fn clone_eq_and_hash_consistency_success() {
     assert_eq!(ha, hb);
 }
 
-/// Test: HashSet requires Hash and Eq
-/// What: Insert an Error into a HashSet and assert an equal Error is contained.
-/// Why: Enforces presence and correctness of `Hash` and `Eq`.
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that equal errors can be stored and found in a hash-based set.
 #[test]
 fn hashset_contains_equal_success() {
     let a = Error::for_user(Kind::PermissionDenied, "denied");
@@ -63,9 +87,9 @@ fn hashset_contains_equal_success() {
     assert!(set.contains(&b));
 }
 
-/// Test: Debug formatting present
-/// What: Format the Error with `{:?}` and assert the output is non-empty.
-/// Why: Guards against accidental removal of `Debug`.
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that the debug representation remains available and non-empty.
 #[test]
 fn debug_format_non_empty_success() {
     let e = Error::new(Audience::User, Kind::ProcessingFailure, "proc");
@@ -73,9 +97,10 @@ fn debug_format_non_empty_success() {
     assert!(!s.is_empty());
 }
 
-/// Test: empty message and extension of behavior
-/// What: Construct with an empty message and ensure Display yields empty string and other accessors still work.
-/// Why: Edge-case handling for empty messages should not break accessors or formatting.
+/// Requirement validation: No requirement validation point is currently supplied.
+///
+/// Verifies that empty messages remain representable without breaking accessors
+/// or display behavior.
 #[test]
 fn empty_message_is_allowed_success() {
     let e = Error::new(Audience::User, Kind::InvalidInput, "");

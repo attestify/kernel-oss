@@ -1,0 +1,130 @@
+//! Specification procedure location value.
+
+use crate::error::{Error, Kind};
+use crate::values::specification::repository_link::RepositoryLink;
+
+/// # Overview
+///
+/// A struct that represents a Procedure.
+///
+/// # Attributes
+///
+/// * `repository` - A string slice representing the repository link where the [`Procedure`] data is stored
+/// * `directory` - A string slice representing the directory path of the where the [`Procedure`] information is located within the repository.
+///
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct Procedure {
+    /// Repository location for the procedure.
+    pub repository: String,
+    /// Directory path within the repository.
+    pub directory: String,
+}
+
+impl Procedure {
+    /// Returns the repository location for this procedure.
+    pub fn repository(&self) -> &str {
+        &self.repository
+    }
+
+    /// Returns the directory path for this procedure.
+    pub fn directory(&self) -> &str {
+        &self.directory
+    }
+
+    /// # Overview
+    ///
+    /// Attempts to create a new Procedure instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `repository` - A string slice representing the repository link of the Procedure.
+    /// * `directory` - A string slice representing the directory path of the Procedure.
+    ///
+    /// # Returns
+    ///
+    /// - A [`Result`] containing either a [`Procedure`] instance or an [`Error`].
+    ///  - All returned errors are for the audience [`Audience::User`](crate::error::Audience::User), and of kind [`Kind::InvalidInput`].
+    ///
+    pub fn try_new(repository: &str, directory: &str) -> Result<Procedure, Error> {
+        let valid_repo = validate_repository_link(repository)?;
+        let valid_directory = validate_directory(directory)?;
+        Ok(Procedure {
+            repository: valid_repo.to_string(),
+            directory: valid_directory,
+        })
+    }
+}
+
+fn validate_repository_link(link: &str) -> Result<RepositoryLink, Error> {
+    // TODO - AFTER THE UPDATE to getting the File:// to work , come back here and real with the default secma & allowed schmea. right now, they are hard coded for the procedure
+    let allowed_schema = ["file".to_string(), "git".to_string(), "https".to_string()].to_vec();
+    let default_schema = "git";
+
+    RepositoryLink::builder()
+        .allowed_schema(allowed_schema)
+        .default_scheme(default_schema)
+        .repo_link(link)
+        .build()
+        .map_err(|e| {
+            Error::for_user(
+                Kind::InvalidInput,
+                format!(
+                    "'{}' is not a valid procedure location: {}",
+                    link, e.message
+                ),
+            )
+        })
+}
+
+fn validate_directory(directory: &str) -> Result<String, Error> {
+    let mut previous_char = None;
+
+    if directory.is_empty() || directory == "/" {
+        return Ok(String::from("/"));
+    }
+
+    for (i, c) in directory.chars().enumerate() {
+        match c {
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => (),
+            '/' => {
+                if let Some('/') = previous_char {
+                    return Err(Error::for_user(
+                        Kind::InvalidInput,
+                        format!(
+                            "The directory path cannot contain contiguous forward slashes at position {}. Please remove the extra forward slash.",
+                            i
+                        ),
+                    ));
+                }
+                if i == 0 || i == directory.len() - 1 {
+                    return Err(Error::for_user(
+                        Kind::InvalidInput,
+                        "The directory path cannot start or end with a forward slash at position."
+                            .to_string(),
+                    ));
+                }
+            }
+            _ => {
+                return Err(Error::for_user(
+                    Kind::InvalidInput,
+                    format!(
+                        "Invalid character at position {}: '{}'. The directory path can only contain alphanumeric characters, underscores, and non-contiguous forward slashes.",
+                        i, c
+                    ),
+                ));
+            }
+        }
+        if (i == 0 || i == directory.len() - 1) && c == '-' {
+            return Err(Error::for_user(
+                Kind::InvalidInput,
+                "The directory path cannot start or end with a dash.".to_string(),
+            ));
+        }
+        previous_char = Some(c);
+    }
+
+    Ok(String::from(directory))
+}
+
+#[cfg(test)]
+mod tests;
