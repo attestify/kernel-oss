@@ -4,85 +4,102 @@ Date: 2026-06-17
 
 Purpose:
 
-- Record the current stopping point inside `kernel-oss`
-- Identify the next recommended implementation step
-- Keep follow-up work scoped to files in this repository
+- Record the current release state inside `kernel-oss`.
+- Keep the next work focused on remaining release decisions.
+- Remove stale pickup notes that no longer guide current implementation.
 
-## Current State
+## Current Release State
 
-- Shared kernel seam traits now distinguish request-bearing and no-input execution:
-  - `src/usecase/mod.rs`
-    - `VoidUseCase`
-    - `UseCase`
-    - `AsyncVoidUseCase`
-    - `AsyncUseCase`
-  - `src/gateway/mod.rs`
-    - `VoidGateway`
-    - `Gateway`
-    - `AsyncVoidGateway`
-    - `AsyncGateway`
-- The no-input compatibility retrofits completed so far are:
-  - `src/gateway/new_identity/mod.rs`
-    - `NewIdentityGW`
-    - `AsyncNewIdentityGW`
-  - `src/gateway/current_utc_timestamp/mod.rs`
-    - `CurrentUTCTimestampGW`
-    - `AsyncCurrentUTCTimestampGW`
-- The request-bearing compatibility retrofits completed so far are:
-  - `src/gateway/retrieve_directory_path/mod.rs`
-    - `RetrieveDirectoryPathRequest`
-    - `RetrieveDirectoryPathGW`
-    - `AsyncRetrieveDirectoryPathGW`
-    - `RetrieveDirectoryPathFnGateway`
-  - `src/gateway/file_data/mod.rs`
-    - `FileDataRequest`
-    - `FileDataGW`
-    - `AsyncFileDataGW`
-    - `FileDataFnGateway`
-  - `src/gateway/write_log_entry/mod.rs`
-    - `LogLevel`
-    - `WriteLogEntryRequest`
-    - `WriteLogEntryGW`
-    - `AsyncWriteLogEntryGW`
-    - `WriteLogEntryFnGateway`
-- The corresponding touched tests are passing:
-  - `src/gateway/tests.rs`
-  - `src/usecase/tests.rs`
-  - `src/gateway/new_identity/tests.rs`
-  - `src/gateway/current_utc_timestamp/tests.rs`
-  - `src/gateway/retrieve_directory_path/tests.rs`
-  - `src/gateway/file_data/tests.rs`
-  - `src/gateway/write_log_entry/tests.rs`
-- `examples/gateway_usecase_composition.rs` has been updated to use the no-input seam direction.
-- `cargo fmt --all` and `cargo test` pass in this repository.
+The shared kernel role traits are in place:
 
-## Where Work Stopped
+- `src/values/mod.rs`
+  - `Value`
+- `src/entity/mod.rs`
+  - `Entity`
+- `src/response/mod.rs`
+  - `ResponseFuture`
+- `src/usecase/mod.rs`
+  - `VoidUseCase`
+  - `UseCase`
+  - `AsyncVoidUseCase`
+  - `AsyncUseCase`
+- `src/gateway/mod.rs`
+  - `VoidGateway`
+  - `Gateway`
+  - `AsyncVoidGateway`
+  - `AsyncGateway`
 
-Work stopped after:
+The current gateway compatibility retrofits are complete:
 
-1. Changing true no-input seams away from placeholder request objects and onto dedicated void shared traits.
-2. Adding paired async marker seams for the current foundational no-input gateway retrofits.
-3. Adding side-by-side request-bearing gateway retrofits for `RetrieveDirectoryPath` and `FileDataGateway`.
-4. Adding a side-by-side write-log-entry gateway retrofit for `Logger`.
-5. Deprecating the old gateway aliases and logger trait with migration notes pointing to the replacement modules.
-6. Updating release-facing package metadata and README guidance.
+- `IdentityGateway` is deprecated in favor of `gateway::new_identity::NewIdentityGW` and `AsyncNewIdentityGW`.
+- `UTCTimestampGateway` is deprecated in favor of `gateway::current_utc_timestamp::CurrentUTCTimestampGW` and `AsyncCurrentUTCTimestampGW`.
+- `RetrieveDirectoryPath` is deprecated in favor of `gateway::retrieve_directory_path::RetrieveDirectoryPathGW` and `AsyncRetrieveDirectoryPathGW`.
+- `FileDataGateway` is deprecated in favor of `gateway::file_data::FileDataGW` and `AsyncFileDataGW`.
+- `Logger` is deprecated in favor of `gateway::write_log_entry::WriteLogEntryGW` and `AsyncWriteLogEntryGW`.
 
-The `Logger` migration decision is now recorded in code and docs: logging is one command gateway, `WriteLogEntryGW`, with `LogLevel` as request data. `message` is the primary log event text, while `error` is optional structured failure context.
+The logger design decision is closed for this release:
 
-## Immediate Next Step
+- Logging is modeled as one command gateway: `WriteLogEntryGW`.
+- `WriteLogEntryRequest::message` is the primary log event text.
+- `WriteLogEntryRequest::error` is optional structured failure context.
+- `LogLevel` is request data, not a separate operation.
 
-Plan the `ULID` move from `src/ulid` into `src/values`.
+Compatibility rule:
 
-## Next Steps After That
-
-1. Plan the extraction of `src/algorithms`.
-2. Continue broader test cleanup, rustdoc fixes, and clippy cleanup.
+- Keep deprecated public APIs until a breaking-change plan explicitly schedules removal.
+- Add standards-aligned APIs side by side before removing any existing public surface.
 
 ## Verification Baseline
 
-At this stopping point:
+At the last full release check:
 
-- `cargo fmt --all` passes
-- `cargo test` passes
-- test count: 324 unit tests
-- doctest count: 11 doctests
+- `cargo fmt --all --check` passed.
+- `cargo test` passed.
+- `cargo check --examples` passed.
+- The release examples passed.
+- Test count was 324 unit tests plus 11 doctests.
+
+Before publishing `0.2.6`, rerun:
+
+```text
+cargo fmt --all --check
+cargo test
+cargo check --examples
+cargo publish --dry-run --allow-dirty
+```
+
+## Known Non-Blocking Release Gaps
+
+These are still real standards deltas, but they do not block the current seam/gateway compatibility release unless the team decides to raise the release bar:
+
+- `cargo clippy --all-targets -- -D warnings` still fails broadly.
+- `cargo rustdoc --lib -- -D missing_docs` still fails broadly.
+- Some bounded public types still expose public fields for compatibility.
+- Several fallible constructors and builders still need `try_new` / `try_build` migration work.
+- Some existing builders still borrow `self` during finalization.
+- Production `.unwrap()` / `.expect(...)` cleanup is not complete.
+- Test naming and test `.unwrap()` cleanup remain broad backlog work.
+
+## Immediate Next Recommended Task
+
+Plan and implement the `ULID` module move:
+
+- Move the implementation from `src/ulid` to `src/values/ulid`.
+- Keep `kernel_oss::ulid::ULID` available as a compatibility re-export.
+- Prefer `kernel_oss::values::ulid::ULID` in new docs and examples.
+- Decide whether the old top-level module should be deprecated immediately or kept without deprecation until the next breaking-change plan is drafted.
+
+## After That
+
+1. Plan the algorithms/domain split.
+   - Signature algorithms should move to a future cryptographic domain project.
+   - OS home-directory behavior should become a kernel driver trait/seam.
+   - The concrete OS implementation should be exported as a kernel driver implementation for that trait.
+   - Keep current `src/algorithms` APIs until replacements and compatibility guidance exist.
+2. Add `try_new` / `try_build` compatibility surfaces and migrate internal call sites.
+3. Remove recoverable production `.unwrap()` / `.expect(...)` usage.
+4. Continue test cleanup, rustdoc cleanup, and clippy cleanup.
+
+## Archived Completed Work
+
+The old dated pickup logs for the initial shared-trait work and gateway retrofit sequence have been collapsed into this file and `1-plans/rust-engineering-standards-delta.md`. They no longer need to be followed as active instructions.
