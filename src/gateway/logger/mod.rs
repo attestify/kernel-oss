@@ -1,5 +1,8 @@
 use crate::error::Error;
 
+#[deprecated(
+    note = "Use gateway::write_log_entry::WriteLogEntryGW, which implements the shared Gateway seam."
+)]
 pub trait Logger: Sync + Send {
     /// Logs an error message.
     ///

@@ -2,8 +2,20 @@
 
 [package]
 name = "kernel_oss"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2024"
+description = "Shared Attestify kernel traits, values, errors, and gateway/use case seams."
+license-file = "LICENSE"
+repository = "https://github.com/attestify/kernel-oss"
+readme = "README.md"
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/LICENSE",
+    "/README.md",
+    "/src/**",
+    "/examples/**",
+]
 
 [dependencies]
 url = "2.5.4"

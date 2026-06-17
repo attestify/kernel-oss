@@ -10,7 +10,7 @@
 //! cargo run --example value_object_and_entity
 //! ```
 
-use kernel_oss::core::traits::Entity;
+use kernel_oss::entity::Entity;
 use kernel_oss::error::{Error, Kind};
 use kernel_oss::ulid::ULID;
 use kernel_oss::values::Value;

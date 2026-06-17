@@ -22,9 +22,9 @@
 //! Requirement validation points:
 //! - No requirement validation points are currently supplied.
 
-use crate::core::traits::ResponseFuture;
 use crate::error::Error;
 use crate::gateway::{AsyncGateway, AsyncVoidGateway, Gateway, VoidGateway};
+use crate::response::ResponseFuture;
 use std::sync::Arc;
 use std::task::{Context, Poll, Wake};
 use test_framework_oss::is_ok;

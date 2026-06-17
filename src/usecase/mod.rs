@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests;
 
-use crate::core::traits::ResponseFuture;
 use crate::error::Error;
+use crate::response::ResponseFuture;
 
 /// Defines the shared synchronous execution role for a no-input use case seam.
 pub trait VoidUseCase: Send + Sync {

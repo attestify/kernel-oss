@@ -15,10 +15,10 @@
 //! Requirement validation points:
 //! - No requirement validation points are currently supplied.
 
-use crate::core::traits::ResponseFuture;
 use crate::error::Error;
 use crate::gateway::current_utc_timestamp::{AsyncCurrentUTCTimestampGW, CurrentUTCTimestampGW};
 use crate::gateway::{AsyncVoidGateway, VoidGateway};
+use crate::response::ResponseFuture;
 use crate::values::datetime::utc_timestamp::UTCTimestamp;
 use std::sync::Arc;
 use std::task::{Context, Poll, Wake};

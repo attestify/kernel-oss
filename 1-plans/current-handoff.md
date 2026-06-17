@@ -1,6 +1,6 @@
 # Current Handoff
 
-Date: 2026-06-04
+Date: 2026-06-17
 
 Purpose:
 
@@ -28,11 +28,31 @@ Purpose:
   - `src/gateway/current_utc_timestamp/mod.rs`
     - `CurrentUTCTimestampGW`
     - `AsyncCurrentUTCTimestampGW`
+- The request-bearing compatibility retrofits completed so far are:
+  - `src/gateway/retrieve_directory_path/mod.rs`
+    - `RetrieveDirectoryPathRequest`
+    - `RetrieveDirectoryPathGW`
+    - `AsyncRetrieveDirectoryPathGW`
+    - `RetrieveDirectoryPathFnGateway`
+  - `src/gateway/file_data/mod.rs`
+    - `FileDataRequest`
+    - `FileDataGW`
+    - `AsyncFileDataGW`
+    - `FileDataFnGateway`
+  - `src/gateway/write_log_entry/mod.rs`
+    - `LogLevel`
+    - `WriteLogEntryRequest`
+    - `WriteLogEntryGW`
+    - `AsyncWriteLogEntryGW`
+    - `WriteLogEntryFnGateway`
 - The corresponding touched tests are passing:
   - `src/gateway/tests.rs`
   - `src/usecase/tests.rs`
   - `src/gateway/new_identity/tests.rs`
   - `src/gateway/current_utc_timestamp/tests.rs`
+  - `src/gateway/retrieve_directory_path/tests.rs`
+  - `src/gateway/file_data/tests.rs`
+  - `src/gateway/write_log_entry/tests.rs`
 - `examples/gateway_usecase_composition.rs` has been updated to use the no-input seam direction.
 - `cargo fmt --all` and `cargo test` pass in this repository.
 
@@ -42,42 +62,21 @@ Work stopped after:
 
 1. Changing true no-input seams away from placeholder request objects and onto dedicated void shared traits.
 2. Adding paired async marker seams for the current foundational no-input gateway retrofits.
-3. Updating the local planning notes to reflect the new shared seam direction.
+3. Adding side-by-side request-bearing gateway retrofits for `RetrieveDirectoryPath` and `FileDataGateway`.
+4. Adding a side-by-side write-log-entry gateway retrofit for `Logger`.
+5. Deprecating the old gateway aliases and logger trait with migration notes pointing to the replacement modules.
+6. Updating release-facing package metadata and README guidance.
 
-No new side-by-side retrofit has started yet for the remaining legacy gateways.
+The `Logger` migration decision is now recorded in code and docs: logging is one command gateway, `WriteLogEntryGW`, with `LogLevel` as request data. `message` is the primary log event text, while `error` is optional structured failure context.
 
 ## Immediate Next Step
 
-Retrofit `RetrieveDirectoryPath` next.
-
-Current source:
-
-- `src/gateway/directory_list/mod.rs`
-
-Why this is next:
-
-- It is still a simple compatibility surface: `type RetrieveDirectoryPath = fn(directory_key: &str) -> Result<String, Error>;`
-- It is smaller and lower risk than `FileDataGateway`.
-- It should let the current compatibility pattern be repeated without introducing the design ambiguity of `Logger`.
-
-Recommended shape:
-
-1. Add a side-by-side replacement module, likely `src/gateway/retrieve_directory_path`.
-2. Introduce a bounded request object for the directory key.
-3. Add a sync marker seam over `Gateway`.
-4. Decide whether the foundational capability should also expose an async marker seam over `AsyncGateway`.
-   - The current standards direction says foundational kernel seams should normally provide both sync and async variants when both are reasonable.
-5. Keep the existing `RetrieveDirectoryPath` alias temporarily for compatibility.
-6. Add sync and async standards-aligned tests before adding deprecation guidance.
+Plan the `ULID` move from `src/ulid` into `src/values`.
 
 ## Next Steps After That
 
-1. Retrofit `FileDataGateway` in `src/gateway/file_data_gateway/mod.rs` using the same side-by-side compatibility pattern.
-2. Design the `Logger` migration separately before implementation because the current trait is multi-operation and does not fit the one-command seam model.
-3. After the remaining gateway retrofits:
-   - plan the `ULID` move from `src/ulid` into `src/values`
-   - plan the extraction of `src/algorithms`
-   - continue broader test cleanup, rustdoc fixes, and clippy cleanup
+1. Plan the extraction of `src/algorithms`.
+2. Continue broader test cleanup, rustdoc fixes, and clippy cleanup.
 
 ## Verification Baseline
 
@@ -85,5 +84,5 @@ At this stopping point:
 
 - `cargo fmt --all` passes
 - `cargo test` passes
-- test count: 307 unit tests
+- test count: 324 unit tests
 - doctest count: 11 doctests

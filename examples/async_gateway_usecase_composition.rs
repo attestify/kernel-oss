@@ -10,9 +10,10 @@
 //! cargo run --example async_gateway_usecase_composition
 //! ```
 
-use kernel_oss::core::traits::{Entity, ResponseFuture};
+use kernel_oss::entity::Entity;
 use kernel_oss::error::{Error, Kind};
 use kernel_oss::gateway::AsyncGateway;
+use kernel_oss::response::ResponseFuture;
 use kernel_oss::ulid::ULID;
 use kernel_oss::usecase::AsyncUseCase;
 use kernel_oss::values::Value;

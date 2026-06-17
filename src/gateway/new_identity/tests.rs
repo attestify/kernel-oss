@@ -16,10 +16,10 @@
 //! Requirement validation points:
 //! - No requirement validation points are currently supplied.
 
-use crate::core::traits::ResponseFuture;
 use crate::error::Error;
 use crate::gateway::new_identity::{AsyncNewIdentityGW, NewIdentityGW};
 use crate::gateway::{AsyncVoidGateway, VoidGateway};
+use crate::response::ResponseFuture;
 use crate::ulid::ULID;
 use std::sync::Arc;
 use std::task::{Context, Poll, Wake};

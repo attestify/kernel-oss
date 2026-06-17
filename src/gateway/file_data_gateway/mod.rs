@@ -12,4 +12,7 @@ use crate::error::Error;
 ///
 /// A `Result<Vec<u8>, Error>` containing the data from the file or an [`Error`] if the data could not be retrieved.
 ///
+#[deprecated(
+    note = "Use gateway::file_data::FileDataGW, which implements the shared Gateway seam."
+)]
 pub type FileDataGateway = fn(file_path: &str) -> Result<Vec<u8>, Error>;

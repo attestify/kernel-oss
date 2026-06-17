@@ -157,10 +157,10 @@ Engineering direction for the kernel:
    - Follow-up: move `ULID` from the top-level `src/ulid` module into the `values` module tree, while keeping a temporary compatibility export for existing callers.
 
 2. Add a shared `Entity` trait.
-   - Proposed location: `src/core/traits/mod.rs` or `src/core/traits/entity.rs`.
+   - Current location: `src/entity/mod.rs`.
    - Shape: associated `IdType` and `id(&self) -> &Self::IdType`.
    - First implementation candidates should wait until we identify which kernel types are truly entities rather than value objects.
-   - Status: shared trait added to `src/core/traits/mod.rs`; first usage is compiler-checked through the Rust examples.
+   - Status: shared trait added to `src/entity/mod.rs`; first usage is compiler-checked through the Rust examples.
 
 3. Add shared synchronous `UseCase` and `Gateway` traits.
    - Current use case location after file move: `src/usecase/mod.rs`.
@@ -168,7 +168,7 @@ Engineering direction for the kernel:
    - Shape: associated `Request` and `Response`, with `execute(request: Request)`.
    - Sync traits: `UseCase` and `Gateway`.
    - Async traits: `AsyncUseCase` and `AsyncGateway`.
-   - Async future alias: shared `ResponseFuture` in `src/core/traits/mod.rs`.
+   - Async future alias: shared `ResponseFuture` in `src/response/mod.rs`.
    - Status: shared trait layout compiles and formats. No-payload success responses are verified with `Response = ()`.
 
 4. Keep request builders as construction-only collaborators.
@@ -445,7 +445,7 @@ Decisions:
 1. Shared seam traits stay in their current module roots for now:
    - `VoidUseCase`, `UseCase`, `AsyncVoidUseCase`, and `AsyncUseCase` remain in `src/usecase/mod.rs`
    - `VoidGateway`, `Gateway`, `AsyncVoidGateway`, and `AsyncGateway` remain in `src/gateway/mod.rs`
-   - `ResponseFuture` remains shared from `src/core/traits/mod.rs`
+   - `ResponseFuture` remains shared from `src/response/mod.rs`
 2. Domain-specific `*UC` and `*GW` traits remain empty marker supertraits over the shared role traits.
 3. Concrete implementations put `execute` on the shared role impl:
    - sync use cases implement `UseCase`
@@ -637,7 +637,7 @@ Current shared seam baseline:
 
 - `UseCase` and `AsyncUseCase` remain in `src/usecase/mod.rs`.
 - `Gateway` and `AsyncGateway` remain in `src/gateway/mod.rs`.
-- `ResponseFuture` remains shared from `src/core/traits/mod.rs`.
+- `ResponseFuture` remains shared from `src/response/mod.rs`.
 - Existing compatibility seams now completed:
   - `IdentityGateway` -> `gateway::new_identity::NewIdentityGW`
   - `UTCTimestampGateway` -> `gateway::current_utc_timestamp::CurrentUTCTimestampGW`
@@ -744,7 +744,7 @@ Current shared seam baseline:
 
 - `VoidUseCase`, `UseCase`, `AsyncVoidUseCase`, and `AsyncUseCase` remain in `src/usecase/mod.rs`.
 - `VoidGateway`, `Gateway`, `AsyncVoidGateway`, and `AsyncGateway` remain in `src/gateway/mod.rs`.
-- `ResponseFuture` remains shared from `src/core/traits/mod.rs`.
+- `ResponseFuture` remains shared from `src/response/mod.rs`.
 - True no-input seams should use the dedicated void traits rather than placeholder request objects.
 
 Next recommended implementation order:
@@ -767,6 +767,40 @@ Recommended `RetrieveDirectoryPath` retrofit shape:
 3. Define marker seams over `Gateway` and `AsyncGateway` with the same request and response contract.
 4. Keep the old `RetrieveDirectoryPath` function alias temporarily for compatibility.
 5. Add standards-aligned sync and async seam tests before deprecating the old alias.
+
+### 2026-06-17, Request-Bearing Gateway Retrofits and Release Cleanup
+
+Status: complete.
+
+Decisions:
+
+1. `RetrieveDirectoryPath` now has a side-by-side replacement module at `src/gateway/retrieve_directory_path`.
+2. The replacement retrieve-directory-path seam uses a named `RetrieveDirectoryPathRequest` instead of a bare `&str` request.
+3. `FileDataGateway` now has a side-by-side replacement module at `src/gateway/file_data`.
+4. The replacement file-data seam uses a named `FileDataRequest` with `FilePath` as the bounded request value.
+5. Both replacement capabilities expose sync and async marker seams because these foundational gateways are reasonable for both execution models.
+6. The logger replacement is one command gateway, `WriteLogEntryGW`, with `LogLevel` carried as request data.
+7. `WriteLogEntryRequest::message` is required because it is the primary log event text; `WriteLogEntryRequest::error` is optional structured failure context for that event.
+8. The legacy `RetrieveDirectoryPath` and `FileDataGateway` aliases remain available temporarily and are deprecated with notes pointing to the replacement seams.
+9. The legacy `Logger` trait remains available temporarily and is deprecated with a note pointing to `WriteLogEntryGW`.
+10. Release-facing package metadata and README guidance were updated before publishing.
+
+Actions completed:
+
+1. Added `RetrieveDirectoryPathRequest`, `RetrieveDirectoryPathGW`, `AsyncRetrieveDirectoryPathGW`, and `RetrieveDirectoryPathFnGateway`.
+2. Added `FileDataRequest`, `FileDataGW`, `AsyncFileDataGW`, and `FileDataFnGateway`.
+3. Added `LogLevel`, `WriteLogEntryRequest`, `WriteLogEntryGW`, `AsyncWriteLogEntryGW`, and `WriteLogEntryFnGateway`.
+4. Added standards-aligned sync and async seam tests for the replacement gateways.
+5. Deprecated the old function aliases and logger trait with migration notes.
+6. Added Cargo package metadata and an explicit package include list.
+7. Updated `README.md` to document the shared seam surface, gateway migration map, and log-entry message/error design.
+8. Updated `1-plans/current-handoff.md` to make the next task the ULID module move plan.
+
+Next tasks:
+
+1. Plan the `ULID` module move into `src/values`.
+2. Keep the broader `src/algorithms` extraction as a separate follow-up plan.
+3. Continue broader test cleanup, rustdoc fixes, and clippy cleanup.
 
 ### 2026-05-31, Accessor Surface
 

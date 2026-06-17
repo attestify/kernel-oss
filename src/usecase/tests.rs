@@ -22,8 +22,8 @@
 //! Requirement validation points:
 //! - No requirement validation points are currently supplied.
 
-use crate::core::traits::ResponseFuture;
 use crate::error::Error;
+use crate::response::ResponseFuture;
 use crate::usecase::{AsyncUseCase, AsyncVoidUseCase, UseCase, VoidUseCase};
 use std::sync::Arc;
 use std::task::{Context, Poll, Wake};

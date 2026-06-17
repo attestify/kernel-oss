@@ -1,16 +1,19 @@
 pub mod current_utc_timestamp;
 pub mod directory_list;
+pub mod file_data;
 pub mod file_data_gateway;
 pub mod identity;
 pub mod logger;
 pub mod new_identity;
+pub mod retrieve_directory_path;
+pub mod write_log_entry;
 
 #[cfg(test)]
 mod tests;
 pub mod utc_timestamp;
 
-use crate::core::traits::ResponseFuture;
 use crate::error::Error;
+use crate::response::ResponseFuture;
 
 /// Defines the shared synchronous execution role for a no-input gateway seam.
 pub trait VoidGateway: Send + Sync {
