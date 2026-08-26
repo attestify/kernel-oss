@@ -16,6 +16,11 @@ include = [
     "/docs/**",
     "/src/**",
     "/examples/**",
+    "/THIRD_PARTY_NOTICES.md",
+    "/third-party/**",
+    "/tools/unicode-nfc/**",
+    "/test_data/nfc/**",
+    "/tests/nfc_text_unicode_17_conformance.rs",
 ]
 
 [dependencies]
