@@ -1,0 +1,7 @@
+docs/implementation-handoffs/aknl-nfc-oss-evidence/R1-CARGOTOML-DIFF-001.out:15: trailing whitespace.
++ 
+docs/implementation-handoffs/aknl-nfc-oss-evidence/R1-GIT-FSCK-001.out:2: trailing whitespace.
++error: refs/heads/._main: badRefContent: 
+docs/implementation-handoffs/aknl-nfc-oss-evidence/R1-TEST-ALL-001.out:447: new blank line at EOF.
+docs/implementation-handoffs/aknl-nfc-oss-evidence/TEST-ALL-TARGETS-003.out:445: new blank line at EOF.
+docs/implementation-handoffs/aknl-nfc-oss-evidence/TEST-ALL-TARGETS-004.out:448: new blank line at EOF.

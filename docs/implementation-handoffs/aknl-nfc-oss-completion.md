@@ -9,10 +9,12 @@ Outcome: **REVIEW_REQUIRED**
 - Engineering standards: `13b770f0347a96b06c58d061ed40608afbe8d31a`
 
 Kernel Proprietary remained clean and read-only. The original relocation
-candidate HEAD was `98cb0370e039ece840d5192124b4fa5b05f9fa04`; the exact
-review-round correction commit and resulting HEAD are recorded in the local
-commit history returned with this packet. This completion record is updated by
-that correction commit and does not claim an uncommitted worktree is clean.
+candidate HEAD was `98cb0370e039ece840d5192124b4fa5b05f9fa04`. The Round 1
+correction commit is `b104a25bc19aab7f07fa08052c2ae26378e61953`
+(`docs(kernel-oss): correct NFC relocation evidence`); it was the resulting
+committed candidate HEAD when the final range, custody, archive, and source
+reconciliation evidence was captured. This completion record does not claim
+that later evidence-capture files are part of that committed snapshot.
 
 The pre-correction local commit series was:
 
@@ -21,6 +23,7 @@ The pre-correction local commit series was:
 - `df28d0f` feat(kernel-oss): relocate NfcText and shared normalizer
 - `ba07734` test(kernel-oss): qualify NFC public boundary
 - `98cb037` docs(kernel-oss): record NFC relocation evidence
+- `b104a25` docs(kernel-oss): correct NFC relocation evidence
 
 ## Public ABI
 
@@ -85,13 +88,14 @@ row and recorded SHA-256 value.
 
 The required full-range command
 `git diff --check 27ebd5f638e7a654c81d58831adbeef006613cc1..HEAD` exits 2
-because preserved raw evidence files `TEST-ALL-TARGETS-003.out` and
-`TEST-ALL-TARGETS-004.out` each contain a trailing blank line. Raw evidence
-was deliberately not edited. The evidence-excluded command,
+because preserved raw evidence contains whitespace reported in
+`R1-CARGOTOML-DIFF-001.out`, `R1-GIT-FSCK-001.out`,
+`TEST-ALL-TARGETS-003.out`, and `TEST-ALL-TARGETS-004.out`. Raw evidence was
+deliberately not edited. The evidence-excluded command,
 `git diff --check 27ebd5f638e7a654c81d58831adbeef006613cc1..HEAD -- .
 ':(exclude)docs/implementation-handoffs/aknl-nfc-oss-evidence/*.out'`, passes.
 
-`git fsck --no-dangling` exits 8. Its raw output records 164 `.git/._*`
+`git fsck --no-dangling` exits 8. Its final raw output records 239 `.git/._*`
 AppleDouble files, including `.git/refs/heads/._main` and object sidecars.
 Git reports invalid ref/object storage metadata. No `.git` file was modified,
 and the provenance of these filesystem metadata files relative to the original
@@ -100,11 +104,11 @@ integrity is therefore **OPEN**, notwithstanding a clean tracked worktree.
 
 ## Package-archive hygiene
 
-The rebuilt archive inventory has 268 entries, including three `.DS_Store`
+The final rebuilt archive inventory has 323 entries, including three `.DS_Store`
 entries (`src/.DS_Store`, `src/gateway/.DS_Store`, and
-`src/values/.DS_Store`) and 14 AppleDouble `._*` entries. The separately
-captured `cargo package --list --allow-dirty` output has 281 entries, including
-the same three `.DS_Store` entries and 28 AppleDouble entries. The two listings
+`src/values/.DS_Store`) and 32 AppleDouble `._*` entries. The separately
+captured `cargo package --list --allow-dirty` output has 356 entries, including
+the same three `.DS_Store` entries and 66 AppleDouble entries. The two listings
 do not reconcile because AppleDouble metadata changed between the package-list
 and package-archive invocations. No package rule or filesystem metadata file
 was changed under this correction authorization.
@@ -126,7 +130,7 @@ Raw output, UTC completion times, exit codes, and SHA-256 values are in
    authorization and were not changed. Required NFC notices, licenses,
    generator, inputs, checksums, and conformance test are included.
 3. **HIGH — open repository-storage integrity.** `git fsck --no-dangling`
-   exits 8 because of 164 `.git/._*` AppleDouble files. Cleanup is outside this
+   exits 8 because of 239 `.git/._*` AppleDouble files. Cleanup is outside this
    authorization and requires separate sponsor direction.
 4. **HIGH — open package-archive hygiene.** The actual `.crate` archive
    contains AppleDouble entries as well as the three existing `.DS_Store`
