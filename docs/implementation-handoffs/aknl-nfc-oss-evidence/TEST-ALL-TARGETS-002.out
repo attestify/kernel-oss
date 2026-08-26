@@ -1,0 +1,29 @@
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/kernel_oss-2agm6xdxz3stu/s-hlpo8js8yx-0e8iarp-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/kernel_oss-2wh0g1fd9ntni/s-hlpo8js8yw-0jle6iq-working`
+
+warning: `kernel_oss` (lib) generated 1 warning
+warning: `kernel_oss` (lib test) generated 1 warning
+   Compiling kernel_oss v0.2.7 (/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss)
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/unit_success_payload-3sryvtzbx9ac4/s-hlpo8loj6z-1xdaepl-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/async_gateway_usecase_composition-2fdw2oi3aemy6/s-hlpo8loja1-1az1cs0-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/gateway_usecase_composition-3f4e3vw12zbdy/s-hlpo8lomkg-1gag8pd-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/value_object_and_entity-3djeh6vtji535/s-hlpo8loj3i-03x3tvd-working`
+
+warning: `kernel_oss` (example "unit_success_payload" test) generated 1 warning
+warning: `kernel_oss` (example "async_gateway_usecase_composition" test) generated 1 warning
+warning: `kernel_oss` (example "gateway_usecase_composition" test) generated 1 warning
+warning: `kernel_oss` (example "value_object_and_entity" test) generated 1 warning
+error[E0432]: unresolved import `kernel_oss::values::text::NfcText`
+  --> tests/nfc_text_unicode_17_conformance.rs:17:5
+   |
+17 | use kernel_oss::values::text::NfcText;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^-------
+   |                               |
+   |                               no `NfcText` in `values::text`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `kernel_oss` (test "nfc_text_unicode_17_conformance") due to 1 previous error

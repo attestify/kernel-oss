@@ -30,6 +30,13 @@ catalog. It is scoped to `kernel-oss`.
 
 ## Remaining Documentation Updates
 
+NFC relocation update: `NfcText` is documented as an OSS-owned Unicode 17.0
+value object with a private shared engine. Its source provenance, MIT
+attribution, and Unicode License v3 custody are in
+`docs/implementation-handoffs/aknl-nfc-oss-source-provenance.md` and
+`THIRD_PARTY_NOTICES.md`. URL integration and Proprietary migration remain
+separate future work.
+
 1. Catalog maintenance
    - Update `docs/kernel-catalog.md` whenever a public reusable value object, entity, request, response, use case seam, or gateway seam is added, deprecated, moved, or removed.
    - Keep deprecated APIs in the compatibility section, not the preferred-use tables.

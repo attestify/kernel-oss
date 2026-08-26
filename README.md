@@ -8,6 +8,8 @@ This crate provides:
 - shared entity, response future, use case, and gateway traits
 - sync and async execution seams
 - compatibility modules for older gateway APIs while consumers migrate
+- `NfcText`, an immutable Unicode 17.0 NFC value with a private shared
+  normalization engine
 
 ## Shared Seams
 
@@ -30,6 +32,15 @@ Supporting roles:
 - `entity::Entity`
 - `response::ResponseFuture`
 - `values::Value`
+
+## NFC text
+
+`kernel_oss::values::text::NfcText` owns one immutable Unicode 17.0 NFC value.
+Construction and `is_nfc` use the same private shared engine; normalization
+tables and engine APIs are not public. The capability was relocated into Kernel
+OSS with recorded MIT-derived influence and Unicode License v3 custody. Future
+URL/IDNA work may consume it internally, while URL integration and Proprietary
+migration remain separate tasks.
 
 ## Gateway Migrations
 

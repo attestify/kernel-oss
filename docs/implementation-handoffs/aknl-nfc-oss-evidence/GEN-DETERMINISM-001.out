@@ -1,0 +1,10 @@
+UTC_START=2026-08-26T20:00:19Z
+run1_equals_run2=yes
+run1_equals_committed=yes
+  109191 /private/tmp/aknl-nfc-generator.NtoOAU/tables-run-1.rs
+  109191 /private/tmp/aknl-nfc-generator.NtoOAU/tables-run-2.rs
+  109191 src/values/text/nfc_text/normalization/tables.rs
+  327573 total
+7189aab455a06fa193b001a6d72fd8cc4033f21f60f8b46f960a68346c4ac254  /private/tmp/aknl-nfc-generator.NtoOAU/tables-run-1.rs
+7189aab455a06fa193b001a6d72fd8cc4033f21f60f8b46f960a68346c4ac254  /private/tmp/aknl-nfc-generator.NtoOAU/tables-run-2.rs
+7189aab455a06fa193b001a6d72fd8cc4033f21f60f8b46f960a68346c4ac254  src/values/text/nfc_text/normalization/tables.rs

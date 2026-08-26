@@ -138,6 +138,11 @@ The only flat leaf that is already aligned with the passive-leaf exception is:
 
 ## Recommendation
 
+NFC relocation update: `src/values/text/nfc_text/` is a directory module with
+colocated public-value and private-normalizer tests. Its crate-private
+normalization operations support later internal consumers only; generated
+tables remain private and no public normalization module is exposed.
+
 Prioritize the following module work:
 
 1. keep `src/values/copy_value.rs` flat unless it later gains executable

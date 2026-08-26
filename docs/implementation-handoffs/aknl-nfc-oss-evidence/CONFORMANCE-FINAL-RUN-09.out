@@ -1,0 +1,24 @@
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/kernel_oss-2agm6xdxz3stu/s-hlpoci5mmp-1yropa9-working`
+
+warning: `kernel_oss` (lib) generated 1 warning
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/nfc_text_unicode_17_conformance-2h3xcfmbh7awt/s-hlpockrm29-0masapo-working`
+
+warning: `kernel_oss` (test "nfc_text_unicode_17_conformance") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/nfc_text_unicode_17_conformance.rs (target/debug/deps/nfc_text_unicode_17_conformance-b2dfc8caba3c0511)
+
+running 8 tests
+test malformed_fixture_structure_returns_contextual_errors_error ... ok
+test malformed_scalar_columns_return_contextual_errors_error ... ok
+test invalid_part_one_oracle_sources_return_contextual_errors_error ... ok
+test official_unicode_17_fixture_census_success ... ok
+test official_unicode_17_rows_construct_expected_public_values_success ... ok
+test official_unicode_17_rows_report_expected_public_nfc_state_success ... ok
+test every_valid_unicode_scalar_constructs_expected_public_value_success ... ok
+test every_valid_unicode_scalar_reports_expected_public_nfc_state_success ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.54s
+
+real 1.67
+user 3.35
+sys 0.05

@@ -47,6 +47,10 @@ style or missing test docs.
 
 ### Coverage Audit Targets
 
+- `src/values/text/nfc_text/tests.rs`
+- `src/values/text/nfc_text/normalization/tests.rs`
+- `tests/nfc_text_unicode_17_conformance.rs`
+
 - `src/gateway/tests.rs`
 - `src/gateway/new_identity/tests.rs`
 - `src/gateway/current_utc_timestamp/tests.rs`

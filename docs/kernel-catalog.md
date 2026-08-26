@@ -51,6 +51,7 @@ request objects before callers cross use case or gateway seams.
 | `StartTime` | `kernel_oss::values::datetime::start_time::StartTime` | `u128` milliseconds | `now`, `from`, `try_from` | Use for process or operation start times. |
 | `Line` | `kernel_oss::values::text::line::Line` | `str` | `try_from` | Use for bounded single-line text. |
 | `Block` | `kernel_oss::values::text::block::Block` | `str` | `try_from` | Use for bounded multi-line text blocks. |
+| `NfcText` | `kernel_oss::values::text::NfcText` | Unicode 17.0 NFC `str` | `new` | Use when a complete string must be held as canonical NFC text; the shared normalization engine remains private. |
 | `URL` | `kernel_oss::values::uri::url::URL` | parsed URL parts plus original line | `new` | Use when a URL must be parsed into scheme, host, path, query, and fragment. |
 
 ### File And Directory Values

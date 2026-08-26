@@ -1,0 +1,16 @@
+id	target_path	category	material_difference	behavioral_impact
+ADAPT-001	src/values/text/mod.rs	Visibility adaptation	Added crate-private nfc_text module and public NfcText re-export	Required public ABI is available; engine remains non-public
+ADAPT-002	src/values/text/nfc_text/mod.rs	Import-path adaptation	Changed Value import to the OSS in-crate path	No NFC algorithm or observable behavior change
+ADAPT-003	src/values/text/nfc_text/mod.rs	Visibility adaptation	Made nested module crate-private and added compile-fail privacy documentation	Enables future internal consumers without public engine exposure
+ADAPT-004	src/values/text/nfc_text/mod.rs	Documentation adaptation	Changed proprietary ownership and crate example paths to Kernel OSS	No runtime behavior change
+ADAPT-005	src/values/text/nfc_text/tests.rs	Documentation adaptation	Changed crate path in bounded-unit description	No test logic change
+ADAPT-006	src/values/text/nfc_text/normalization/mod.rs	Visibility adaptation	Changed normalization operations from parent-visible to crate-visible	No algorithm change; permits future internal reuse only
+ADAPT-007	src/values/text/nfc_text/normalization/mod.rs	License/provenance adaptation	Changed provenance record reference to the OSS-specific record	Retains Rust Project copyright, MIT reference, and Attestify modification notice
+ADAPT-008	src/values/text/nfc_text/normalization/tests.rs	Fixture-path adaptation	Changed compile-time fixture path to canonical OSS Unicode custody location	No test-data or algorithm change
+ADAPT-009	test_data/nfc/unicode/README.md	Documentation adaptation	Changed ownership and relocation wording	No fixture-content change
+ADAPT-010	tools/unicode-nfc/generate_tables.py	Fixture-path adaptation	Changed default Unicode input directory to test_data/nfc/unicode	Deterministic output remains byte-identical
+ADAPT-011	tools/unicode-nfc/README.md	Documentation adaptation	Changed ownership and retained-custody wording	No generator behavior change
+ADAPT-012	tests/nfc_text_unicode_17_conformance.rs	Import-path adaptation	Changed crate imports to kernel_oss	No conformance behavior change
+ADAPT-013	tests/nfc_text_unicode_17_conformance.rs	Fixture-path adaptation	Changed fixture include to canonical OSS Unicode custody location	No fixture-content or test-logic change
+ADAPT-014	Cargo.toml	Packaging adaptation	Added only approved custody, generator, fixture, license, notice, and conformance-test include entries	No package identity, dependency, feature, edition, or lockfile change
+ADAPT-015	THIRD_PARTY_NOTICES.md	License/provenance adaptation	Created OSS notice record from approved relevant NFC and Unicode material	Preserves required attribution and custody without copying proprietary handoff documents
