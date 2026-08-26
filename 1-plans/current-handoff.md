@@ -1,6 +1,6 @@
 # Current Handoff
 
-Date: 2026-06-17
+Date: 2026-08-26
 
 Purpose:
 
@@ -28,6 +28,16 @@ The shared kernel role traits are in place:
   - `Gateway`
   - `AsyncVoidGateway`
   - `AsyncGateway`
+
+The NFC relocation candidate is present for review:
+
+- `kernel_oss::values::text::NfcText` is the public immutable Unicode 17.0
+  NFC value.
+- Its shared normalizer is crate-private; generated tables remain private.
+- The implementation was relocated from the approved Kernel Proprietary source
+  set without an algorithm rewrite. MIT attribution and Unicode License v3
+  custody are retained.
+- URL/IDNA use and Proprietary migration are explicitly separate future work.
 
 The current gateway compatibility retrofits are complete:
 

@@ -1,6 +1,6 @@
 # Rust Engineering Standards Delta
 
-Date: 2026-06-17
+Date: 2026-08-26
 
 Scope:
 
@@ -16,6 +16,17 @@ The foundational role traits now exist in the kernel:
 - `Entity` in `src/entity/mod.rs`
 - `ResponseFuture` in `src/response/mod.rs`
 - `VoidUseCase`, `UseCase`, `AsyncVoidUseCase`, and `AsyncUseCase` in `src/usecase/mod.rs`
+
+NFC relocation alignment:
+
+- `NfcText` is a bounded Kernel OSS value object with private stored state,
+  borrowed `Value<ValueType = str>` access, infallible `new(&str)`, canonical
+  equality/hash, and manually redacted `Debug`.
+- `src/values/text/nfc_text/` follows the directory-module shape with sibling
+  tests. The crate-private engine is not a public normalization API.
+- The module retains the approved MIT attribution and Unicode License v3
+  custody records; no new dependency or alternate normalizer was introduced.
+- URL integration and Proprietary migration remain separately authorized work.
 - `VoidGateway`, `Gateway`, `AsyncVoidGateway`, and `AsyncGateway` in `src/gateway/mod.rs`
 
 The current public gateway migration pattern is established:
