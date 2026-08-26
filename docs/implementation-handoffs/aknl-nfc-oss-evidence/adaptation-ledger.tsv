@@ -14,3 +14,4 @@ ADAPT-012	tests/nfc_text_unicode_17_conformance.rs	Import-path adaptation	Change
 ADAPT-013	tests/nfc_text_unicode_17_conformance.rs	Fixture-path adaptation	Changed fixture include to canonical OSS Unicode custody location	No fixture-content or test-logic change
 ADAPT-014	Cargo.toml	Packaging adaptation	Added only approved custody, generator, fixture, license, notice, and conformance-test include entries	No package identity, dependency, feature, edition, or lockfile change
 ADAPT-015	THIRD_PARTY_NOTICES.md	License/provenance adaptation	Created OSS notice record from approved relevant NFC and Unicode material	Preserves required attribution and custody without copying proprietary handoff documents
+ADAPT-016	test_data/nfc/unicode/README.md	Documentation adaptation	Corrected the repository-relative checksum-link traversal from five parent segments to three	No fixture-content, generator, or NFC behavior change

@@ -1,0 +1,33 @@
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/kernel_oss-2agm6xdxz3stu/s-hlponynv45-0zoyziw-working`
+
+warning: `kernel_oss` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+   Doc-tests kernel_oss
+
+running 14 tests
+test src/ulid/mod.rs - ulid::ULID::from_string (line 94) ... ok
+test src/ulid/mod.rs - ulid::ULID::nil (line 115) ... ok
+test src/ulid/mod.rs - ulid::ULID::array_to_str (line 148) ... ok
+test src/ulid/mod.rs - ulid::ULID::to_bytes (line 231) ... ok
+test src/ulid/mod.rs - ulid::ULID::is_nil (line 184) ... ok
+test src/ulid/mod.rs - ulid::ULID::from_parts (line 73) ... ok
+test src/ulid/mod.rs - ulid::ULID::to_string (line 168) ... ok
+test src/error/mod.rs - error::Error::new (line 65) ... ok
+test src/ulid/mod.rs - ulid::ULID::from_bytes (line 213) ... ok
+test src/ulid/mod.rs - ulid::ULID::random (line 132) ... ok
+test src/values/datetime/utc_timestamp/mod.rs - values::datetime::utc_timestamp::UTCTimestamp (line 21) ... ok
+test src/values/text/nfc_text/mod.rs - values::text::nfc_text::NfcText::new (line 86) ... ok
+test src/values/text/nfc_text/mod.rs - values::text::nfc_text::NfcText (line 24) ... ok
+test src/values/text/nfc_text/mod.rs - values::text::nfc_text::NfcText::is_nfc (line 118) ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test src/values/text/nfc_text/mod.rs - values::text::nfc_text::NfcText (line 37) - compile fail ... ok
+test src/values/text/nfc_text/mod.rs - values::text::nfc_text::NfcText (line 47) - compile fail ... ok
+test src/values/text/nfc_text/mod.rs - values::text::nfc_text::NfcText (line 56) - compile fail ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+all doctests ran in 1.09s; merged doctests compilation took 0.65s

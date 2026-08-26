@@ -98,7 +98,11 @@ cargo publish --dry-run --allow-dirty
 
 These are still real standards deltas, but they do not block the current seam/gateway compatibility release unless the team decides to raise the release bar:
 
-- `cargo clippy --all-targets -- -D warnings` now passes cleanly.
+- `cargo clippy --all-targets --locked --offline -- -D warnings` currently
+  fails at `src/values/specification/repository_link/mod.rs:76` for
+  `clippy::useless_borrows_in_formatting`. This finding predates and is outside
+  the NFC relocation; no NFC clippy finding was introduced, and the unrelated
+  finding was not fixed under the NFC authorization.
 - `cargo rustdoc --lib -- -D missing_docs` now passes.
 - Some bounded public types still expose public fields for compatibility.
 - Several fallible constructors and builders still need `try_new` / `try_build` migration work.

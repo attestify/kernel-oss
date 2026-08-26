@@ -1,0 +1,5 @@
+98cb037 docs(kernel-oss): record NFC relocation evidence
+ba07734 test(kernel-oss): qualify NFC public boundary
+df28d0f feat(kernel-oss): relocate NfcText and shared normalizer
+678950c chore(kernel-oss): add NFC custody and generation assets
+68bf8c6 docs(kernel-oss): authorize NFC relocation

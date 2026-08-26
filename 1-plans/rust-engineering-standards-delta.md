@@ -116,8 +116,14 @@ The first documentation catalog pass is complete:
    - `src/algorithms/os_home_directory.rs` now has colocated tests and remains part of the flat-module backlog until it is converted into the standard directory shape.
 
 10. Clippy
-   - `cargo clippy --all-targets -- -D warnings` now passes cleanly.
-   - Keep it that way after future public API and module-layout changes.
+   - `cargo clippy --all-targets --locked --offline -- -D warnings` currently
+     fails at `src/values/specification/repository_link/mod.rs:76` for
+     `clippy::useless_borrows_in_formatting`.
+   - This finding predates and is outside the NFC relocation. No new NFC
+     clippy finding was introduced, and the unrelated finding was not fixed
+     under the NFC authorization.
+   - Resolve or explicitly baseline the unrelated finding before treating
+     clippy as clean for a later release.
 
 11. Test documentation
    - The required test-module doc shape is complete across the current `src/**`

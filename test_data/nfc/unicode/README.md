@@ -2,7 +2,7 @@
 
 These exact committed Unicode 17.0 inputs are immutable Q2 qualification and
 offline-generation custody data. Their SHA-256 values are bound by
-[`tools/unicode-nfc/checksums.sha256`](../../../../../tools/unicode-nfc/checksums.sha256).
+[`tools/unicode-nfc/checksums.sha256`](../../../tools/unicode-nfc/checksums.sha256).
 
 | File | Role | Consumer | Verification |
 | --- | --- | --- | --- |
