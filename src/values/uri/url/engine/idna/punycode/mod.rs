@@ -1,5 +1,8 @@
 //! Checked RFC 3492 Bootstring and Punycode primitives.
 
+#[cfg(test)]
+mod tests;
+
 use super::Error;
 
 const BASE: u32 = 36;
@@ -19,7 +22,7 @@ pub(super) fn encode(input: &str) -> Result<String, Error> {
     let basic_count = u32::try_from(output.len()).map_err(|_| Error::Overflow)?;
     let input_count = u32::try_from(input.chars().count()).map_err(|_| Error::Overflow)?;
     let mut handled = basic_count;
-    if basic_count > 0 && handled < input_count {
+    if basic_count > 0 {
         output.push('-');
     }
     let mut n = INITIAL_N;

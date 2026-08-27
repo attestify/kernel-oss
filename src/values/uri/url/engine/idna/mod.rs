@@ -97,7 +97,7 @@ pub(super) fn to_ascii(domain: &str, be_strict: bool) -> Result<String, Error> {
         } else {
             format!("xn--{}", punycode::encode(label)?)
         };
-        validate_a_label(&encoded)?;
+        validate_a_label(&encoded, be_strict)?;
         ascii.push(encoded);
     }
     let output = ascii.join(".");
@@ -183,7 +183,7 @@ fn raw_to_unicode(domain: &str) -> UnicodeOutcome {
                         error.get_or_insert(Error::Invalid);
                         labels.push(label.to_owned());
                     } else {
-                        if let Err(reason) = validate_a_label(label) {
+                        if let Err(reason) = validate_a_label(label, true) {
                             error.get_or_insert(reason);
                         }
                         labels.push(decoded);
@@ -202,7 +202,10 @@ fn raw_to_unicode(domain: &str) -> UnicodeOutcome {
     let decoded_labels: Vec<&str> = value.split('.').collect();
     let bidi_domain = decoded_labels.iter().any(|label| is_bidi_label(label));
     for label in decoded_labels {
-        if let Err(reason) = validate_label(label, true) {
+        if let Err(reason) = validate_label(label, false) {
+            error.get_or_insert(reason);
+        }
+        if let Err(reason) = validate_strict_hyphens(label) {
             error.get_or_insert(reason);
         }
         if bidi_domain && let Err(reason) = validate_bidi(label) {
@@ -251,17 +254,32 @@ fn validate_label(label: &str, be_strict: bool) -> Result<(), Error> {
     if label.starts_with("xn--") && !label.is_ascii() {
         return Err(Error::Invalid);
     }
+    if be_strict && validate_strict_hyphens(label).is_err() {
+        return Err(Error::Invalid);
+    }
     if be_strict
-        && (label.starts_with('-')
-            || label.ends_with('-')
-            || (label.as_bytes().get(2..4) == Some(b"--") && !label.starts_with("xn--")))
+        && label.is_ascii()
+        && !label
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
     {
         return Err(Error::Invalid);
     }
     validate_context_j(&characters)
 }
 
-fn validate_a_label(label: &str) -> Result<(), Error> {
+fn validate_strict_hyphens(label: &str) -> Result<(), Error> {
+    if label.starts_with('-')
+        || label.ends_with('-')
+        || (label.as_bytes().get(2..4) == Some(b"--") && !label.starts_with("xn--"))
+    {
+        Err(Error::Invalid)
+    } else {
+        Ok(())
+    }
+}
+
+fn validate_a_label(label: &str, be_strict: bool) -> Result<(), Error> {
     if !label.is_ascii() || label.is_empty() {
         return Err(Error::Invalid);
     }
@@ -272,12 +290,13 @@ fn validate_a_label(label: &str) -> Result<(), Error> {
         let decoded = punycode::decode(payload)?;
         let processed = normalize_nfc(&map(&decoded, false)?);
         if decoded.is_empty()
+            || decoded.is_ascii()
             || processed != decoded
             || punycode::encode(&processed)? != payload.to_ascii_lowercase()
         {
             return Err(Error::Invalid);
         }
-        validate_label(&processed, false)?;
+        validate_label(&processed, be_strict)?;
         if is_bidi_label(&processed) {
             validate_bidi(&processed)?;
         }

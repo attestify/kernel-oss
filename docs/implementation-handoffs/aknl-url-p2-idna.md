@@ -17,13 +17,14 @@ general-category inputs. The engine reuses the existing crate-private NFC
 normalizer and combining-class table through its minimal virama query; it adds
 no NFC table, normalizer, or generator.
 
-The suite exercises 31 private IDNA tests, 87 WPT `toascii.json` cases, 2,669
+The suite exercises 38 private IDNA tests, 87 WPT `toascii.json` cases, 2,669
 Rust-representable WPT `IdnaTestV2.json` records (two ill-formed UTF-16 records
 are not representable by Rust `&str`), and 6,389 directly asserted Unicode 17
-UTS #46 vectors: 661 ToASCII successes, 361 ToASCII failures, and 5,367
+UTS #46 vectors: 661 ToASCII successes, 5,551 ToASCII failures, and 177
 status-bearing ToUnicode records. The raw ToUnicode projection retains each
 converted value while separately recording whether UTS #46 validation found an
-error.
+error. Strict WHATWG processing independently enforces hyphen checks, STD3
+ASCII rules, and DNS lengths; relaxed all-ASCII compatibility is unchanged.
 The empty WPT `IdnaTestV2` conversion is checked at the pre-wrapper layer; the
 final wrapper rejects it. No substantive unresolved behavior remains.
 

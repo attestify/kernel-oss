@@ -24,11 +24,9 @@ def field_value(value: str) -> str:
 
 
 def requires_relaxed_error(unicode_status: str, ascii_status: str) -> bool:
-    # ToASCII has its own result column. A blank result may inherit a diagnostic
-    # for the separate ToUnicode operation, so only an explicit ToASCII status
-    # can require this private ToASCII wrapper to fail.
-    del unicode_status
-    status = ascii_status
+    # UTS #46's blank ToASCII status inherits the ToUnicode status. Explicit
+    # ToASCII status, including [], takes precedence.
+    status = ascii_status if ascii_status else unicode_status
     tokens = [token.strip() for token in status.strip("[]").split(",") if token.strip()]
     return any(token not in {"A4_1", "A4_2", "V2", "V3", "U1"} for token in tokens)
 

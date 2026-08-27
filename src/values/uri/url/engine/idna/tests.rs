@@ -19,24 +19,6 @@ fn forbidden_domain_code_point_error() {
 }
 
 #[test]
-/// Verifies RFC 3492's canonical Punycode example encodes successfully.
-fn punycode_rfc_example_success() {
-    assert_eq!(punycode::encode("bücher"), Ok("bcher-kva".to_owned()));
-}
-
-#[test]
-/// Verifies RFC 3492 Punycode decoding is case-insensitive where permitted.
-fn punycode_ascii_case_decoding_success() {
-    assert_eq!(punycode::decode("bcher-KVA"), Ok("bücher".to_owned()));
-}
-
-#[test]
-/// Verifies malformed Punycode digits do not panic.
-fn punycode_invalid_digit_error() {
-    assert!(punycode::decode("bcher_").is_err());
-}
-
-#[test]
 /// Verifies mapped Unicode dot separators retain domain boundaries.
 fn mapped_dot_separator_success() {
     assert_eq!(
@@ -105,6 +87,50 @@ fn strict_dns_label_length_error() {
     let label = "a".repeat(64);
     assert!(to_ascii(&label, true).is_err());
     assert!(to_ascii(&label, false).is_ok());
+}
+
+#[test]
+/// Verifies strict WHATWG processing applies the STD3 ASCII restriction.
+fn strict_std3_underscore_error() {
+    assert_eq!(
+        to_ascii("under_score.example", true),
+        Err(super::Error::Invalid)
+    );
+}
+
+#[test]
+/// Verifies relaxed ASCII compatibility keeps non-forbidden underscore labels.
+fn relaxed_ascii_underscore_compatibility_success() {
+    assert_eq!(
+        domain_to_ascii("under_score.example", false),
+        Ok("under_score.example".to_owned())
+    );
+}
+
+#[test]
+/// Verifies strict processing validates a decoded A-label's leading hyphen.
+fn strict_decoded_a_label_leading_hyphen_error() {
+    let payload = punycode::encode("-é");
+    assert!(payload.is_ok());
+    if let Ok(payload) = payload {
+        assert_eq!(
+            to_ascii(&format!("xn--{payload}"), true),
+            Err(super::Error::Invalid)
+        );
+    }
+}
+
+#[test]
+/// Verifies strict processing validates a decoded A-label's third/fourth hyphens.
+fn strict_decoded_a_label_third_fourth_hyphen_error() {
+    let payload = punycode::encode("ab--é");
+    assert!(payload.is_ok());
+    if let Ok(payload) = payload {
+        assert_eq!(
+            to_ascii(&format!("xn--{payload}"), true),
+            Err(super::Error::Invalid)
+        );
+    }
 }
 
 #[test]
