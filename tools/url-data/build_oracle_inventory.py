@@ -9,7 +9,7 @@ G = {
 "KURL-004": [("port-state",x) for x in ["https://e.test/","https://e.test:443/","http://e.test:80/","https://e.test:0/","https://e.test:65535/","https://e.test:99999/"]],
 "KURL-005": [("query-pair-semantics",x) for x in ["https://e.test/?a=1&b=2","https://e.test/?a=1&a=2","https://e.test/?=v","https://e.test/?a=","https://e.test/?a","https://e.test/?a=b=c","https://e.test/?a+b=c+d","https://e.test/?%61=%62","https://e.test/?x=%FF","https://e.test/?x=%C3%28","https://e.test/?&&","https://e.test/?a=1&=2"]],
 "URL257-001": [("synthetic-credential",x) for x in ["https://user:canary@example.test/","https://user@example.test/","https://:canary@example.test/","https://user:canary@e.test/","https://u%40x:canary@example.test/","https://user:canary@e.test/a"]],
-"SEC-001": [("diagnostic-canary",x) for x in ["https://canaryuser:canarypass@example.test/","https://e.test/?token=canaryquery","https://e.test/#canaryfragment","https://user:canarypass@e.test/?q=canaryquery#canaryfragment","https://e.test/a?x=canaryquery","https://user@e.test/#canaryfragment"]],
+"SEC-001": [("valid_credential_canary","https://canaryuser:canarypass@example.test/"),("invalid_credential_canary","https://canaryuser:canarypass@[bad]/"),("valid_query_canary","https://e.test/?token=canaryquery"),("invalid_query_canary","https://e.test:99999/?token=canaryquery"),("valid_fragment_canary","https://e.test/#canaryfragment"),("invalid_fragment_canary","https://[:::1]/#canaryfragment")],
 "KURL-006": [("scheme-class",x) for x in ["http://e.test/","https://e.test/","ws://e.test/","wss://e.test/","ftp://e.test/","foo://e.test/","mailto:x@y.test","data:text/plain,x"]],
 "KURL-007": [("path-class",x) for x in ["foo:bar","mailto:a@b","https://e.test/a","file:///a","data:,x","foo:/a"]],
 "KURL-008": [("file-url",x) for x in ["file:///tmp/a","file://localhost/tmp/a","file:///C:/a","file://server/share/a","file:///","file:///a%20b"]],
@@ -24,19 +24,25 @@ G = {
 "KURL-017": [("form-query",x) for x in ["https://e.test/?a+b=c+d","https://e.test/?a=1&a=2","https://e.test/?=v","https://e.test/?a=","https://e.test/?a=b=c","https://e.test/?x=%FF","https://e.test/?x=%C3%28","https://e.test/?+","https://e.test/?a&&b","https://e.test/?a=1&","https://e.test/?%2B=%2B","https://e.test/?first=eq=tail"]],
 "URL257-002": [("url257-diagnostic-category",x) for x in ["not a url","http://[bad]/","http://e.test:abc/","https://","http://%/","http://e.test:99999/","http:///","http://[:::1]/"," ","http://exa mple/","http://?a","http://[1:2:3:4:5:6:7:8:9]/"]],
 }
-R2=[("build_success","file,git,https","git","true","https://github.com/nape/processes/rust-ci"),("apply_default_scheme_success","file,git","git","true","github.com/nape/processes/rust-ci"),("apply_default_scheme_with_scheme_seperator_only_success","file,git","git","true","://github.com/nape/processes/rust-ci"),("malformed_repo_link_error","file,git","git","true",":/github.com/nape/processes/rust-ci"),("no_allowed_schema_provided_error","","git","true","https://github.com/nape/processes/rust-ci"),("no_default_scheme_provided_error","file,git,https","","true","https://github.com/nape/processes/rust-ci"),("empty_default_scheme_error","file,git,https","","true","https://github.com/nape/processes/rust-ci"),("invalid_default_scheme_not_in_allowed_error","file,git,https","ssh","true","https://github.com/nape/processes/rust-ci"),("no_repo_link_error","file,git,https","git","false",""),("repo_link_whitespace_error","file,git,https","git","true","    "),("unallowed_repo_link_scheme_error","file,git,https","git","true","ssh://localhost")]
-R1=[(f"rlink-synthetic-{i:02d}","file,git,https","git","true",x) for i,x in enumerate(["https://example.test/r","git://example.test/r","file:///tmp/r","example.test/r","ssh://example.test/r","","   ","https://","git://","ftp://example.test/r"],1)]
+R2=[("build_success","file,git,https","git","true","true","https://github.com/nape/processes/rust-ci"),("apply_default_scheme_success","file,git","git","true","true","github.com/nape/processes/rust-ci"),("apply_default_scheme_with_scheme_seperator_only_success","file,git","git","true","true","://github.com/nape/processes/rust-ci"),("malformed_repo_link_error","file,git","git","true","true",":/github.com/nape/processes/rust-ci"),("no_allowed_schema_provided_error","","git","false","true","https://github.com/nape/processes/rust-ci"),("no_default_scheme_provided_error","file,git,https","","true","false","https://github.com/nape/processes/rust-ci"),("empty_default_scheme_error","file,git,https","","true","true","https://github.com/nape/processes/rust-ci"),("invalid_default_scheme_not_in_allowed_error","file,git,https","ssh","true","true","https://github.com/nape/processes/rust-ci"),("no_repo_link_error","file,git,https","git","true","false",""),("repo_link_whitespace_error","file,git,https","git","true","true","    "),("unallowed_repo_link_scheme_error","file,git,https","git","true","true","ssh://localhost")]
+R1=[(f"rlink-synthetic-{i:02d}","file,git,https","git","true","true","true",x) for i,x in enumerate(["https://example.test/r","git://example.test/r","file:///tmp/r","example.test/r","ssh://example.test/r","","   ","https://","git://","ftp://example.test/r"],1)]
 def esc(s): return s.encode("unicode_escape").decode("ascii")
 rows=[]; seen={}; ordinal=0
-def add(group,name,value,op="parse",allowed="",default="",present="true",comparison="",security="synthetic"):
+def add(group,name,value,op="parse",allowed="",default="",allowed_supplied="false",default_supplied="false",present="true",comparison="",security="synthetic"):
  global ordinal
- ordinal+=1; e=esc(value); canon=f"{e}|N/A|{op}"; ident=f"legacy-{group.lower()}-{ordinal:06d}-{hashlib.sha256(canon.encode()).hexdigest()[:12]}"
+ ordinal+=1; e=esc(value); canon=f"{e}|N/A|{op}" if op!="repository_link" else f"{allowed_supplied}|{allowed}|{default_supplied}|{default}|{present}|{e}|{op}"; ident=f"legacy-{group.lower()}-{ordinal:06d}-{hashlib.sha256(canon.encode()).hexdigest()[:12]}"
  key=(e,"N/A",op); duplicate="unique" if key not in seen else f"reused for distinct behavior: {seen[key]} versus {group}"; seen.setdefault(key,group)
- rows.append([ident,group,name,e,"N/A",op,"kernel-fields;kernel-accessors;url257-projection",allowed,default,"true" if allowed else "false","true" if default else "false",present,comparison,security,"current test or behavior-specific synthetic case",duplicate])
+ citation=f"src/values/specification/repository_link/tests.rs::{name}" if group.startswith("RLINK") else (f"src/values/uri/url/tests.rs::{name}" if group=="KURL-001" else "Attestify behavior-specific synthetic case")
+ rows.append([ident,group,name,e,"N/A",op,"kernel-fields;kernel-accessors;url257-projection",allowed,default,allowed_supplied,default_supplied,present,comparison,security,citation,duplicate])
 for group, xs in G.items():
  for name,value in xs: add(group,name,value,comparison=name if group=="KURL-014" else "",security="canary" if group=="SEC-001" else "synthetic")
 for group,xs in (("RLINK-001",R1),("RLINK-002",R2)):
- for n,a,d,p,v in xs: add(group,n,v,"repository_link",a,d,p,security="canary" if group=="RLINK-002" else "synthetic")
+ for entry in xs:
+  if len(entry)==6:
+   n,a,d,asup,dsup,v=entry; p="false" if n=="no_repo_link_error" else "true"
+  else:
+   n,a,d,asup,dsup,p,v=entry
+  add(group,n,v,"repository_link",a,d,asup,dsup,p,security="synthetic")
 assert len(rows)==190
 h="id\tgroup\tstable_source_test_name\tescaped_input\tbase\toperation\texpected_projection_fields\tallowed_schemes\tdefault_scheme\tallowed_schemes_supplied\tdefault_scheme_supplied\trepo_link_supplied\tcomparison_class_id\tsecurity_classification\tsource_citation\tduplicate_reuse_status_reason"
 Path("case-inventory.tsv").write_text(h+"\n"+"\n".join("\t".join(x) for x in rows)+"\n")

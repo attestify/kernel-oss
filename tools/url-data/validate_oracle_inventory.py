@@ -7,7 +7,7 @@ assert {x['stable_source_test_name'] for x in rows if x['group']=='KURL-001'}=={
 assert {x['stable_source_test_name'] for x in rows if x['group']=='RLINK-002'}=={'build_success','apply_default_scheme_success','apply_default_scheme_with_scheme_seperator_only_success','malformed_repo_link_error','no_allowed_schema_provided_error','no_default_scheme_provided_error','empty_default_scheme_error','invalid_default_scheme_not_in_allowed_error','no_repo_link_error','repo_link_whitespace_error','unallowed_repo_link_scheme_error'}
 ids=set()
 for x in rows:
-    escaped=x['escaped_input']; canon=f"{escaped}|{x['base']}|{x['operation']}"
+    escaped=x['escaped_input']; canon=f"{escaped}|{x['base']}|{x['operation']}" if x['operation']!='repository_link' else f"{x['allowed_schemes_supplied']}|{x['allowed_schemes']}|{x['default_scheme_supplied']}|{x['default_scheme']}|{x['repo_link_supplied']}|{escaped}|{x['operation']}"
     tail=hashlib.sha256(canon.encode()).hexdigest()[:12]
     assert x['id'].endswith('-'+tail) and x['id'] not in ids; ids.add(x['id'])
     if x['group'].startswith('RLINK'):
@@ -15,4 +15,8 @@ for x in rows:
     if x['group']=='KURL-014': assert x['comparison_class_id']
     if x['group']=='SEC-001': assert x['security_classification']=='canary'
     if x['duplicate_reuse_status_reason']=='': raise AssertionError('missing reuse status')
-print('PASS rows=190 groups=22 ids=190 KURL-001=5 RLINK-002=11 conditional-fields=PASS')
+empty=[x for x in rows if x['stable_source_test_name']=='empty_default_scheme_error'][0]
+missing=[x for x in rows if x['stable_source_test_name']=='no_default_scheme_provided_error'][0]
+assert empty['default_scheme_supplied']=='true' and empty['default_scheme']==''
+assert missing['default_scheme_supplied']=='false' and missing['default_scheme']==''
+print('PASS rows=190 groups=22 ids=190 KURL-001=5 RLINK-002=11 conditional-fields=PASS builder-presence=PASS')
