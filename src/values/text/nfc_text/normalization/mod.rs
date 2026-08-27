@@ -46,6 +46,11 @@ pub(crate) fn is_nfc(text: &str) -> bool {
     normalize_nfc(text).as_str() == text
 }
 
+/// Returns whether the scalar has canonical combining class Virama (9).
+pub(crate) fn is_virama(character: char) -> bool {
+    canonical_combining_class(character as u32) == 9
+}
+
 fn decompose_scalar(scalar: u32, output: &mut Vec<char>) {
     if is_hangul_syllable(scalar) {
         decompose_hangul(scalar, output);

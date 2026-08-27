@@ -14,7 +14,14 @@
 //! `AKNL-NFC-P1-REQ-034`, `AKNL-NFC-P1-REQ-038`, `AKNL-NFC-P1-REQ-039`, and
 //! `AKNL-NFC-P1-REQ-040`.
 
-use super::{is_nfc, normalize_nfc};
+use super::{is_nfc, is_virama, normalize_nfc};
+
+#[test]
+/// Verifies the crate-private virama query reuses canonical combining classes.
+fn virama_query_uses_shared_table_success() {
+    assert!(is_virama('\u{094D}'));
+    assert!(!is_virama('a'));
+}
 
 const NORMALIZATION_TEST: &str =
     include_str!("../../../../../test_data/nfc/unicode/NormalizationTest-17.0.0.txt");

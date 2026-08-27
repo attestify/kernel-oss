@@ -2,6 +2,8 @@ use crate::error::{Error, Kind};
 use crate::values::text::line::Line;
 use url::{Host, Url};
 
+mod engine;
+
 /// A parsed URL value with exposed components.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct URL {

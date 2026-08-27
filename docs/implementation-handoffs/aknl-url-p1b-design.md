@@ -37,8 +37,13 @@ serializer, resolver, host/IPv4/IPv6, IDNA/domain, percent/form processing, and
 Kernel error translation. IDNA consumes the existing crate-private shared NFC
 seam; it creates neither a second normalizer nor NFC tables/generator.
 
-The design requires deterministic no-I/O parsing. Resource bounds and panic
-safety must be reviewed against the approved WHATWG algorithms during P2; no
+The design requires deterministic no-I/O parsing. P2 adopts the approved policy:
+accept valid Rust `&str` values within representational and allocation limits,
+use no input-controlled recursion, use checked arithmetic and fallible capacity
+planning where derived sizes are calculated, and reject arithmetic or
+representational overflow privately. No arbitrary URL-length limit is imposed;
+DNS length checks apply only when strict processing requests them. Resource
+bounds and panic safety must be reviewed against the approved WHATWG algorithms during P2; no
 arbitrary input bound is frozen here.
 
 ## Compatibility and qualification
