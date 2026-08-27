@@ -166,7 +166,19 @@ fn ends_in_number(domain: &str) -> bool {
         .next()
         .unwrap_or_default();
     !label.is_empty()
-        && (label.bytes().all(|byte| byte.is_ascii_digit()) || parse_ipv4_number(label).is_ok())
+        && (label.bytes().all(|byte| byte.is_ascii_digit())
+            || parse_ipv4_number(label).is_ok()
+            // A syntactically numeric hexadecimal label still enters the IPv4
+            // parser even if its value overflows there. That lets the parser
+            // reject it as an invalid IPv4 host rather than treating it as a
+            // domain. Prefixes with invalid digits (for example `0xzz`) do not
+            // take this path.
+            || label
+                .strip_prefix("0x")
+                .or_else(|| label.strip_prefix("0X"))
+                .is_some_and(|digits| {
+                    !digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_hexdigit())
+                }))
 }
 
 fn parse_ipv4(input: &str) -> Result<(u32, Vec<Validation>), Error> {
