@@ -73,7 +73,7 @@ impl RepositoryLinkBuilder {
                 Kind::InvalidInput,
                 format!(
                     "The provided repository link [{}] is malformed. {}",
-                    &repo_link, error
+                    repo_link, error
                 ),
             )
         })?;
