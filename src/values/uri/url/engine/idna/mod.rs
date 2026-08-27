@@ -29,6 +29,22 @@ pub(super) enum Error {
     Bidi,
 }
 
+/// The raw UTS #46 ToUnicode outcome retains conversion even when validation
+/// records a private failure. The WHATWG wrappers decide whether that failure
+/// is fatal for their operation.
+#[derive(Debug, Eq, PartialEq)]
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "P2 retains raw ToUnicode outcomes for P3 host processing."
+    )
+)]
+struct UnicodeOutcome {
+    value: String,
+    error: Option<Error>,
+}
+
 /// Applies the WHATWG domain parser's nontransitional UTS #46 ToASCII path.
 #[cfg_attr(
     not(test),
@@ -147,18 +163,82 @@ pub(super) fn to_unicode(domain: &str, be_strict: bool) -> Result<String, Error>
     Ok(labels.join("."))
 }
 
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "P2 retains raw ToUnicode outcomes for P3 host processing."
+    )
+)]
+fn raw_to_unicode(domain: &str) -> UnicodeOutcome {
+    let (mapped, mapping_error) = map_with_outcome(domain);
+    let normalized = normalize_nfc(&mapped);
+    let mut labels = Vec::new();
+    let mut error = mapping_error;
+    for label in normalized.split('.') {
+        if let Some(payload) = label.strip_prefix("xn--") {
+            match punycode::decode(payload) {
+                Ok(decoded) => {
+                    if decoded.is_empty() {
+                        error.get_or_insert(Error::Invalid);
+                        labels.push(label.to_owned());
+                    } else {
+                        if let Err(reason) = validate_a_label(label) {
+                            error.get_or_insert(reason);
+                        }
+                        labels.push(decoded);
+                    }
+                }
+                Err(reason) => {
+                    labels.push(label.to_owned());
+                    error.get_or_insert(reason);
+                }
+            }
+        } else {
+            labels.push(label.to_owned());
+        }
+    }
+    let value = labels.join(".");
+    let decoded_labels: Vec<&str> = value.split('.').collect();
+    let bidi_domain = decoded_labels.iter().any(|label| is_bidi_label(label));
+    for label in decoded_labels {
+        if let Err(reason) = validate_label(label, true) {
+            error.get_or_insert(reason);
+        }
+        if bidi_domain {
+            if let Err(reason) = validate_bidi(label) {
+                error.get_or_insert(reason);
+            }
+        }
+    }
+    UnicodeOutcome { value, error }
+}
+
 fn map(domain: &str, _be_strict: bool) -> Result<String, Error> {
+    let (mapped, error) = map_with_outcome(domain);
+    error.map_or(Ok(mapped), Err)
+}
+
+fn map_with_outcome(domain: &str) -> (String, Option<Error>) {
     let mut mapped = String::new();
+    let mut error = None;
     for character in domain.chars() {
-        let entry = lookup_mapping(u32::from(character)).ok_or(Error::Invalid)?;
+        let Some(entry) = lookup_mapping(u32::from(character)) else {
+            mapped.push(character);
+            error.get_or_insert(Error::Invalid);
+            continue;
+        };
         match entry.status {
             Status::Valid | Status::Deviation => mapped.push(character),
             Status::Mapped => mapped.push_str(entry.mapping),
             Status::Ignored => {}
-            Status::Disallowed => return Err(Error::Invalid),
+            Status::Disallowed => {
+                mapped.push(character);
+                error.get_or_insert(Error::Invalid);
+            }
         }
     }
-    Ok(mapped)
+    (mapped, error)
 }
 
 fn validate_label(label: &str, be_strict: bool) -> Result<(), Error> {

@@ -1,7 +1,7 @@
 //! Tests for the private dependency-free IDNA boundary.
 use super::{
-    domain_to_ascii, fixture_vectors, punycode, to_ascii, to_unicode, wpt_idna_v2_vectors,
-    wpt_vectors,
+    domain_to_ascii, fixture_vectors, punycode, raw_to_unicode, to_ascii, to_unicode,
+    wpt_idna_v2_vectors, wpt_vectors,
 };
 
 #[test]
@@ -157,6 +157,20 @@ fn unicode_17_uts46_error_vectors_error() {
     assert_eq!(
         fixture_vectors::UTS46_ERROR_CASE_COUNT,
         fixture_vectors::UTS46_ERROR_CASES.len()
+    );
+}
+
+#[test]
+/// Verifies status-bearing UTS #46 ToUnicode vectors retain conversion and error state.
+fn unicode_17_uts46_to_unicode_vectors_success() {
+    for (input, expected, has_error) in fixture_vectors::UTS46_TO_UNICODE_CASES {
+        let outcome = raw_to_unicode(input);
+        assert_eq!(outcome.value, *expected, "{input:?}");
+        assert_eq!(outcome.error.is_some(), *has_error, "{input:?}");
+    }
+    assert_eq!(
+        fixture_vectors::UTS46_TO_UNICODE_ONLY_COUNT,
+        fixture_vectors::UTS46_TO_UNICODE_CASES.len()
     );
 }
 

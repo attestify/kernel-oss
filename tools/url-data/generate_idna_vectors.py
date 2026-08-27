@@ -33,6 +33,11 @@ def requires_relaxed_error(unicode_status: str, ascii_status: str) -> bool:
     return any(token not in {"A4_1", "A4_2", "V2", "V3", "U1"} for token in tokens)
 
 
+def has_to_unicode_error(status: str) -> bool:
+    tokens = [token.strip() for token in status.strip("[]").split(",") if token.strip()]
+    return any(token != "U1" for token in tokens)
+
+
 def rust(value: str) -> str:
     chunks: list[str] = []
     for character in value:
@@ -53,9 +58,10 @@ def rust(value: str) -> str:
     return '"' + "".join(chunks) + '"'
 
 
-def vectors() -> tuple[list[tuple[str, str]], list[str], int, int]:
+def vectors() -> tuple[list[tuple[str, str]], list[str], list[tuple[str, str, bool]], int]:
     result: list[tuple[str, str]] = []
     error_cases: list[str] = []
+    to_unicode_cases: list[tuple[str, str, bool]] = []
     skipped = 0
     to_unicode_only = 0
     for raw in INPUT.read_text(encoding="utf-8").splitlines():
@@ -69,7 +75,10 @@ def vectors() -> tuple[list[tuple[str, str]], list[str], int, int]:
         source = field_value(source)
         unicode_value = field_value(unicode_value) if unicode_value else source
         expected = field_value(ascii_value) if ascii_value else unicode_value
-        if any(0xD800 <= ord(character) <= 0xDFFF for character in source + expected):
+        if any(
+            0xD800 <= ord(character) <= 0xDFFF
+            for character in source + unicode_value + expected
+        ):
             skipped += 1
             continue
         if requires_relaxed_error(unicode_status, ascii_status):
@@ -79,19 +88,20 @@ def vectors() -> tuple[list[tuple[str, str]], list[str], int, int]:
             continue
         if unicode_status:
             to_unicode_only += 1
+            to_unicode_cases.append((source, unicode_value, has_to_unicode_error(unicode_status)))
             continue
         result.append((source, expected))
-    return result, error_cases, skipped, to_unicode_only
+    return result, error_cases, to_unicode_cases, skipped
 
 
 def render() -> str:
-    cases, error_cases, skipped, to_unicode_only = vectors()
+    cases, error_cases, to_unicode_cases, skipped = vectors()
     lines = [
         "//! Generated from Unicode 17.0.0 IdnaTestV2.txt; do not edit.",
         f"pub(super) const UTS46_SUCCESS_CASE_COUNT: usize = {len(cases)};",
         f"pub(super) const UTS46_ERROR_CASE_COUNT: usize = {len(error_cases)};",
         f"pub(super) const UTS46_ILL_FORMED_SKIPPED_COUNT: usize = {skipped};",
-        f"pub(super) const UTS46_TO_UNICODE_ONLY_COUNT: usize = {to_unicode_only};",
+        f"pub(super) const UTS46_TO_UNICODE_ONLY_COUNT: usize = {len(to_unicode_cases)};",
         "#[rustfmt::skip]",
         "pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[",
     ]
@@ -99,6 +109,24 @@ def render() -> str:
         lines.extend(["    (", f"        {rust(source)},", f"        {rust(expected)},", "    ),"])
     lines.extend(["];", "", "#[rustfmt::skip]", "pub(super) static UTS46_ERROR_CASES: &[&str] = &["])
     lines.extend(f"    {rust(source)}," for source in error_cases)
+    lines.extend(
+        [
+            "];",
+            "",
+            "#[rustfmt::skip]",
+            "pub(super) static UTS46_TO_UNICODE_CASES: &[(&str, &str, bool)] = &[",
+        ]
+    )
+    for source, expected, has_error in to_unicode_cases:
+        lines.extend(
+            [
+                "    (",
+                f"        {rust(source)},",
+                f"        {rust(expected)},",
+                f"        {str(has_error).lower()},",
+                "    ),",
+            ]
+        )
     lines.extend(["];", ""])
     return "\n".join(lines)
 
