@@ -185,15 +185,22 @@ impl<'a> Machine<'a> {
                     let scheme = self.scheme.as_deref().ok_or(Error::Invalid)?;
                     if let Some(base) = self.base
                         && base.is_special()
+                        && !base.is_file()
                         && base.scheme() == scheme
-                        && is_same_scheme_relative(&self.remainder)
                     {
-                        self.validations
-                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
-                        if self.remainder.starts_with('\\') {
-                            self.validations.push(Validation::InvalidReverseSolidus);
-                        }
                         self.state = State::SpecialRelativeOrAuthority;
+                    } else if let Some(base) = self.base
+                        && base.is_file()
+                        && base.scheme() == scheme
+                        && !self.remainder.starts_with("//")
+                    {
+                        return resolve_relative(
+                            base,
+                            &self.remainder,
+                            self.query.as_deref(),
+                            self.fragment.as_deref(),
+                            &mut self.validations,
+                        );
                     } else if scheme == "file" {
                         self.state = State::File;
                     } else if is_special(scheme) {
@@ -212,6 +219,27 @@ impl<'a> Machine<'a> {
                 }
                 State::SpecialRelativeOrAuthority => {
                     let base = self.base.ok_or(Error::Invalid)?;
+                    if self.remainder.starts_with("//") {
+                        if self.remainder.starts_with("///") {
+                            self.validations
+                                .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                            self.remainder = self.remainder.trim_start_matches('/').to_owned();
+                        } else {
+                            self.remainder = self.remainder[2..].to_owned();
+                        }
+                        self.state = State::Authority;
+                        continue;
+                    }
+                    if self.remainder.starts_with("\\\\") {
+                        self.validations
+                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                        self.validations.push(Validation::InvalidReverseSolidus);
+                        self.remainder = self.remainder.trim_start_matches('\\').to_owned();
+                        self.state = State::Authority;
+                        continue;
+                    }
+                    self.validations
+                        .push(Validation::SpecialSchemeMissingFollowingSolidus);
                     return resolve_relative(
                         base,
                         &self.remainder,
@@ -261,6 +289,10 @@ impl<'a> Machine<'a> {
                     self.state = State::Authority;
                 }
                 State::SpecialAuthoritySlashes => {
+                    if self.remainder.starts_with("///") {
+                        self.validations
+                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                    }
                     self.remainder =
                         normalize_special_separators(&self.remainder, &mut self.validations);
                     self.state = State::SpecialAuthorityIgnoreSlashes;
@@ -303,8 +335,13 @@ impl<'a> Machine<'a> {
                     self.state = State::Path;
                 }
                 State::File => {
+                    if !self.remainder.starts_with("//") {
+                        self.validations
+                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                    }
                     self.remainder =
                         normalize_special_separators(&self.remainder, &mut self.validations);
+                    validate_component(&self.remainder, &mut self.validations);
                     self.state = State::FileSlash;
                 }
                 State::FileSlash => {
@@ -599,9 +636,6 @@ fn parse_file(
         format!("/{normalized}")
     };
     let normalized = if begins_windows_drive(normalized.trim_start_matches('/')) {
-        if normalized.trim_start_matches('/').as_bytes().get(1) == Some(&b'|') {
-            validations.push(Validation::FileInvalidWindowsDriveLetter);
-        }
         format!(
             "/{}",
             normalize_windows_drive(normalized.trim_start_matches('/'))
@@ -682,7 +716,6 @@ fn resolve_relative(
     fragment: Option<&str>,
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
-    validate_component(reference, validations);
     let reference = if base.is_special() {
         normalize_special_separators(reference, validations)
     } else {
@@ -714,6 +747,10 @@ fn resolve_relative(
         );
     }
     if base.is_file() && begins_windows_drive(reference.trim_start_matches('/')) {
+        validate_component(&reference, validations);
+        if reference.trim_start_matches('/').as_bytes().get(1) == Some(&b'|') {
+            validations.push(Validation::FileInvalidWindowsDriveLetter);
+        }
         let record = base.with_path(Path::Segments(parse_file_segments(
             &format!(
                 "/{}",
@@ -937,12 +974,12 @@ fn parse_segments_inner(
     preserve_drive: bool,
     validations: &mut Vec<Validation>,
 ) -> Result<Vec<String>, Error> {
-    validate_component(raw, validations);
     let raw = if special {
         normalize_special_separators(raw, validations)
     } else {
         raw.to_owned()
     };
+    validate_component(&raw, validations);
     let rooted = raw.starts_with('/');
     let mut output = if rooted {
         vec![String::new()]
@@ -1088,7 +1125,11 @@ fn encode_opaque_path(path: &str, has_query_or_fragment: bool) -> String {
 }
 
 fn validate_component(value: &str, validations: &mut Vec<Validation>) {
-    if value.chars().any(is_invalid_url_unit) || has_malformed_percent_triplet(value) {
+    if value
+        .chars()
+        .any(|character| character != '%' && is_invalid_url_unit(character))
+        || has_malformed_percent_triplet(value)
+    {
         validations.push(Validation::InvalidUrlUnit);
     }
 }
@@ -1182,10 +1223,6 @@ fn normalize_special_separators(input: &str, validations: &mut Vec<Validation>) 
         validations.push(Validation::InvalidReverseSolidus);
     }
     input.replace('\\', "/")
-}
-
-fn is_same_scheme_relative(remainder: &str) -> bool {
-    !remainder.starts_with("//") && !remainder.starts_with("\\\\")
 }
 
 fn is_special(scheme: &str) -> bool {

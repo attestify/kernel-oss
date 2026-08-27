@@ -54,12 +54,22 @@ impl Record {
             || is_special_scheme(&scheme) && matches!(path, Path::Opaque(_))
             || is_special_scheme(&scheme) && authority.is_none()
             || is_special_scheme(&scheme) && !is_rooted_path(&path)
+            || is_special_scheme(&scheme) && is_single_empty_segment_path(&path)
             || authority.is_some() && !is_rooted_path(&path) && !is_empty_segments(&path)
+            || !is_special_scheme(&scheme)
+                && authority.is_none()
+                && matches!(path, Path::Segments(_))
+                && (!is_rooted_path(&path) || is_empty_segments(&path))
         {
             return Err(Error::Invalid);
         }
         if let Some(authority) = &mut authority {
             if is_special_scheme(&scheme) && matches!(authority.host, Host::Opaque(_)) {
+                return Err(Error::Invalid);
+            }
+            if !is_special_scheme(&scheme)
+                && matches!(authority.host, Host::Domain(_) | Host::Ipv4(_))
+            {
                 return Err(Error::Invalid);
             }
             if scheme != "file"
@@ -69,6 +79,13 @@ impl Record {
                 return Err(Error::Invalid);
             }
             if scheme == "file"
+                && (!authority.username.is_empty()
+                    || authority.password.is_some()
+                    || authority.port.is_some())
+            {
+                return Err(Error::Invalid);
+            }
+            if matches!(authority.host, Host::Empty)
                 && (!authority.username.is_empty()
                     || authority.password.is_some()
                     || authority.port.is_some())
@@ -235,6 +252,10 @@ fn is_rooted_path(path: &Path) -> bool {
 
 fn is_empty_segments(path: &Path) -> bool {
     matches!(path, Path::Segments(segments) if segments.is_empty())
+}
+
+fn is_single_empty_segment_path(path: &Path) -> bool {
+    matches!(path, Path::Segments(segments) if segments.len() == 1 && segments[0].is_empty())
 }
 
 /// Private record construction failure without user-supplied diagnostic text.

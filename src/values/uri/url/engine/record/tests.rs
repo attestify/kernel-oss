@@ -154,3 +154,64 @@ fn canonical_record_invariants_error() {
         .is_err()
     );
 }
+
+#[test]
+/// Verifies later canonical constraints exclude states that would change on parsing.
+fn serialize_parse_stable_record_states_error() {
+    assert!(
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Domain("example.test".to_owned()),
+                None,
+            )),
+            Path::Segments(vec![String::new()]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    for host in [
+        Host::Domain("example.test".to_owned()),
+        Host::Ipv4(0x7f000001),
+    ] {
+        assert!(
+            Record::new(
+                "custom".to_owned(),
+                Some(Authority::new(String::new(), None, host, None)),
+                Path::Segments(Vec::new()),
+                None,
+                None,
+            )
+            .is_err()
+        );
+    }
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new("user".to_owned(), None, Host::Empty, None)),
+            Path::Segments(Vec::new()),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(String::new(), None, Host::Empty, Some(1))),
+            Path::Segments(Vec::new()),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    for path in [
+        Path::Segments(Vec::new()),
+        Path::Segments(vec!["path".to_owned()]),
+    ] {
+        assert!(Record::new("custom".to_owned(), None, path, None, None).is_err());
+    }
+}

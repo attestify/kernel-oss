@@ -3,7 +3,7 @@
 use super::{Error, Validation, parse, wpt_vectors::VECTORS};
 use crate::values::uri::url::engine::{
     host,
-    record::{Path, Record},
+    record::{Authority, Path, Record},
     serializer,
 };
 
@@ -123,7 +123,7 @@ fn same_scheme_special_state_transitions_success() {
         ("http:g", "http://a/g", true, false),
         ("http:/g", "http://a/g", true, false),
         ("http:\\g", "http://a/g", true, true),
-        (r"http:\\g", "http://g/", false, true),
+        (r"http:\\g", "http://g/", true, true),
     ];
     for (input, expected, missing_solidus, reverse_solidus) in vectors {
         let outcome = parse(input, Some(&base));
@@ -145,6 +145,96 @@ fn same_scheme_special_state_transitions_success() {
 }
 
 #[test]
+/// Verifies special state routing records each required condition exactly once.
+fn special_state_validation_sets_success() {
+    let base = match parse("http://a/b", None) {
+        Ok(outcome) => outcome.record,
+        Err(_) => panic!(),
+    };
+    let vectors = [
+        (
+            "http:g",
+            "http://a/g",
+            vec![Validation::SpecialSchemeMissingFollowingSolidus],
+        ),
+        (
+            "http:/g",
+            "http://a/g",
+            vec![Validation::SpecialSchemeMissingFollowingSolidus],
+        ),
+        (
+            "http:\\g",
+            "http://a/g",
+            vec![
+                Validation::SpecialSchemeMissingFollowingSolidus,
+                Validation::InvalidReverseSolidus,
+            ],
+        ),
+        (
+            r"http:\\g",
+            "http://g/",
+            vec![
+                Validation::SpecialSchemeMissingFollowingSolidus,
+                Validation::InvalidReverseSolidus,
+            ],
+        ),
+        ("http://g", "http://g/", Vec::new()),
+        (
+            "http:///g",
+            "http://g/",
+            vec![Validation::SpecialSchemeMissingFollowingSolidus],
+        ),
+    ];
+    for (input, expected, validations) in vectors {
+        let outcome = match parse(input, Some(&base)) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("{input}"),
+        };
+        assert_eq!(serializer::serialize(&outcome.record), expected, "{input}");
+        assert_eq!(outcome.validations, validations, "{input}");
+    }
+    let absolute = match parse("http:///foo", None) {
+        Ok(outcome) => outcome,
+        Err(_) => panic!(),
+    };
+    assert_eq!(
+        absolute.validations,
+        vec![Validation::SpecialSchemeMissingFollowingSolidus]
+    );
+}
+
+#[test]
+/// Verifies file drive validation occurs only in the file state that owns it.
+fn file_state_validation_sets_success() {
+    let absolute = match parse("file:C|/x", None) {
+        Ok(outcome) => outcome,
+        Err(_) => panic!(),
+    };
+    assert_eq!(
+        absolute.validations,
+        vec![
+            Validation::SpecialSchemeMissingFollowingSolidus,
+            Validation::InvalidUrlUnit,
+        ]
+    );
+    let base = match parse("file:///a/b", None) {
+        Ok(outcome) => outcome.record,
+        Err(_) => panic!(),
+    };
+    let relative = match parse("C|/x", Some(&base)) {
+        Ok(outcome) => outcome,
+        Err(_) => panic!(),
+    };
+    assert_eq!(
+        relative.validations,
+        vec![
+            Validation::InvalidUrlUnit,
+            Validation::FileInvalidWindowsDriveLetter,
+        ]
+    );
+}
+
+#[test]
 /// Verifies file states reject userinfo and every explicit port spelling.
 fn file_state_authority_rejections_error() {
     for input in [
@@ -153,6 +243,63 @@ fn file_state_authority_rejections_error() {
         "file://example.test:80/a",
     ] {
         assert!(parse(input, None).is_err(), "{input}");
+    }
+}
+
+#[test]
+/// Verifies representative valid record shapes survive serializer/parser round trips.
+fn canonical_record_shapes_round_trip_success() {
+    let records = [
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                host::Host::Domain("example.test".to_owned()),
+                None,
+            )),
+            Path::Segments(vec![String::new(), String::new()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "file".to_owned(),
+            Some(Authority::new(String::new(), None, host::Host::Empty, None)),
+            Path::Segments(vec![String::new(), "path".to_owned()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                host::Host::Opaque("opaque-host".to_owned()),
+                None,
+            )),
+            Path::Segments(Vec::new()),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Opaque("opaque-path".to_owned()),
+            None,
+            None,
+        ),
+    ];
+    for record in records {
+        let record = match record {
+            Ok(record) => record,
+            Err(_) => panic!(),
+        };
+        let serialized = serializer::serialize(&record);
+        let reparsed = match parse(&serialized, None) {
+            Ok(outcome) => outcome.record,
+            Err(_) => panic!("{serialized}"),
+        };
+        assert!(reparsed == record);
     }
 }
 
@@ -311,6 +458,41 @@ fn component_validation_conditions_success() {
         outcome.validations.contains(&Validation::InvalidUrlUnit)
             && serializer::serialize(&outcome.record).contains("%ZZ%0E")
     }));
+}
+
+#[test]
+/// Verifies valid percent-encoded bytes do not become invalid URL-unit findings.
+fn valid_percent_triplets_success() {
+    for input in [
+        "custom:path%20ok",
+        "custom:path?query=%2F",
+        "custom:path#fragment%23",
+        "custom:/relative%20path",
+    ] {
+        let outcome = match parse(input, None) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("{input}"),
+        };
+        assert!(outcome.validations.is_empty(), "{input}");
+    }
+    let credential = match parse("custom://user%20name@example.test/path", None) {
+        Ok(outcome) => outcome,
+        Err(_) => panic!(),
+    };
+    assert_eq!(credential.validations, vec![Validation::InvalidCredentials]);
+    for input in [
+        "custom:path%ZZ",
+        "custom:path?query=%2",
+        "custom:path#fragment%",
+        "custom://user%2@example.test/path",
+        "custom:/relative%GGpath",
+    ] {
+        let outcome = match parse(input, None) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("{input}"),
+        };
+        assert!(outcome.validations.contains(&Validation::InvalidUrlUnit));
+    }
 }
 
 #[test]
