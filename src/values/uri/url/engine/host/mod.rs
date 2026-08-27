@@ -26,6 +26,7 @@ pub(super) enum Validation {
     Ipv4NonDecimal,
     Ipv4Shortened,
     Ipv4TrailingDot,
+    Ipv6PieceLeadingZero,
     InvalidUrlUnit,
 }
 
@@ -115,6 +116,14 @@ pub(super) fn parse_ipv6(input: &str) -> Result<Host, Error> {
         pieces[right_start.checked_add(offset).ok_or(Error::Overflow)?] = *piece;
     }
     Ok(Host::Ipv6(pieces))
+}
+
+/// Identifies the nonfatal URL validation condition for a hexadecimal IPv6 piece
+/// with an unnecessary leading zero. Embedded IPv4 is governed separately.
+pub(super) fn ipv6_piece_has_leading_zero(input: &str) -> bool {
+    input.split(':').any(|piece| {
+        !piece.contains('.') && piece.len() > 1 && piece.as_bytes().first() == Some(&b'0')
+    })
 }
 
 pub(super) fn serialize(host: &Host) -> String {

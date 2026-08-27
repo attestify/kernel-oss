@@ -88,6 +88,7 @@ struct Machine<'a> {
     remainder: String,
     validations: Vec<Validation>,
     authority: Option<AuthorityWork>,
+    components_ready: bool,
 }
 
 struct AuthorityWork {
@@ -107,7 +108,7 @@ impl<'a> Machine<'a> {
     fn new(input: &str, base: Option<&'a Record>) -> Self {
         let (body, validations) = preprocess(input);
         Self {
-            state: State::Fragment,
+            state: State::SchemeStart,
             base,
             body,
             query: None,
@@ -116,6 +117,7 @@ impl<'a> Machine<'a> {
             remainder: String::new(),
             validations,
             authority: None,
+            components_ready: false,
         }
     }
 
@@ -123,10 +125,19 @@ impl<'a> Machine<'a> {
         loop {
             match self.state {
                 State::Fragment => {
-                    let (before, fragment) = split_component(&self.body, '#');
+                    let active = if self.scheme.is_some() {
+                        core::mem::take(&mut self.remainder)
+                    } else {
+                        core::mem::take(&mut self.body)
+                    };
+                    let (before, fragment) = split_component(&active, '#');
                     let body = before.to_owned();
                     let fragment = fragment.map(str::to_owned);
-                    self.body = body;
+                    if self.scheme.is_some() {
+                        self.remainder = body;
+                    } else {
+                        self.body = body;
+                    }
                     self.fragment = fragment;
                     if let Some(fragment) = self.fragment.as_deref() {
                         validate_component(fragment, &mut self.validations);
@@ -134,15 +145,29 @@ impl<'a> Machine<'a> {
                     self.state = State::Query;
                 }
                 State::Query => {
-                    let (before, query) = split_component(&self.body, '?');
+                    let active = if self.scheme.is_some() {
+                        core::mem::take(&mut self.remainder)
+                    } else {
+                        core::mem::take(&mut self.body)
+                    };
+                    let (before, query) = split_component(&active, '?');
                     let body = before.to_owned();
                     let query = query.map(str::to_owned);
-                    self.body = body;
+                    if self.scheme.is_some() {
+                        self.remainder = body;
+                    } else {
+                        self.body = body;
+                    }
                     self.query = query;
                     if let Some(query) = self.query.as_deref() {
                         validate_component(query, &mut self.validations);
                     }
-                    self.state = State::SchemeStart;
+                    self.components_ready = true;
+                    self.state = if self.scheme.is_some() {
+                        State::Scheme
+                    } else {
+                        State::NoScheme
+                    };
                 }
                 State::SchemeStart => match split_scheme(&self.body) {
                     Some((scheme, remainder)) => {
@@ -150,16 +175,24 @@ impl<'a> Machine<'a> {
                         self.remainder = remainder.to_owned();
                         self.state = State::Scheme;
                     }
-                    None => self.state = State::NoScheme,
+                    None => self.state = State::Fragment,
                 },
                 State::Scheme => {
+                    if !self.components_ready {
+                        self.state = State::Fragment;
+                        continue;
+                    }
                     let scheme = self.scheme.as_deref().ok_or(Error::Invalid)?;
                     if let Some(base) = self.base
                         && base.is_special()
                         && base.scheme() == scheme
-                        && !self.remainder.starts_with("//")
-                        && !self.remainder.starts_with('\\')
+                        && is_same_scheme_relative(&self.remainder)
                     {
+                        self.validations
+                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                        if self.remainder.starts_with('\\') {
+                            self.validations.push(Validation::InvalidReverseSolidus);
+                        }
                         self.state = State::SpecialRelativeOrAuthority;
                     } else if scheme == "file" {
                         self.state = State::File;
@@ -252,6 +285,10 @@ impl<'a> Machine<'a> {
                     let authority = self.authority.as_mut().ok_or(Error::Invalid)?;
                     if authority.bracketed {
                         authority.host = Some(host::parse_ipv6(&authority.host_text)?);
+                        if host::ipv6_piece_has_leading_zero(&authority.host_text) {
+                            self.validations
+                                .push(Validation::Host(host::Validation::Ipv6PieceLeadingZero));
+                        }
                         self.state = State::Port;
                     } else {
                         self.state = State::Hostname;
@@ -266,9 +303,14 @@ impl<'a> Machine<'a> {
                     self.state = State::Path;
                 }
                 State::File => {
+                    self.remainder =
+                        normalize_special_separators(&self.remainder, &mut self.validations);
                     self.state = State::FileSlash;
                 }
                 State::FileSlash => {
+                    if !self.remainder.starts_with('/') {
+                        self.remainder.insert(0, '/');
+                    }
                     self.state = State::FileHost;
                 }
                 State::FileHost => {
@@ -493,14 +535,63 @@ fn parse_file(
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
     let normalized = normalize_special_separators(remainder, validations);
-    if normalized.contains('|') {
-        validations.push(Validation::FileInvalidWindowsDriveLetter);
-    }
     if let Some(authority) = normalized.strip_prefix("//") {
-        if begins_windows_drive(authority) {
+        let separator = authority.find('/').unwrap_or(authority.len());
+        let host_text = &authority[..separator];
+        let raw_path = &authority[separator..];
+        if begins_windows_drive(host_text) {
             validations.push(Validation::FileInvalidWindowsDriveLetterHost);
+            let path = parse_file_segments(
+                &format!("/{}{}", normalize_windows_drive(host_text), raw_path),
+                true,
+                validations,
+            )?;
+            return finish(
+                Record::new(
+                    scheme,
+                    Some(Authority::new(String::new(), None, Host::Empty, None)),
+                    Path::Segments(path),
+                    encode_query(query, true),
+                    encode_fragment(fragment),
+                )?,
+                validations,
+            );
         }
-        return parse_with_authority(scheme, true, authority, query, fragment, validations, true);
+        if host_text.contains('@') || split_host_port(host_text)?.1.is_some() {
+            return Err(Error::Invalid);
+        }
+        let host = if host_text.is_empty() {
+            Host::Empty
+        } else if host_text.starts_with('[') {
+            let (inside, _, bracketed) = split_host_port(host_text)?;
+            if !bracketed {
+                return Err(Error::Invalid);
+            }
+            let host = host::parse_ipv6(inside)?;
+            if host::ipv6_piece_has_leading_zero(inside) {
+                validations.push(Validation::Host(host::Validation::Ipv6PieceLeadingZero));
+            }
+            host
+        } else {
+            let outcome = host::parse_special(host_text)?;
+            validations.extend(outcome.validations.into_iter().map(Validation::Host));
+            if matches!(outcome.value, Host::Domain(ref value) if value == "localhost") {
+                Host::Empty
+            } else {
+                outcome.value
+            }
+        };
+        let path = parse_file_segments(raw_path, true, validations)?;
+        return finish(
+            Record::new(
+                scheme,
+                Some(Authority::new(String::new(), None, host, None)),
+                Path::Segments(path),
+                encode_query(query, true),
+                encode_fragment(fragment),
+            )?,
+            validations,
+        );
     }
     let normalized = if normalized.starts_with('/') {
         normalized
@@ -508,6 +599,9 @@ fn parse_file(
         format!("/{normalized}")
     };
     let normalized = if begins_windows_drive(normalized.trim_start_matches('/')) {
+        if normalized.trim_start_matches('/').as_bytes().get(1) == Some(&b'|') {
+            validations.push(Validation::FileInvalidWindowsDriveLetter);
+        }
         format!(
             "/{}",
             normalize_windows_drive(normalized.trim_start_matches('/'))
@@ -588,12 +682,22 @@ fn resolve_relative(
     fragment: Option<&str>,
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
+    validate_component(reference, validations);
     let reference = if base.is_special() {
         normalize_special_separators(reference, validations)
     } else {
         reference.to_owned()
     };
     if let Some(stripped_authority) = reference.strip_prefix("//") {
+        if base.is_file() {
+            return parse_file(
+                base.scheme().to_owned(),
+                &reference,
+                query,
+                fragment,
+                validations,
+            );
+        }
         let authority = if base.is_special() && !base.is_file() {
             reference.trim_start_matches('/')
         } else {
@@ -724,7 +828,11 @@ fn parse_authority(
     let host = if host_text.is_empty() {
         Host::Empty
     } else if bracketed {
-        host::parse_ipv6(host_text)?
+        let host = host::parse_ipv6(host_text)?;
+        if host::ipv6_piece_has_leading_zero(host_text) {
+            validations.push(Validation::Host(host::Validation::Ipv6PieceLeadingZero));
+        }
+        host
     } else if special {
         let outcome = host::parse_special(host_text)?;
         validations.extend(outcome.validations.into_iter().map(Validation::Host));
@@ -986,7 +1094,39 @@ fn validate_component(value: &str, validations: &mut Vec<Validation>) {
 }
 
 fn is_invalid_url_unit(character: char) -> bool {
-    character <= '\u{001f}' || character == '\u{007f}'
+    !is_url_code_point(character)
+}
+
+fn is_url_code_point(character: char) -> bool {
+    if character.is_ascii() {
+        return character.is_ascii_alphanumeric()
+            || matches!(
+                character,
+                '!' | '$'
+                    | '&'
+                    | '\''
+                    | '('
+                    | ')'
+                    | '*'
+                    | '+'
+                    | ','
+                    | '-'
+                    | '.'
+                    | '/'
+                    | ':'
+                    | ';'
+                    | '='
+                    | '?'
+                    | '@'
+                    | '_'
+                    | '~'
+            );
+    }
+    let value = u32::from(character);
+    (0x00a0..=0x10fffd).contains(&value)
+        && !(0xfdd0..=0xfdef).contains(&value)
+        && value & 0xffff != 0xfffe
+        && value & 0xffff != 0xffff
 }
 
 fn has_malformed_percent_triplet(input: &str) -> bool {
@@ -1042,6 +1182,10 @@ fn normalize_special_separators(input: &str, validations: &mut Vec<Validation>) 
         validations.push(Validation::InvalidReverseSolidus);
     }
     input.replace('\\', "/")
+}
+
+fn is_same_scheme_relative(remainder: &str) -> bool {
+    !remainder.starts_with("//") && !remainder.starts_with("\\\\")
 }
 
 fn is_special(scheme: &str) -> bool {

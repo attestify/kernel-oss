@@ -86,3 +86,71 @@ fn absent_and_empty_host_are_distinct_success() {
     assert!(absent.is_ok_and(|record| record.host().is_none()));
     assert!(empty.is_ok_and(|record| matches!(record.host(), Some(Host::Empty))));
 }
+
+#[test]
+/// Verifies constructor-only state cannot represent invalid special or file records.
+fn canonical_record_invariants_error() {
+    let rooted = Path::Segments(vec![String::new(), "path".to_owned()]);
+    assert!(Record::new("HTTP".to_owned(), None, rooted.clone(), None, None).is_err());
+    assert!(Record::new("http".to_owned(), None, rooted.clone(), None, None).is_err());
+    assert!(
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(String::new(), None, Host::Empty, None)),
+            rooted.clone(),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Domain("example.test".to_owned()),
+                None,
+            )),
+            Path::Opaque("path".to_owned()),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "file".to_owned(),
+            Some(Authority::new("user".to_owned(), None, Host::Empty, None,)),
+            rooted.clone(),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "file".to_owned(),
+            Some(Authority::new(String::new(), None, Host::Empty, Some(80))),
+            rooted,
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Opaque("host".to_owned()),
+                None,
+            )),
+            Path::Segments(vec!["not-rooted".to_owned()]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+}

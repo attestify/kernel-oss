@@ -1,6 +1,6 @@
 //! Tests for private parser and resolver behavior.
 
-use super::{Validation, parse, wpt_vectors::VECTORS};
+use super::{Error, Validation, parse, wpt_vectors::VECTORS};
 use crate::values::uri::url::engine::{
     host,
     record::{Path, Record},
@@ -110,6 +110,50 @@ fn focused_state_transitions_success() {
         parse("#fragment", Some(&base.record)).is_ok()
             && parse("relative", Some(&base.record)).is_err()
     }));
+}
+
+#[test]
+/// Verifies same-scheme special references distinguish one and two reverse solidi.
+fn same_scheme_special_state_transitions_success() {
+    let base = match parse("http://a/b", None) {
+        Ok(outcome) => outcome.record,
+        Err(_) => panic!(),
+    };
+    let vectors = [
+        ("http:g", "http://a/g", true, false),
+        ("http:/g", "http://a/g", true, false),
+        ("http:\\g", "http://a/g", true, true),
+        (r"http:\\g", "http://g/", false, true),
+    ];
+    for (input, expected, missing_solidus, reverse_solidus) in vectors {
+        let outcome = parse(input, Some(&base));
+        assert!(
+            outcome.is_ok_and(|outcome| {
+                serializer::serialize(&outcome.record) == expected
+                    && outcome
+                        .validations
+                        .contains(&Validation::SpecialSchemeMissingFollowingSolidus)
+                        == missing_solidus
+                    && outcome
+                        .validations
+                        .contains(&Validation::InvalidReverseSolidus)
+                        == reverse_solidus
+            }),
+            "{input}"
+        );
+    }
+}
+
+#[test]
+/// Verifies file states reject userinfo and every explicit port spelling.
+fn file_state_authority_rejections_error() {
+    for input in [
+        "file://user@example.test/a",
+        "file://example.test:/a",
+        "file://example.test:80/a",
+    ] {
+        assert!(parse(input, None).is_err(), "{input}");
+    }
 }
 
 #[test]
@@ -229,12 +273,21 @@ fn structured_adversarial_inputs_success() {
         format!("file:///C:/{}", "a/".repeat(16_384)),
     ];
     for input in corpus {
-        if let Ok(outcome) = parse(&input, None) {
-            let serialized = serializer::serialize(&outcome.record);
-            let reparsed = parse(&serialized, None);
-            assert!(reparsed.is_ok());
-        }
+        let outcome = match parse(&input, None) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("expected structured input to parse"),
+        };
+        let serialized = serializer::serialize(&outcome.record);
+        let reparsed = match parse(&serialized, None) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("expected canonical structured input to parse"),
+        };
+        assert!(reparsed.record == outcome.record);
     }
+    assert!(matches!(
+        parse("http://[::ffff:127.00.0.1]/", None),
+        Err(Error::Invalid)
+    ));
 }
 
 #[test]
@@ -257,6 +310,32 @@ fn component_validation_conditions_success() {
     assert!(opaque.is_ok_and(|outcome| {
         outcome.validations.contains(&Validation::InvalidUrlUnit)
             && serializer::serialize(&outcome.record).contains("%ZZ%0E")
+    }));
+}
+
+#[test]
+/// Verifies the complete URL-code-point boundary records nonfatal invalid units.
+fn url_code_point_validation_conditions_success() {
+    for input in [
+        "custom:path space",
+        "custom:path\"quote",
+        "custom:path|pipe",
+        "custom:path\u{fdd0}",
+        "custom:path?query|pipe",
+        "custom:path#fragment\u{ffff}",
+        "custom://user name@example.test/",
+        "custom:/relative|path",
+    ] {
+        assert!(
+            parse(input, None)
+                .is_ok_and(|outcome| { outcome.validations.contains(&Validation::InvalidUrlUnit) })
+        );
+    }
+    let ipv6 = parse("http://[2001:0db8::1]/", None);
+    assert!(ipv6.is_ok_and(|outcome| {
+        outcome
+            .validations
+            .contains(&Validation::Host(host::Validation::Ipv6PieceLeadingZero))
     }));
 }
 

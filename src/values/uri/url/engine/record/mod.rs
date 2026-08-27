@@ -49,11 +49,30 @@ impl Record {
         query: Option<String>,
         fragment: Option<String>,
     ) -> Result<Self, Error> {
-        if scheme.is_empty() || matches!(path, Path::Opaque(_)) && authority.is_some() {
+        if !is_canonical_scheme(&scheme)
+            || matches!(path, Path::Opaque(_)) && authority.is_some()
+            || is_special_scheme(&scheme) && matches!(path, Path::Opaque(_))
+            || is_special_scheme(&scheme) && authority.is_none()
+            || is_special_scheme(&scheme) && !is_rooted_path(&path)
+            || authority.is_some() && !is_rooted_path(&path) && !is_empty_segments(&path)
+        {
             return Err(Error::Invalid);
         }
         if let Some(authority) = &mut authority {
             if is_special_scheme(&scheme) && matches!(authority.host, Host::Opaque(_)) {
+                return Err(Error::Invalid);
+            }
+            if scheme != "file"
+                && is_special_scheme(&scheme)
+                && matches!(authority.host, Host::Empty)
+            {
+                return Err(Error::Invalid);
+            }
+            if scheme == "file"
+                && (!authority.username.is_empty()
+                    || authority.password.is_some()
+                    || authority.port.is_some())
+            {
                 return Err(Error::Invalid);
             }
             if authority.password.as_deref() == Some("") {
@@ -198,6 +217,24 @@ fn default_port(scheme: &str) -> Option<u16> {
         "https" | "wss" => Some(443),
         _ => None,
     }
+}
+
+fn is_canonical_scheme(value: &str) -> bool {
+    let mut characters = value.bytes();
+    matches!(characters.next(), Some(first) if first.is_ascii_lowercase())
+        && characters.all(|character| {
+            character.is_ascii_lowercase()
+                || character.is_ascii_digit()
+                || matches!(character, b'+' | b'-' | b'.')
+        })
+}
+
+fn is_rooted_path(path: &Path) -> bool {
+    matches!(path, Path::Segments(segments) if segments.first().is_some_and(String::is_empty))
+}
+
+fn is_empty_segments(path: &Path) -> bool {
+    matches!(path, Path::Segments(segments) if segments.is_empty())
 }
 
 /// Private record construction failure without user-supplied diagnostic text.
