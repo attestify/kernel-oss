@@ -1,0 +1,18 @@
+@startuml
+component "Public URL facade\n(private finalized state)" as facade
+component "URLMutator\n(private pending replacements)" as mutator
+component "Canonical WHATWG engine" as engine
+component "Parser + serializer + resolver" as parse
+component "Host / IPv4 / IPv6" as host
+component "IDNA + percent/form processing" as idna
+component "crate-private shared NFC seam" as nfc
+component "Kernel error translation" as error
+facade --> engine
+mutator --> engine : try_mutate
+engine --> parse
+engine --> host
+engine --> idna
+engine --> error
+idna --> nfc
+note right of engine : Private; deterministic; no I/O\nOne canonical path
+@enduml

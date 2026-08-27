@@ -1,0 +1,13 @@
+{
+  "schema": "AKNL-URL-P1B-ABI-001",
+  "type": "kernel_oss::values::uri::url::URL",
+  "private_state": true,
+  "methods": [
+    "pub fn try_new(value: &str) -> Result<Self, Error>", "pub fn value(&self) -> &str", "pub fn scheme(&self) -> &str", "pub fn username(&self) -> &str", "pub fn password(&self) -> Option<&str>", "pub fn host(&self) -> Option<&str>", "pub fn port(&self) -> Option<u16>", "pub fn path(&self) -> &str", "pub fn query(&self) -> Option<&str>", "pub fn query_pairs(&self) -> &[(String, String)]", "pub fn fragment(&self) -> Option<&str>", "pub fn has_opaque_path(&self) -> bool", "pub fn try_resolve(&self, reference: &str) -> Result<Self, Error>", "pub fn mutator(&self) -> URLMutator"
+  ],
+  "mutator_methods": ["scheme(self, value: &str) -> Self", "username(self, value: &str) -> Self", "password(self, value: Option<&str>) -> Self", "host(self, value: Option<&str>) -> Self", "port(self, value: Option<u16>) -> Self", "path(self, value: &str) -> Self", "query(self, value: Option<&str>) -> Self", "fragment(self, value: Option<&str>) -> Self", "try_mutate(self) -> Result<URL, Error>"],
+  "traits": ["Clone", "PartialEq", "Eq", "Hash", "manual Debug"],
+  "absent_traits": ["Display", "Copy", "Default", "PartialOrd", "Ord", "FromStr", "public TryFrom", "public serde"],
+  "debug": "URL([REDACTED])",
+  "layout_or_ffi_stability": false
+}
