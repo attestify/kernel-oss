@@ -226,51 +226,67 @@ impl fmt::Debug for URL {
 
 impl URLMutator {
     /// Requests a replacement scheme.
-    pub fn scheme(mut self, value: &str) -> Self {
-        self.scheme = Some(value.to_owned());
-        self
+    pub fn scheme(self, value: &str) -> Self {
+        Self {
+            scheme: Some(value.to_owned()),
+            ..self
+        }
     }
 
     /// Requests a replacement username.
-    pub fn username(mut self, value: &str) -> Self {
-        self.username = Some(value.to_owned());
-        self
+    pub fn username(self, value: &str) -> Self {
+        Self {
+            username: Some(value.to_owned()),
+            ..self
+        }
     }
 
     /// Requests a replacement or removal of the password.
-    pub fn password(mut self, value: Option<&str>) -> Self {
-        self.password = Some(value.map(str::to_owned));
-        self
+    pub fn password(self, value: Option<&str>) -> Self {
+        Self {
+            password: Some(value.map(str::to_owned)),
+            ..self
+        }
     }
 
     /// Requests a replacement or removal of the host.
-    pub fn host(mut self, value: Option<&str>) -> Self {
-        self.host = Some(value.map(str::to_owned));
-        self
+    pub fn host(self, value: Option<&str>) -> Self {
+        Self {
+            host: Some(value.map(str::to_owned)),
+            ..self
+        }
     }
 
     /// Requests a replacement or removal of the explicit port.
-    pub fn port(mut self, value: Option<u16>) -> Self {
-        self.port = Some(value);
-        self
+    pub fn port(self, value: Option<u16>) -> Self {
+        Self {
+            port: Some(value),
+            ..self
+        }
     }
 
     /// Requests a replacement path component.
-    pub fn path(mut self, value: &str) -> Self {
-        self.path = Some(value.to_owned());
-        self
+    pub fn path(self, value: &str) -> Self {
+        Self {
+            path: Some(value.to_owned()),
+            ..self
+        }
     }
 
     /// Requests a replacement or removal of the query component.
-    pub fn query(mut self, value: Option<&str>) -> Self {
-        self.query = Some(value.map(str::to_owned));
-        self
+    pub fn query(self, value: Option<&str>) -> Self {
+        Self {
+            query: Some(value.map(str::to_owned)),
+            ..self
+        }
     }
 
     /// Requests a replacement or removal of the fragment component.
-    pub fn fragment(mut self, value: Option<&str>) -> Self {
-        self.fragment = Some(value.map(str::to_owned));
-        self
+    pub fn fragment(self, value: Option<&str>) -> Self {
+        Self {
+            fragment: Some(value.map(str::to_owned)),
+            ..self
+        }
     }
 
     /// Reconstructs and validates one new canonical URL from all replacements.
