@@ -16,15 +16,18 @@ mod wpt_vectors;
 use super::{
     host::{self, Host},
     percent_encoding::{self, EncodeSet},
-    record::{self, Path, Record},
+    record::{self, Authority, Path, Record},
 };
 
 /// Private, typed nonfatal conditions for the future parser-wide validation model.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum Validation {
     InvalidUrlUnit,
-    SpecialBackslash,
-    Credentials,
+    SpecialSchemeMissingFollowingSolidus,
+    InvalidReverseSolidus,
+    InvalidCredentials,
+    FileInvalidWindowsDriveLetter,
+    FileInvalidWindowsDriveLetterHost,
     Host(host::Validation),
 }
 
@@ -47,9 +50,16 @@ enum State {
     SchemeStart,
     Scheme,
     NoScheme,
+    SpecialRelativeOrAuthority,
     SpecialAuthoritySlashes,
     SpecialAuthorityIgnoreSlashes,
     Authority,
+    Host,
+    Hostname,
+    Port,
+    File,
+    FileSlash,
+    FileHost,
     Relative,
     RelativeSlash,
     PathOrAuthority,
@@ -62,34 +72,346 @@ enum State {
 
 /// Parses one UTF-8 URL input against an optional private base record.
 pub(super) fn parse(input: &str, base: Option<&Record>) -> Result<Outcome, Error> {
-    let (prepared, mut validations) = preprocess(input);
-    let (before_fragment, fragment) = split_component(&prepared, '#');
-    if fragment.is_some() {
-        transition(State::Fragment)?;
+    Machine::new(input, base).run()
+}
+
+/// State-driven private parser dispatcher. Individual states select the relevant
+/// parsing operation; helpers only implement the component algorithms selected by
+/// this machine.
+struct Machine<'a> {
+    state: State,
+    base: Option<&'a Record>,
+    body: String,
+    query: Option<String>,
+    fragment: Option<String>,
+    scheme: Option<String>,
+    remainder: String,
+    validations: Vec<Validation>,
+    authority: Option<AuthorityWork>,
+}
+
+struct AuthorityWork {
+    scheme: String,
+    special: bool,
+    raw_path: String,
+    username: String,
+    password: Option<String>,
+    host_text: String,
+    raw_port: Option<String>,
+    port: Option<u16>,
+    bracketed: bool,
+    host: Option<Host>,
+}
+
+impl<'a> Machine<'a> {
+    fn new(input: &str, base: Option<&'a Record>) -> Self {
+        let (body, validations) = preprocess(input);
+        Self {
+            state: State::Fragment,
+            base,
+            body,
+            query: None,
+            fragment: None,
+            scheme: None,
+            remainder: String::new(),
+            validations,
+            authority: None,
+        }
     }
-    let (before_query, query) = split_component(before_fragment, '?');
-    if query.is_some() {
-        transition(State::Query)?;
-    }
-    match split_scheme(before_query) {
-        Some((scheme, remainder)) => {
-            let scheme = scheme.to_ascii_lowercase();
-            if let Some(base) = base
-                && base.special
-                && base.scheme == scheme
-                && !remainder.starts_with("//")
-                && !remainder.starts_with('\\')
-            {
-                resolve_relative(base, remainder, query, fragment, &mut validations)
-            } else {
-                parse_absolute(scheme, remainder, query, fragment, &mut validations)
+
+    fn run(mut self) -> Result<Outcome, Error> {
+        loop {
+            match self.state {
+                State::Fragment => {
+                    let (before, fragment) = split_component(&self.body, '#');
+                    let body = before.to_owned();
+                    let fragment = fragment.map(str::to_owned);
+                    self.body = body;
+                    self.fragment = fragment;
+                    if let Some(fragment) = self.fragment.as_deref() {
+                        validate_component(fragment, &mut self.validations);
+                    }
+                    self.state = State::Query;
+                }
+                State::Query => {
+                    let (before, query) = split_component(&self.body, '?');
+                    let body = before.to_owned();
+                    let query = query.map(str::to_owned);
+                    self.body = body;
+                    self.query = query;
+                    if let Some(query) = self.query.as_deref() {
+                        validate_component(query, &mut self.validations);
+                    }
+                    self.state = State::SchemeStart;
+                }
+                State::SchemeStart => match split_scheme(&self.body) {
+                    Some((scheme, remainder)) => {
+                        self.scheme = Some(scheme.to_ascii_lowercase());
+                        self.remainder = remainder.to_owned();
+                        self.state = State::Scheme;
+                    }
+                    None => self.state = State::NoScheme,
+                },
+                State::Scheme => {
+                    let scheme = self.scheme.as_deref().ok_or(Error::Invalid)?;
+                    if let Some(base) = self.base
+                        && base.is_special()
+                        && base.scheme() == scheme
+                        && !self.remainder.starts_with("//")
+                        && !self.remainder.starts_with('\\')
+                    {
+                        self.state = State::SpecialRelativeOrAuthority;
+                    } else if scheme == "file" {
+                        self.state = State::File;
+                    } else if is_special(scheme) {
+                        if !self.remainder.starts_with("//") && !self.remainder.starts_with('\\') {
+                            self.validations
+                                .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                        }
+                        self.state = State::SpecialAuthoritySlashes;
+                    } else if self.remainder.starts_with("//") {
+                        self.state = State::PathOrAuthority;
+                    } else if self.remainder.starts_with('/') {
+                        self.state = State::PathStart;
+                    } else {
+                        self.state = State::OpaquePath;
+                    }
+                }
+                State::SpecialRelativeOrAuthority => {
+                    let base = self.base.ok_or(Error::Invalid)?;
+                    return resolve_relative(
+                        base,
+                        &self.remainder,
+                        self.query.as_deref(),
+                        self.fragment.as_deref(),
+                        &mut self.validations,
+                    );
+                }
+                State::NoScheme => {
+                    self.state = State::Relative;
+                }
+                State::Relative => {
+                    if self.base.is_some_and(Record::is_special) {
+                        self.body = normalize_special_separators(&self.body, &mut self.validations);
+                    }
+                    if self.body.starts_with("//") {
+                        self.state = State::RelativeSlash;
+                    } else {
+                        let base = self.base.ok_or(Error::Invalid)?;
+                        return resolve_relative(
+                            base,
+                            &self.body,
+                            self.query.as_deref(),
+                            self.fragment.as_deref(),
+                            &mut self.validations,
+                        );
+                    }
+                }
+                State::RelativeSlash => {
+                    let base = self.base.ok_or(Error::Invalid)?;
+                    let reference = if base.is_special() && !base.is_file() {
+                        self.body.trim_start_matches('/')
+                    } else {
+                        self.body.strip_prefix("//").ok_or(Error::Invalid)?
+                    };
+                    if base.is_file() {
+                        return parse_file(
+                            base.scheme().to_owned(),
+                            &self.body,
+                            self.query.as_deref(),
+                            self.fragment.as_deref(),
+                            &mut self.validations,
+                        );
+                    }
+                    self.scheme = Some(base.scheme().to_owned());
+                    self.remainder = reference.to_owned();
+                    self.state = State::Authority;
+                }
+                State::SpecialAuthoritySlashes => {
+                    self.remainder =
+                        normalize_special_separators(&self.remainder, &mut self.validations);
+                    self.state = State::SpecialAuthorityIgnoreSlashes;
+                }
+                State::SpecialAuthorityIgnoreSlashes => {
+                    self.remainder = self.remainder.trim_start_matches('/').to_owned();
+                    self.state = State::Authority;
+                }
+                State::PathOrAuthority => {
+                    self.remainder = self
+                        .remainder
+                        .strip_prefix("//")
+                        .ok_or(Error::Invalid)?
+                        .to_owned();
+                    self.state = State::Authority;
+                }
+                State::Authority => {
+                    self.begin_authority()?;
+                    self.state = State::Host;
+                }
+                State::Host => {
+                    let authority = self.authority.as_mut().ok_or(Error::Invalid)?;
+                    if authority.bracketed {
+                        authority.host = Some(host::parse_ipv6(&authority.host_text)?);
+                        self.state = State::Port;
+                    } else {
+                        self.state = State::Hostname;
+                    }
+                }
+                State::Hostname => {
+                    self.parse_hostname()?;
+                    self.state = State::Port;
+                }
+                State::Port => {
+                    self.parse_authority_port()?;
+                    self.state = State::Path;
+                }
+                State::File => {
+                    self.state = State::FileSlash;
+                }
+                State::FileSlash => {
+                    self.state = State::FileHost;
+                }
+                State::FileHost => {
+                    let scheme = self.scheme.take().ok_or(Error::Invalid)?;
+                    return parse_file(
+                        scheme,
+                        &self.remainder,
+                        self.query.as_deref(),
+                        self.fragment.as_deref(),
+                        &mut self.validations,
+                    );
+                }
+                State::PathStart => {
+                    let scheme = self.scheme.take().ok_or(Error::Invalid)?;
+                    return parse_absolute(
+                        scheme,
+                        &self.remainder,
+                        self.query.as_deref(),
+                        self.fragment.as_deref(),
+                        &mut self.validations,
+                    );
+                }
+                State::OpaquePath => {
+                    let scheme = self.scheme.take().ok_or(Error::Invalid)?;
+                    return parse_absolute(
+                        scheme,
+                        &self.remainder,
+                        self.query.as_deref(),
+                        self.fragment.as_deref(),
+                        &mut self.validations,
+                    );
+                }
+                State::Path => return self.finish_authority_path(),
             }
         }
-        None => {
-            transition(State::NoScheme)?;
-            let base = base.ok_or(Error::Invalid)?;
-            resolve_relative(base, before_query, query, fragment, &mut validations)
+    }
+
+    fn begin_authority(&mut self) -> Result<(), Error> {
+        let scheme = self.scheme.take().ok_or(Error::Invalid)?;
+        let special = is_special(&scheme);
+        let separator = self
+            .remainder
+            .char_indices()
+            .find_map(|(index, character)| {
+                (character == '/' || special && character == '\\').then_some(index)
+            });
+        let (authority, raw_path) = separator.map_or((self.remainder.as_str(), ""), |index| {
+            self.remainder.split_at(index)
+        });
+        let (userinfo, host_port) = authority
+            .rsplit_once('@')
+            .map_or((None, authority), |parts| {
+                self.validations.push(Validation::InvalidCredentials);
+                (Some(parts.0), parts.1)
+            });
+        let (username, password) = userinfo.map_or((String::new(), None), |value| {
+            validate_component(value, &mut self.validations);
+            let value = value.replace('@', "%40");
+            let (username, password) = value
+                .split_once(':')
+                .map_or((value.as_str(), None), |parts| (parts.0, Some(parts.1)));
+            (
+                percent_encoding::encode(username, EncodeSet::UserInfo),
+                password.map(|password| percent_encoding::encode(password, EncodeSet::UserInfo)),
+            )
+        });
+        let (host_text, port_text, bracketed) = split_host_port(host_port)?;
+        if host_text.is_empty() && (special || userinfo.is_some() || port_text.is_some()) {
+            return Err(Error::Invalid);
         }
+        self.authority = Some(AuthorityWork {
+            scheme,
+            special,
+            raw_path: raw_path.to_owned(),
+            username,
+            password,
+            host_text: host_text.to_owned(),
+            raw_port: port_text.map(str::to_owned),
+            port: None,
+            bracketed,
+            host: None,
+        });
+        Ok(())
+    }
+
+    fn parse_hostname(&mut self) -> Result<(), Error> {
+        let authority = self.authority.as_mut().ok_or(Error::Invalid)?;
+        authority.host = Some(if authority.host_text.is_empty() {
+            Host::Empty
+        } else if authority.special {
+            let outcome = host::parse_special(&authority.host_text)?;
+            self.validations
+                .extend(outcome.validations.into_iter().map(Validation::Host));
+            outcome.value
+        } else {
+            let outcome = host::parse_opaque(&authority.host_text)?;
+            self.validations
+                .extend(outcome.validations.into_iter().map(Validation::Host));
+            outcome.value
+        });
+        Ok(())
+    }
+
+    fn parse_authority_port(&mut self) -> Result<(), Error> {
+        let authority = self.authority.as_mut().ok_or(Error::Invalid)?;
+        let port = parse_port(
+            authority.raw_port.as_deref(),
+            &authority.scheme,
+            &authority.host_text,
+            authority.special,
+            false,
+            &mut self.validations,
+        )?;
+        let host = authority.host.take().ok_or(Error::Invalid)?;
+        authority.host = Some(host);
+        authority.port = port;
+        Ok(())
+    }
+
+    fn finish_authority_path(&mut self) -> Result<Outcome, Error> {
+        let authority = self.authority.take().ok_or(Error::Invalid)?;
+        let host = authority.host.ok_or(Error::Invalid)?;
+        let path = parse_segments(
+            &authority.raw_path,
+            authority.special,
+            true,
+            &mut self.validations,
+        )?;
+        finish(
+            Record::new(
+                authority.scheme,
+                Some(Authority::new(
+                    authority.username,
+                    authority.password,
+                    host,
+                    authority.port,
+                )),
+                Path::Segments(path),
+                encode_query(self.query.as_deref(), authority.special),
+                encode_fragment(self.fragment.as_deref()),
+            )?,
+            &mut self.validations,
+        )
     }
 }
 
@@ -100,13 +422,10 @@ fn parse_absolute(
     fragment: Option<&str>,
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
-    transition(State::SchemeStart)?;
-    transition(State::Scheme)?;
     let special = is_special(&scheme);
     if special {
         parse_special_absolute(scheme, remainder, query, fragment, validations)
     } else if let Some(authority) = remainder.strip_prefix("//") {
-        transition(State::PathOrAuthority)?;
         parse_with_authority(
             scheme,
             false,
@@ -117,38 +436,27 @@ fn parse_absolute(
             false,
         )
     } else if remainder.starts_with('/') {
-        transition(State::PathStart)?;
         let path = parse_segments(remainder, false, false, validations)?;
         finish(
             Record::new(
                 scheme,
-                String::new(),
-                None,
-                None,
                 None,
                 Path::Segments(path),
                 encode_query(query, false),
                 encode_fragment(fragment),
-                false,
-                false,
             )?,
             validations,
         )
     } else {
-        transition(State::OpaquePath)?;
+        validate_component(remainder, validations);
         let path = encode_opaque_path(remainder, query.is_some() || fragment.is_some());
         finish(
             Record::new(
                 scheme,
-                String::new(),
-                None,
-                None,
                 None,
                 Path::Opaque(path),
                 encode_query(query, false),
                 encode_fragment(fragment),
-                false,
-                false,
             )?,
             validations,
         )
@@ -163,10 +471,8 @@ fn parse_special_absolute(
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
     if scheme == "file" {
-        transition(State::PathOrAuthority)?;
         return parse_file(scheme, remainder, query, fragment, validations);
     }
-    transition(State::SpecialAuthoritySlashes)?;
     let normalized = normalize_special_separators(remainder, validations);
     let authority = normalized
         .strip_prefix("//")
@@ -176,7 +482,6 @@ fn parse_special_absolute(
                 .map(|value| value.trim_start_matches('/'))
         })
         .unwrap_or(&normalized);
-    transition(State::SpecialAuthorityIgnoreSlashes)?;
     parse_with_authority(scheme, true, authority, query, fragment, validations, false)
 }
 
@@ -188,7 +493,13 @@ fn parse_file(
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
     let normalized = normalize_special_separators(remainder, validations);
+    if normalized.contains('|') {
+        validations.push(Validation::FileInvalidWindowsDriveLetter);
+    }
     if let Some(authority) = normalized.strip_prefix("//") {
+        if begins_windows_drive(authority) {
+            validations.push(Validation::FileInvalidWindowsDriveLetterHost);
+        }
         return parse_with_authority(scheme, true, authority, query, fragment, validations, true);
     }
     let normalized = if normalized.starts_with('/') {
@@ -208,15 +519,10 @@ fn parse_file(
     finish(
         Record::new(
             scheme,
-            String::new(),
-            None,
-            Some(Host::Empty),
-            None,
+            Some(Authority::new(String::new(), None, Host::Empty, None)),
             Path::Segments(path),
             encode_query(query, true),
             encode_fragment(fragment),
-            true,
-            true,
         )?,
         validations,
     )
@@ -231,7 +537,6 @@ fn parse_with_authority(
     validations: &mut Vec<Validation>,
     file: bool,
 ) -> Result<Outcome, Error> {
-    transition(State::Authority)?;
     let separator = authority_and_path
         .char_indices()
         .find_map(|(index, character)| {
@@ -249,22 +554,16 @@ fn parse_with_authority(
         return finish(
             Record::new(
                 scheme,
-                String::new(),
-                None,
-                Some(Host::Empty),
-                None,
+                Some(Authority::new(String::new(), None, Host::Empty, None)),
                 Path::Segments(path),
                 encode_query(query, true),
                 encode_fragment(fragment),
-                true,
-                true,
             )?,
             validations,
         );
     }
     let (username, password, host, port) =
         parse_authority(authority, &scheme, special, file, validations)?;
-    transition(State::PathStart)?;
     let path = if file {
         parse_file_segments(raw_path, true, validations)?
     } else {
@@ -273,15 +572,10 @@ fn parse_with_authority(
     finish(
         Record::new(
             scheme,
-            username,
-            password,
-            Some(host),
-            port,
+            Some(Authority::new(username, password, host, port)),
             Path::Segments(path),
             encode_query(query, special),
             encode_fragment(fragment),
-            true,
-            special,
         )?,
         validations,
     )
@@ -294,68 +588,65 @@ fn resolve_relative(
     fragment: Option<&str>,
     validations: &mut Vec<Validation>,
 ) -> Result<Outcome, Error> {
-    transition(State::Relative)?;
-    let reference = if base.special {
+    let reference = if base.is_special() {
         normalize_special_separators(reference, validations)
     } else {
         reference.to_owned()
     };
     if let Some(stripped_authority) = reference.strip_prefix("//") {
-        transition(State::RelativeSlash)?;
-        let authority = if base.special && base.scheme != "file" {
+        let authority = if base.is_special() && !base.is_file() {
             reference.trim_start_matches('/')
         } else {
             stripped_authority
         };
         return parse_with_authority(
-            base.scheme.clone(),
-            base.special,
+            base.scheme().to_owned(),
+            base.is_special(),
             authority,
             query,
             fragment,
             validations,
-            base.scheme == "file",
+            base.is_file(),
         );
     }
-    if base.scheme == "file" && begins_windows_drive(reference.trim_start_matches('/')) {
-        let mut record = base.clone();
-        record.path = Path::Segments(parse_file_segments(
+    if base.is_file() && begins_windows_drive(reference.trim_start_matches('/')) {
+        let record = base.with_path(Path::Segments(parse_file_segments(
             &format!(
                 "/{}",
                 normalize_windows_drive(reference.trim_start_matches('/'))
             ),
             true,
             validations,
-        )?);
-        record.query = encode_query(query, true);
-        record.fragment = encode_fragment(fragment);
+        )?))?;
+        let record = record.with_query(encode_query(query, true))?;
+        let record = record.with_fragment(encode_fragment(fragment))?;
         return finish(record, validations);
     }
     if base.has_opaque_path() {
         if !reference.is_empty() || query.is_some() {
             return Err(Error::Invalid);
         }
-        let mut record = base.clone();
-        record.fragment = encode_fragment(fragment);
+        let record = base.with_fragment(encode_fragment(fragment))?;
         return finish(record, validations);
     }
-    let mut record = base.clone();
-    record.fragment = encode_fragment(fragment);
+    let record = base.with_fragment(encode_fragment(fragment))?;
     if reference.is_empty() {
         if query.is_some() {
-            record.query = encode_query(query, record.special);
+            return finish(
+                record.with_query(encode_query(query, record.is_special()))?,
+                validations,
+            );
         }
         return finish(record, validations);
     }
-    transition(State::Path)?;
     let absolute = reference.starts_with('/');
-    let mut segments = match &record.path {
+    let mut segments = match record.path() {
         Path::Segments(segments) => segments.clone(),
         Path::Opaque(_) => return Err(Error::Invalid),
     };
     if absolute {
-        let drive = match &record.path {
-            Path::Segments(segments) if record.scheme == "file" => segments
+        let drive = match record.path() {
+            Path::Segments(segments) if record.is_file() => segments
                 .get(1)
                 .filter(|value| is_windows_drive_segment(value)),
             Path::Segments(_) | Path::Opaque(_) => None,
@@ -370,13 +661,18 @@ fn resolve_relative(
         } else {
             reference.clone()
         };
-        segments = if record.scheme == "file" {
+        segments = if record.is_file() {
             parse_file_segments(&path, true, validations)?
         } else {
-            parse_segments(&path, record.special, record.has_authority, validations)?
+            parse_segments(
+                &path,
+                record.is_special(),
+                record.has_authority(),
+                validations,
+            )?
         };
     } else {
-        if segments.is_empty() && record.has_authority {
+        if segments.is_empty() && record.has_authority() {
             segments.push(String::new());
         } else if segments.len() > 1 {
             segments.pop();
@@ -384,16 +680,16 @@ fn resolve_relative(
         append_relative_segments(
             &mut segments,
             &reference,
-            record.scheme == "file",
-            record.special,
+            record.is_file(),
+            record.is_special(),
         );
-        if segments.is_empty() && record.has_authority {
+        if segments.is_empty() && record.has_authority() {
             segments.push(String::new());
             segments.push(String::new());
         }
     }
-    record.path = Path::Segments(segments);
-    record.query = encode_query(query, record.special);
+    let record = record.with_path(Path::Segments(segments))?;
+    let record = record.with_query(encode_query(query, record.is_special()))?;
     finish(record, validations)
 }
 
@@ -407,10 +703,11 @@ fn parse_authority(
     let (userinfo, host_port) = authority
         .rsplit_once('@')
         .map_or((None, authority), |parts| {
-            validations.push(Validation::Credentials);
+            validations.push(Validation::InvalidCredentials);
             (Some(parts.0), parts.1)
         });
     let (username, password) = userinfo.map_or((String::new(), None), |value| {
+        validate_component(value, validations);
         let value = value.replace('@', "%40");
         let (username, password) = value
             .split_once(':')
@@ -532,7 +829,7 @@ fn parse_segments_inner(
     preserve_drive: bool,
     validations: &mut Vec<Validation>,
 ) -> Result<Vec<String>, Error> {
-    transition(State::PathStart)?;
+    validate_component(raw, validations);
     let raw = if special {
         normalize_special_separators(raw, validations)
     } else {
@@ -682,6 +979,27 @@ fn encode_opaque_path(path: &str, has_query_or_fragment: bool) -> String {
     percent_encoding::encode(path, EncodeSet::C0Control)
 }
 
+fn validate_component(value: &str, validations: &mut Vec<Validation>) {
+    if value.chars().any(is_invalid_url_unit) || has_malformed_percent_triplet(value) {
+        validations.push(Validation::InvalidUrlUnit);
+    }
+}
+
+fn is_invalid_url_unit(character: char) -> bool {
+    character <= '\u{001f}' || character == '\u{007f}'
+}
+
+fn has_malformed_percent_triplet(input: &str) -> bool {
+    let bytes = input.as_bytes();
+    bytes.iter().enumerate().any(|(index, byte)| {
+        *byte == b'%'
+            && !matches!(
+                (bytes.get(index + 1), bytes.get(index + 2)),
+                (Some(high), Some(low)) if high.is_ascii_hexdigit() && low.is_ascii_hexdigit()
+            )
+    })
+}
+
 fn split_component(input: &str, delimiter: char) -> (&str, Option<&str>) {
     input
         .split_once(delimiter)
@@ -721,7 +1039,7 @@ fn preprocess(input: &str) -> (String, Vec<Validation>) {
 
 fn normalize_special_separators(input: &str, validations: &mut Vec<Validation>) -> String {
     if input.contains('\\') {
-        validations.push(Validation::SpecialBackslash);
+        validations.push(Validation::InvalidReverseSolidus);
     }
     input.replace('\\', "/")
 }
@@ -765,25 +1083,6 @@ fn finish(record: Record, validations: &mut Vec<Validation>) -> Result<Outcome, 
         record,
         validations: core::mem::take(validations),
     })
-}
-
-fn transition(state: State) -> Result<(), Error> {
-    match state {
-        State::SchemeStart
-        | State::Scheme
-        | State::NoScheme
-        | State::SpecialAuthoritySlashes
-        | State::SpecialAuthorityIgnoreSlashes
-        | State::Authority
-        | State::Relative
-        | State::RelativeSlash
-        | State::PathOrAuthority
-        | State::PathStart
-        | State::Path
-        | State::OpaquePath
-        | State::Query
-        | State::Fragment => Ok(()),
-    }
 }
 
 impl From<host::Error> for Error {

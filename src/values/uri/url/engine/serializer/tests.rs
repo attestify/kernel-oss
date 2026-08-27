@@ -3,7 +3,7 @@
 use super::serialize;
 use crate::values::uri::url::engine::{
     host::Host,
-    record::{Path, Record},
+    record::{Authority, Path, Record},
 };
 
 #[test]
@@ -11,15 +11,15 @@ use crate::values::uri::url::engine::{
 fn empty_query_and_fragment_success() {
     let record = Record::new(
         "http".to_owned(),
-        String::new(),
-        None,
-        Some(Host::Domain("example.test".to_owned())),
-        None,
+        Some(Authority::new(
+            String::new(),
+            None,
+            Host::Domain("example.test".to_owned()),
+            None,
+        )),
         Path::Segments(vec![String::new(), String::new()]),
         Some(String::new()),
         Some(String::new()),
-        true,
-        true,
     );
     assert!(matches!(
         record.as_ref().map(serialize),

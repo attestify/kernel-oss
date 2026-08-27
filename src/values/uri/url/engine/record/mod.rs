@@ -24,62 +24,179 @@ pub(super) enum Path {
 /// Canonical, private URL state. It deliberately implements no diagnostic formatting.
 #[derive(Clone, Eq, PartialEq)]
 pub(super) struct Record {
-    pub(super) scheme: String,
-    pub(super) username: String,
-    pub(super) password: Option<String>,
-    pub(super) host: Option<Host>,
-    pub(super) port: Option<u16>,
-    pub(super) path: Path,
-    pub(super) query: Option<String>,
-    pub(super) fragment: Option<String>,
-    pub(super) has_authority: bool,
-    pub(super) special: bool,
+    scheme: String,
+    authority: Option<Authority>,
+    path: Path,
+    query: Option<String>,
+    fragment: Option<String>,
+}
+
+/// Canonical authority state. It can only exist together with a host.
+#[derive(Clone, Eq, PartialEq)]
+pub(super) struct Authority {
+    username: String,
+    password: Option<String>,
+    host: Host,
+    port: Option<u16>,
 }
 
 impl Record {
     /// Creates a canonical record while enforcing representation-level invariants.
-    #[expect(
-        clippy::too_many_arguments,
-        reason = "each canonical URL component is independently required to validate private record invariants"
-    )]
     pub(super) fn new(
         scheme: String,
-        username: String,
-        password: Option<String>,
-        host: Option<Host>,
-        port: Option<u16>,
+        mut authority: Option<Authority>,
         path: Path,
         query: Option<String>,
         fragment: Option<String>,
-        has_authority: bool,
-        special: bool,
     ) -> Result<Self, Error> {
-        if scheme.is_empty()
-            || (special && matches!(host, Some(Host::Opaque(_))))
-            || matches!(path, Path::Opaque(_)) && has_authority
-        {
+        if scheme.is_empty() || matches!(path, Path::Opaque(_)) && authority.is_some() {
             return Err(Error::Invalid);
         }
-        if host.is_none() && (port.is_some() || !username.is_empty() || password.is_some()) {
-            return Err(Error::Invalid);
+        if let Some(authority) = &mut authority {
+            if is_special_scheme(&scheme) && matches!(authority.host, Host::Opaque(_)) {
+                return Err(Error::Invalid);
+            }
+            if authority.password.as_deref() == Some("") {
+                authority.password = None;
+            }
+            if is_special_scheme(&scheme) && default_port(&scheme) == authority.port {
+                authority.port = None;
+            }
         }
         Ok(Self {
             scheme,
-            username,
-            password,
-            host,
-            port,
+            authority,
             path,
             query,
             fragment,
-            has_authority,
-            special,
         })
+    }
+
+    /// Returns the canonical scheme.
+    pub(super) fn scheme(&self) -> &str {
+        &self.scheme
+    }
+
+    /// Returns whether this scheme is special under the URL standard.
+    pub(super) fn is_special(&self) -> bool {
+        is_special_scheme(&self.scheme)
+    }
+
+    /// Returns whether this is a file URL.
+    pub(super) fn is_file(&self) -> bool {
+        self.scheme == "file"
+    }
+
+    /// Returns whether this record contains authority state.
+    pub(super) fn has_authority(&self) -> bool {
+        self.authority.is_some()
+    }
+
+    /// Returns the canonical username, or an empty value when authority is absent.
+    pub(super) fn username(&self) -> &str {
+        self.authority
+            .as_ref()
+            .map_or("", |authority| &authority.username)
+    }
+
+    /// Returns the canonical optional password.
+    pub(super) fn password(&self) -> Option<&str> {
+        self.authority
+            .as_ref()
+            .and_then(|authority| authority.password.as_deref())
+    }
+
+    /// Returns the authority host when present.
+    pub(super) fn host(&self) -> Option<&Host> {
+        self.authority.as_ref().map(|authority| &authority.host)
+    }
+
+    /// Returns the canonical non-default port when present.
+    pub(super) fn port(&self) -> Option<u16> {
+        self.authority.as_ref().and_then(|authority| authority.port)
+    }
+
+    /// Returns the canonical path.
+    pub(super) fn path(&self) -> &Path {
+        &self.path
+    }
+
+    /// Returns the canonical optional query.
+    pub(super) fn query(&self) -> Option<&str> {
+        self.query.as_deref()
+    }
+
+    /// Returns the canonical optional fragment.
+    pub(super) fn fragment(&self) -> Option<&str> {
+        self.fragment.as_deref()
+    }
+
+    /// Returns a new record with a replacement path.
+    pub(super) fn with_path(&self, path: Path) -> Result<Self, Error> {
+        Self::new(
+            self.scheme.clone(),
+            self.authority.clone(),
+            path,
+            self.query.clone(),
+            self.fragment.clone(),
+        )
+    }
+
+    /// Returns a new record with a replacement query.
+    pub(super) fn with_query(&self, query: Option<String>) -> Result<Self, Error> {
+        Self::new(
+            self.scheme.clone(),
+            self.authority.clone(),
+            self.path.clone(),
+            query,
+            self.fragment.clone(),
+        )
+    }
+
+    /// Returns a new record with a replacement fragment.
+    pub(super) fn with_fragment(&self, fragment: Option<String>) -> Result<Self, Error> {
+        Self::new(
+            self.scheme.clone(),
+            self.authority.clone(),
+            self.path.clone(),
+            self.query.clone(),
+            fragment,
+        )
     }
 
     /// Returns whether this record cannot serve as a relative-resolution base.
     pub(super) fn has_opaque_path(&self) -> bool {
         matches!(self.path, Path::Opaque(_))
+    }
+}
+
+impl Authority {
+    /// Creates authority state that remains tied to a host.
+    pub(super) fn new(
+        username: String,
+        password: Option<String>,
+        host: Host,
+        port: Option<u16>,
+    ) -> Self {
+        Self {
+            username,
+            password,
+            host,
+            port,
+        }
+    }
+}
+
+fn is_special_scheme(scheme: &str) -> bool {
+    matches!(scheme, "ftp" | "file" | "http" | "https" | "ws" | "wss")
+}
+
+fn default_port(scheme: &str) -> Option<u16> {
+    match scheme {
+        "ftp" => Some(21),
+        "http" | "ws" => Some(80),
+        "https" | "wss" => Some(443),
+        _ => None,
     }
 }
 
