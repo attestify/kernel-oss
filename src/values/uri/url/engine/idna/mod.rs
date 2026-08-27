@@ -205,10 +205,8 @@ fn raw_to_unicode(domain: &str) -> UnicodeOutcome {
         if let Err(reason) = validate_label(label, true) {
             error.get_or_insert(reason);
         }
-        if bidi_domain {
-            if let Err(reason) = validate_bidi(label) {
-                error.get_or_insert(reason);
-            }
+        if bidi_domain && let Err(reason) = validate_bidi(label) {
+            error.get_or_insert(reason);
         }
     }
     UnicodeOutcome { value, error }
