@@ -29,7 +29,8 @@ The shared kernel role traits are in place:
   - `AsyncVoidGateway`
   - `AsyncGateway`
 
-The NFC relocation candidate is present for review:
+The NFC relocation is owned by Kernel OSS and its accepted seven-commit
+candidate is being prepared locally for the `0.2.8` release candidate:
 
 - `kernel_oss::values::text::NfcText` is the public immutable Unicode 17.0
   NFC value.
@@ -37,7 +38,10 @@ The NFC relocation candidate is present for review:
 - The implementation was relocated from the approved Kernel Proprietary source
   set without an algorithm rewrite. MIT attribution and Unicode License v3
   custody are retained.
-- URL/IDNA use and Proprietary migration are explicitly separate future work.
+- URL/IDNA work remains separately unauthorized.
+- Kernel Proprietary migration remains blocked until the signed immutable OSS
+  `0.2.8` tag exists; this local candidate does not create a tag, push, or
+  publication.
 
 The current gateway compatibility retrofits are complete:
 
@@ -85,24 +89,23 @@ At the last full release check:
 - The release examples passed.
 - Test count was 355 unit tests plus 11 doctests.
 
-Before publishing `0.2.6`, rerun:
+Before authorizing the `0.2.8` tag, push, publication, or release, rerun:
 
 ```text
 cargo fmt --all --check
 cargo test
 cargo check --examples
-cargo publish --dry-run --allow-dirty
+cargo clippy --all-targets --locked --offline -- -D warnings
 ```
 
 ## Known Non-Blocking Release Gaps
 
 These are still real standards deltas, but they do not block the current seam/gateway compatibility release unless the team decides to raise the release bar:
 
-- `cargo clippy --all-targets --locked --offline -- -D warnings` currently
-  fails at `src/values/specification/repository_link/mod.rs:76` for
-  `clippy::useless_borrows_in_formatting`. This finding predates and is outside
-  the NFC relocation; no NFC clippy finding was introduced, and the unrelated
-  finding was not fixed under the NFC authorization.
+- Strict clippy must pass for the local `0.2.8` release candidate. The
+  behavior-neutral formatting-borrow correction is limited to the existing
+  RepositoryLink lint location; URL behavior and diagnostics remain outside
+  this release-preparation task.
 - `cargo rustdoc --lib -- -D missing_docs` now passes.
 - Some bounded public types still expose public fields for compatibility.
 - Several fallible constructors and builders still need `try_new` / `try_build` migration work.

@@ -26,7 +26,10 @@ NFC relocation alignment:
   tests. The crate-private engine is not a public normalization API.
 - The module retains the approved MIT attribution and Unicode License v3
   custody records; no new dependency or alternate normalizer was introduced.
-- URL integration and Proprietary migration remain separately authorized work.
+- URL/IDNA integration remains separately unauthorized work. Kernel
+  Proprietary migration remains blocked until the signed immutable OSS `0.2.8`
+  tag exists; no tag, push, publication, or release occurs during local
+  release-candidate preparation.
 - `VoidGateway`, `Gateway`, `AsyncVoidGateway`, and `AsyncGateway` in `src/gateway/mod.rs`
 
 The current public gateway migration pattern is established:
@@ -116,14 +119,11 @@ The first documentation catalog pass is complete:
    - `src/algorithms/os_home_directory.rs` now has colocated tests and remains part of the flat-module backlog until it is converted into the standard directory shape.
 
 10. Clippy
-   - `cargo clippy --all-targets --locked --offline -- -D warnings` currently
-     fails at `src/values/specification/repository_link/mod.rs:76` for
-     `clippy::useless_borrows_in_formatting`.
-   - This finding predates and is outside the NFC relocation. No new NFC
-     clippy finding was introduced, and the unrelated finding was not fixed
-     under the NFC authorization.
-   - Resolve or explicitly baseline the unrelated finding before treating
-     clippy as clean for a later release.
+   - Strict `cargo clippy --all-targets --locked --offline -- -D warnings`
+     must pass for the local `0.2.8` release candidate.
+   - The permitted release-preparation correction removes only the unnecessary
+     formatting borrow at the established RepositoryLink lint location. It
+     does not alter URL parsing, validation, diagnostics, or display behavior.
 
 11. Test documentation
    - The required test-module doc shape is complete across the current `src/**`
@@ -152,13 +152,13 @@ At the last full release check:
 - The release examples passed.
 - Test count was 355 unit tests plus 11 doctests.
 
-Before publishing `0.2.6`, rerun:
+Before authorizing the `0.2.8` tag, push, publication, or release, rerun:
 
 ```text
 cargo fmt --all --check
 cargo test
 cargo check --examples
-cargo publish --dry-run --allow-dirty
+cargo clippy --all-targets --locked --offline -- -D warnings
 ```
 
 ## Archived Completed Decisions
