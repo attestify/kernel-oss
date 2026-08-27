@@ -66,7 +66,10 @@ pub(super) fn to_ascii(domain: &str, be_strict: bool) -> Result<String, Error> {
         }
     }
 
-    let mut ascii = Vec::with_capacity(labels.len());
+    let mut ascii = Vec::new();
+    ascii
+        .try_reserve(labels.len())
+        .map_err(|_| Error::Overflow)?;
     for label in labels {
         if label.is_empty() {
             ascii.push(String::new());
