@@ -32,6 +32,7 @@ include = [
 name = "kernel_oss_url_performance"
 path = "tools/url-data/url_performance.rs"
 harness = false
+test = false
 
 [dev-dependencies]
 test_framework_oss = { git = "https://github.com/attestify/test-framework-oss.git", tag = "0.2.4" }

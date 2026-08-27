@@ -96,7 +96,20 @@ impl Measurement {
     }
 }
 
+// Cargo includes explicit benchmark targets in `test --all-targets` even when
+// their target metadata has `test = false`.  Keep that debug-profile invocation
+// inert; the optimized bench profile below is the sole performance workload.
+#[cfg(debug_assertions)]
 fn main() {
+    let _ = run;
+}
+
+#[cfg(not(debug_assertions))]
+fn main() {
+    run();
+}
+
+fn run() {
     let short = "https://example.test/a";
     let credential = "https://user:pass@example.test/a?x=1&x=2#fragment";
     let percent = "https://example.test/%25%2F%3F%23?a=%25%26%3D#%25";
