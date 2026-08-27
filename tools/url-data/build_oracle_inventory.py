@@ -1,5 +1,6 @@
-"""Build R1B behavior-specific oracle cases; no product code is written."""
+"""Build the explicit-output-path AKNL-URL-P1A-R1E oracle inventory."""
 import hashlib
+import sys
 from pathlib import Path
 
 G = {
@@ -45,4 +46,5 @@ for group,xs in (("RLINK-001",R1),("RLINK-002",R2)):
   add(group,n,v,"repository_link",a,d,asup,dsup,p,security="synthetic")
 assert len(rows)==190
 h="id\tgroup\tstable_source_test_name\tescaped_input\tbase\toperation\texpected_projection_fields\tallowed_schemes\tdefault_scheme\tallowed_schemes_supplied\tdefault_scheme_supplied\trepo_link_supplied\tcomparison_class_id\tsecurity_classification\tsource_citation\tduplicate_reuse_status_reason"
-Path("case-inventory.tsv").write_text(h+"\n"+"\n".join("\t".join(x) for x in rows)+"\n")
+if len(sys.argv)!=2: raise SystemExit("usage: build_oracle_inventory.py OUTPUT_PATH")
+Path(sys.argv[1]).write_text(h+"\n"+"\n".join("\t".join(x) for x in rows)+"\n")
