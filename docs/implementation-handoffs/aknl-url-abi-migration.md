@@ -1,17 +1,29 @@
 # URL ABI migration freeze
 
-| Current surface | Target / caller action | Compatibility and phase |
-| --- | --- | --- |
-| public fields | private finalized state | source breaking; P5 |
-| `URL::new`, `value`, `line` | `try_new`, borrowed sensitive `value`, no `line` | source/ownership break; P5 |
-| scheme/host/port/path/query/fragment accessors | borrowed accessors; optional values use `Option` | zero/empty sentinels removed; P5 |
-| query_string/queries/query_count | `query` and borrowed ordered `query_pairs` | query representation break; P5 |
-| Clone, Eq, Hash, Debug | retained canonical traits; redacted Debug | semantic redaction change; P5 |
-| URL Display | absent | compile fail; P5 |
-| RepositoryLink construction/errors/Display | target URL and redacted message/Display | preserve P1A Kind/Audience; P5 |
-| external `url` dependency | removed only at final cutover | manifest/lock/tree/product removal; P6 |
+| Current surface | Target and caller action | Impact / phase |
+|---|---|---|
+| public URL fields | private state; use accessors | source break, P5 |
+| `URL::new` | `URL::try_new` | rename/fallible, P5 |
+| `value()` | borrowed sensitive `value()` | remove clone, P5 |
+| `line()` | no replacement | removed, P5 |
+| `scheme()` | retained borrowed | canonical value, P5 |
+| `host()` | `Option<&str>` | empty sentinel removed, P5 |
+| `port()` | `Option<u16>` | zero sentinel removed, P5 |
+| `path()` | retained borrowed | canonical path, P5 |
+| `query_string()` | `query()` | absent versus empty, P5 |
+| `queries()` | `query_pairs()` | borrowed ordered slice, P5 |
+| `query_pairs()` | retained borrowed slice | no allocation, P5 |
+| `query_count()` | `query_pairs().len()` | convenience removed, P5 |
+| `fragment()` | `Option<&str>` | absent versus empty, P5 |
+| Clone | retained | canonical value, P5 |
+| PartialEq/Eq | retained | complete canonical equality, P5 |
+| Hash | retained | equality-consistent hash, P5 |
+| Debug | manual redacted Debug | security change, P5 |
+| URL Display | absent | compile failure, P5 |
+| RepositoryLink construction | target URL facade | migrate builder internals, P5 |
+| RepositoryLink errors | preserve P1A Kind/Audience; redact text | security, P5 |
+| RepositoryLink Display | `RepositoryLink([REDACTED])` | security, P5 |
+| external `url` | remove manifest/lock/tree/product use | final cutover, P6 |
 
-RepositoryLink migrates to the redacted Display contract at P5. Legacy behavior
-is compared with the accepted locked `url` 2.5.7 oracle; implementation
-conformance is governed by WHATWG and approved WPT/Unicode inputs. Final release
-cannot retain the external dependency.
+New target-only APIs are `username()`, `password()`, `has_opaque_path()`,
+`try_resolve()`, and `mutator()`/`URLMutator`.

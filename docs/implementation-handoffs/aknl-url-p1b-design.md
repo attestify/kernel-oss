@@ -95,9 +95,11 @@ one, explaining correctness, memory, denial-of-service, and compatibility.
 
 ## Future P5 manual API matrix
 
-Pass IDs `API-P-001` through `API-P-008`: private URL/Mutator fields; every
-approved URL/Mutator signature; `Value<str>`; Clone/Eq/Hash; redacted Debug;
-borrowed query pairs; resolver return type; mutator chaining. Fail IDs
-`API-F-001` through `API-F-012`: `new`, fields, `line`, URL Display,
-Copy/Default, ordering, FromStr, conversions/serde, Mutator fields, and public
-engine/IDNA/NFC/url types. These are P5 plans only, not tests to implement now.
+Pass: `API-P-001` URL/`try_new`; `API-P-002` `Value<ValueType = str>`/`value`;
+`API-P-003` component accessors; `API-P-004` resolver; `API-P-005` Mutator
+setters/finalizer; `API-P-006` borrowed pairs; `API-P-007` Clone/PartialEq/Eq/
+Hash; `API-P-008` exact Debug. Fail: `API-F-001` `new`; `F-002` fields;
+`F-003` `line`; `F-004` Display; `F-005` Copy; `F-006` Default; `F-007`
+PartialOrd/Ord; `F-008` FromStr; `F-009` TryFrom; `F-010` serde; `F-011`
+Mutator fields; `F-012` engine/IDNA/NFC/external-url types. These remain P5
+plans only, not tests to implement now.

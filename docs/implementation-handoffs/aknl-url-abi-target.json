@@ -1,2 +1,239 @@
-{"schema":"AKNL-URL-P1B-ABI-001","items":[
-{"id":"ABI-001","rule":"pub struct URL private finalized state"},{"id":"ABI-002","rule":"pub struct URLMutator private state"},{"id":"ABI-003","signature":"impl Value<ValueType = str> for URL"},{"id":"ABI-004","signature":"pub fn try_new(value: &str) -> Result<Self, Error>"},{"id":"ABI-005","signature":"pub fn value(&self) -> &str"},{"id":"ABI-006","signature":"pub fn scheme(&self) -> &str"},{"id":"ABI-007","signature":"pub fn username(&self) -> &str"},{"id":"ABI-008","signature":"pub fn password(&self) -> Option<&str>"},{"id":"ABI-009","signature":"pub fn host(&self) -> Option<&str>"},{"id":"ABI-010","signature":"pub fn port(&self) -> Option<u16>"},{"id":"ABI-011","signature":"pub fn path(&self) -> &str"},{"id":"ABI-012","signature":"pub fn query(&self) -> Option<&str>"},{"id":"ABI-013","signature":"pub fn query_pairs(&self) -> &[(String, String)]"},{"id":"ABI-014","signature":"pub fn fragment(&self) -> Option<&str>"},{"id":"ABI-015","signature":"pub fn has_opaque_path(&self) -> bool"},{"id":"ABI-016","signature":"pub fn try_resolve(&self, reference: &str) -> Result<Self, Error>"},{"id":"ABI-017","signature":"pub fn mutator(&self) -> URLMutator"},{"id":"ABI-018","signature":"pub fn scheme(self, value: &str) -> Self"},{"id":"ABI-019","signature":"pub fn username(self, value: &str) -> Self"},{"id":"ABI-020","signature":"pub fn password(self, value: Option<&str>) -> Self"},{"id":"ABI-021","signature":"pub fn host(self, value: Option<&str>) -> Self"},{"id":"ABI-022","signature":"pub fn port(self, value: Option<u16>) -> Self"},{"id":"ABI-023","signature":"pub fn path(self, value: &str) -> Self"},{"id":"ABI-024","signature":"pub fn query(self, value: Option<&str>) -> Self"},{"id":"ABI-025","signature":"pub fn fragment(self, value: Option<&str>) -> Self"},{"id":"ABI-026","signature":"pub fn try_mutate(self) -> Result<URL, Error>"},{"id":"ABI-027","rule":"Clone"},{"id":"ABI-028","rule":"PartialEq"},{"id":"ABI-029","rule":"Eq"},{"id":"ABI-030","rule":"Hash"},{"id":"ABI-031","rule":"manual Debug URL([REDACTED])"},{"id":"ABI-032","rule":"URL Display absent"},{"id":"ABI-033","rule":"Copy Default PartialOrd Ord absent"},{"id":"ABI-034","rule":"FromStr public TryFrom serde absent"},{"id":"ABI-035","rule":"Error InvalidInput User redacted approved messages"},{"id":"ABI-036","rule":"no public url crate/private engine"},{"id":"ABI-037","rule":"no public IDNA/NFC types"},{"id":"ABI-038","rule":"no repr(C) C ABI FFI/layout/binary promise"},{"id":"ABI-039","rule":"complete canonical equality/hash"}]}
+{
+  "schema": "AKNL-URL-P1B-ABI-001",
+  "items": [
+    {
+      "id": "ABI-001",
+      "item": "URL",
+      "signature_or_rule": "pub struct URL { private finalized state }",
+      "observable_behavior": "no public fields or layout/FFI promise"
+    },
+    {
+      "id": "ABI-002",
+      "item": "try_new",
+      "signature_or_rule": "pub fn try_new(value: &str) -> Result<Self, Error>",
+      "observable_behavior": "same WHATWG engine; Kernel Error"
+    },
+    {
+      "id": "ABI-003",
+      "item": "Value",
+      "signature_or_rule": "impl Value<ValueType = str>",
+      "observable_behavior": "shared value object"
+    },
+    {
+      "id": "ABI-004",
+      "item": "value",
+      "signature_or_rule": "pub fn value(&self) -> &str",
+      "observable_behavior": "borrowed canonical serialization"
+    },
+    {
+      "id": "ABI-005",
+      "item": "scheme",
+      "signature_or_rule": "pub fn scheme(&self) -> &str",
+      "observable_behavior": "canonical scheme"
+    },
+    {
+      "id": "ABI-006",
+      "item": "username",
+      "signature_or_rule": "pub fn username(&self) -> &str",
+      "observable_behavior": "canonical username"
+    },
+    {
+      "id": "ABI-007",
+      "item": "password",
+      "signature_or_rule": "pub fn password(&self) -> Option<&str>",
+      "observable_behavior": "absence aware"
+    },
+    {
+      "id": "ABI-008",
+      "item": "host",
+      "signature_or_rule": "pub fn host(&self) -> Option<&str>",
+      "observable_behavior": "absence aware"
+    },
+    {
+      "id": "ABI-009",
+      "item": "port",
+      "signature_or_rule": "pub fn port(&self) -> Option<u16>",
+      "observable_behavior": "no zero sentinel"
+    },
+    {
+      "id": "ABI-010",
+      "item": "path",
+      "signature_or_rule": "pub fn path(&self) -> &str",
+      "observable_behavior": "canonical path"
+    },
+    {
+      "id": "ABI-011",
+      "item": "query",
+      "signature_or_rule": "pub fn query(&self) -> Option<&str>",
+      "observable_behavior": "absent distinct from empty"
+    },
+    {
+      "id": "ABI-012",
+      "item": "query_pairs",
+      "signature_or_rule": "pub fn query_pairs(&self) -> &[(String, String)]",
+      "observable_behavior": "ordered duplicate-preserving pairs"
+    },
+    {
+      "id": "ABI-013",
+      "item": "fragment",
+      "signature_or_rule": "pub fn fragment(&self) -> Option<&str>",
+      "observable_behavior": "absent distinct from empty"
+    },
+    {
+      "id": "ABI-014",
+      "item": "has_opaque_path",
+      "signature_or_rule": "pub fn has_opaque_path(&self) -> bool",
+      "observable_behavior": "path mode projection"
+    },
+    {
+      "id": "ABI-015",
+      "item": "try_resolve",
+      "signature_or_rule": "pub fn try_resolve(&self, reference: &str) -> Result<Self, Error>",
+      "observable_behavior": "self base; relative/absolute reference; same WHATWG parser; new canonical value; no mutation/network/DNS/redirect/filesystem; redacted error; opaque base per pin"
+    },
+    {
+      "id": "ABI-016",
+      "item": "mutator",
+      "signature_or_rule": "pub fn mutator(&self) -> URLMutator",
+      "observable_behavior": "seeds immutable reconstruction"
+    },
+    {
+      "id": "ABI-017",
+      "item": "URLMutator",
+      "signature_or_rule": "pub struct URLMutator { private state }",
+      "observable_behavior": "no public representation"
+    },
+    {
+      "id": "ABI-018",
+      "item": "mutator scheme",
+      "signature_or_rule": "pub fn scheme(self, value: &str) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-019",
+      "item": "mutator username",
+      "signature_or_rule": "pub fn username(self, value: &str) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-020",
+      "item": "mutator password",
+      "signature_or_rule": "pub fn password(self, value: Option<&str>) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-021",
+      "item": "mutator host",
+      "signature_or_rule": "pub fn host(self, value: Option<&str>) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-022",
+      "item": "mutator port",
+      "signature_or_rule": "pub fn port(self, value: Option<u16>) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-023",
+      "item": "mutator path",
+      "signature_or_rule": "pub fn path(self, value: &str) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-024",
+      "item": "mutator query",
+      "signature_or_rule": "pub fn query(self, value: Option<&str>) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-025",
+      "item": "mutator fragment",
+      "signature_or_rule": "pub fn fragment(self, value: Option<&str>) -> Self",
+      "observable_behavior": "collect replacement"
+    },
+    {
+      "id": "ABI-026",
+      "item": "try_mutate",
+      "signature_or_rule": "pub fn try_mutate(self) -> Result<URL, Error>",
+      "observable_behavior": "revalidates; original unchanged"
+    },
+    {
+      "id": "ABI-027",
+      "item": "Clone",
+      "signature_or_rule": "impl Clone",
+      "observable_behavior": "value clone"
+    },
+    {
+      "id": "ABI-028",
+      "item": "PartialEq",
+      "signature_or_rule": "impl PartialEq",
+      "observable_behavior": "canonical equality"
+    },
+    {
+      "id": "ABI-029",
+      "item": "Eq",
+      "signature_or_rule": "impl Eq",
+      "observable_behavior": "full equality"
+    },
+    {
+      "id": "ABI-030",
+      "item": "Hash",
+      "signature_or_rule": "impl Hash",
+      "observable_behavior": "canonical hash"
+    },
+    {
+      "id": "ABI-031",
+      "item": "Debug",
+      "signature_or_rule": "manual impl Debug",
+      "observable_behavior": "redacted"
+    },
+    {
+      "id": "ABI-032",
+      "item": "Display",
+      "signature_or_rule": "no impl Display unless separately approved",
+      "observable_behavior": "no implicit disclosure"
+    },
+    {
+      "id": "ABI-033",
+      "item": "Error",
+      "signature_or_rule": "crate::error::Error; approved categories/wording",
+      "observable_behavior": "Kernel owned and redacted"
+    },
+    {
+      "id": "ABI-034",
+      "item": "absent Copy",
+      "signature_or_rule": "no Copy",
+      "observable_behavior": "intentionally absent"
+    },
+    {
+      "id": "ABI-035",
+      "item": "absent Default",
+      "signature_or_rule": "no Default",
+      "observable_behavior": "intentionally absent"
+    },
+    {
+      "id": "ABI-036",
+      "item": "absent PartialOrd",
+      "signature_or_rule": "no PartialOrd",
+      "observable_behavior": "intentionally absent"
+    },
+    {
+      "id": "ABI-037",
+      "item": "absent Ord",
+      "signature_or_rule": "no Ord",
+      "observable_behavior": "intentionally absent"
+    },
+    {
+      "id": "ABI-038",
+      "item": "absent conversions",
+      "signature_or_rule": "no FromStr TryFrom serde public conversions",
+      "observable_behavior": "intentionally absent"
+    },
+    {
+      "id": "ABI-039",
+      "item": "prohibitions",
+      "signature_or_rule": "no public url::Url/url::Host/private engine; no repr(C) or stable layout",
+      "observable_behavior": "no representation leakage"
+    }
+  ]
+}
