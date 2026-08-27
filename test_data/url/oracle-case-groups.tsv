@@ -1,2 +1,18 @@
 id	count	authority	operation	security
-SYNTHETIC-URL-001	3	locked url 2.5.7 black-box and current Kernel facade	parse serialization components	all values synthetic
+KURL-001	12	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-002	12	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-003	12	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-004	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-005	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-006	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-007	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-008	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-009	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-010	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-011	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-012	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-013	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-014	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-015	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-016	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
+KURL-017	11	locked url 2.5.7 black-box and Kernel facade	parse	synthetic
