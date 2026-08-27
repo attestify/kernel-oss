@@ -1,5 +1,5 @@
 //! Tests for private host parsing and serialization.
-use super::{Host, Validation, parse_ipv6, parse_opaque, parse_special, serialize};
+use super::{Host, Validation, ends_in_number, parse_ipv6, parse_opaque, parse_special, serialize};
 
 #[test]
 /// Verifies shortened hexadecimal IPv4 uses canonical dotted decimal.
@@ -24,6 +24,67 @@ fn ipv4_validation_conditions_success() {
         outcome.validations.contains(&Validation::Ipv4NonDecimal)
             && outcome.validations.contains(&Validation::Ipv4Shortened)
             && outcome.validations.contains(&Validation::Ipv4TrailingDot)
+    }));
+}
+
+#[test]
+/// Verifies all accepted WHATWG IPv4 part counts serialize canonically.
+fn ipv4_part_forms_success() {
+    for (input, expected) in [
+        ("127", "0.0.0.127"),
+        ("127.1", "127.0.0.1"),
+        ("127.0.1", "127.0.0.1"),
+        ("127.0.0.1", "127.0.0.1"),
+        ("0xffffffff", "255.255.255.255"),
+        ("0177.0.0.1", "127.0.0.1"),
+        ("0x7f.0.0.1", "127.0.0.1"),
+    ] {
+        assert_eq!(
+            parse_special(input).map(|outcome| serialize(&outcome.value)),
+            Ok(expected.to_owned()),
+            "{input}"
+        );
+    }
+}
+
+#[test]
+/// Verifies IPv4 numeric dispatch distinguishes valid prefixes from arbitrary text.
+fn ipv4_number_dispatch_success() {
+    assert!(ends_in_number("0x"));
+    assert!(!ends_in_number("0xzz"));
+    assert!(!ends_in_number("0foo"));
+    assert!(ends_in_number("09"));
+    assert!(ends_in_number("999999999999999999999999999999999999"));
+    assert_eq!(
+        parse_special("0x").map(|outcome| serialize(&outcome.value)),
+        Ok("0.0.0.0".to_owned())
+    );
+    for input in ["0xzz", "0foo"] {
+        assert_eq!(
+            parse_special(input).map(|outcome| serialize(&outcome.value)),
+            Ok(input.to_owned()),
+            "{input}"
+        );
+    }
+    for input in ["09", "4294967296", "1.2.3.4.5", "256.0.0.1"] {
+        assert!(parse_special(input).is_err(), "{input}");
+    }
+}
+
+#[test]
+/// Verifies percent and non-ASCII special-host validation conditions are preserved.
+fn special_host_validation_conditions_success() {
+    let percent_encoded = parse_special("exa%6dple.com");
+    assert!(percent_encoded.is_ok_and(|outcome| {
+        outcome.value == Host::Domain("example.com".to_owned())
+            && outcome
+                .validations
+                .contains(&Validation::DomainPercentEncoded)
+    }));
+    let non_ascii_ipv4 = parse_special("１２７");
+    assert!(non_ascii_ipv4.is_ok_and(|outcome| {
+        outcome.value == Host::Ipv4(127)
+            && outcome.validations.contains(&Validation::Ipv4NonAsciiInput)
     }));
 }
 
@@ -53,6 +114,19 @@ fn opaque_host_success() {
         Ok(Host::Opaque("0x7f.1".to_owned()))
     );
 }
+
+#[test]
+/// Verifies opaque non-URL units remain nonfatal and use C0 percent encoding.
+fn opaque_host_nonfatal_validation_success() {
+    assert_eq!(
+        parse_opaque("\u{000e}").map(|outcome| (serialize(&outcome.value), outcome.validations)),
+        Ok(("%0E".to_owned(), vec![Validation::InvalidUrlUnit]))
+    );
+    assert_eq!(
+        parse_opaque("%ZZ").map(|outcome| (serialize(&outcome.value), outcome.validations)),
+        Ok(("%ZZ".to_owned(), vec![Validation::InvalidUrlUnit]))
+    );
+}
 #[test]
 /// Verifies forbidden opaque host characters fail.
 fn opaque_host_forbidden_error() {
@@ -64,6 +138,10 @@ fn ipv6_serialization_success() {
     assert_eq!(
         serialize(&Host::Ipv6([1, 0, 0, 2, 0, 0, 3, 4])),
         "[1::2:0:0:3:4]"
+    );
+    assert_eq!(
+        serialize(&Host::Ipv6([1, 0, 2, 3, 4, 5, 6, 7])),
+        "[1:0:2:3:4:5:6:7]"
     );
     assert_eq!(serialize(&Host::Empty), "");
 }
@@ -79,6 +157,14 @@ fn ipv6_parsing_success() {
         parse_ipv6("::ffff:192.0.2.128").map(|host| serialize(&host)),
         Ok("[::ffff:c000:280]".to_owned())
     );
+    assert_eq!(
+        parse_ipv6("1:2:3:4:5:6:192.0.2.1").map(|host| serialize(&host)),
+        Ok("[1:2:3:4:5:6:c000:201]".to_owned())
+    );
+    assert_eq!(
+        parse_ipv6("::").map(|host| serialize(&host)),
+        Ok("[::]".to_owned())
+    );
 }
 
 #[test]
@@ -87,4 +173,10 @@ fn ipv6_invalid_error() {
     assert!(parse_ipv6("1:2:3:4:5:6:7").is_err());
     assert!(parse_ipv6("fe80::1%25en0").is_err());
     assert!(parse_ipv6("1::2::3").is_err());
+    assert!(parse_ipv6("::ffff:0x7f.1").is_err());
+    assert!(parse_ipv6("::ffff:127.1").is_err());
+    assert!(parse_ipv6("::ffff:192.0.2.999").is_err());
+    assert!(parse_ipv6("192.0.2.1::").is_err());
+    assert!(parse_ipv6("1:::2").is_err());
+    assert!(parse_ipv6("1:2:3:4:5:6:7:8:9").is_err());
 }

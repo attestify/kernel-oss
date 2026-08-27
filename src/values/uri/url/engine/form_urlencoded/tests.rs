@@ -31,9 +31,16 @@ fn decoding_success() {
 }
 
 #[test]
-/// Verifies repeated delimiters retain empty sequences.
+/// Verifies repeated delimiters discard empty sequences.
 fn repeated_delimiters_success() {
-    assert_eq!(parse("&&"), vec![("".to_owned(), "".to_owned()); 3]);
+    assert!(parse("&&").is_empty());
+    assert_eq!(
+        parse("a=1&&b=2&"),
+        vec![
+            ("a".to_owned(), "1".to_owned()),
+            ("b".to_owned(), "2".to_owned()),
+        ]
+    );
 }
 
 #[test]

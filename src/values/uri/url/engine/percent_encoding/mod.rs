@@ -76,7 +76,7 @@ fn must_encode(byte: u8, set: EncodeSet) -> bool {
         EncodeSet::SpecialQuery => matches!(byte, b' ' | b'"' | b'#' | b'<' | b'>' | b'\''),
         EncodeSet::Path => matches!(
             byte,
-            b' ' | b'"' | b'#' | b'<' | b'>' | b'?' | 0x60 | b'{' | b'}'
+            b' ' | b'"' | b'#' | b'<' | b'>' | b'?' | 0x60 | b'{' | b'}' | b'^'
         ),
         EncodeSet::UserInfo => matches!(
             byte,
@@ -99,7 +99,22 @@ fn must_encode(byte: u8, set: EncodeSet) -> bool {
                 | b'^'
                 | b'|'
         ),
-        EncodeSet::Component | EncodeSet::FormUrlEncoded => {
+        EncodeSet::Component => !matches!(
+            byte,
+            b'A'..=b'Z'
+                | b'a'..=b'z'
+                | b'0'..=b'9'
+                | b'!'
+                | b'\''
+                | b'('
+                | b')'
+                | b'*'
+                | b'-'
+                | b'.'
+                | b'_'
+                | b'~'
+        ),
+        EncodeSet::FormUrlEncoded => {
             !matches!(byte, b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'*' | b'-' | b'.' | b'_')
         }
     }

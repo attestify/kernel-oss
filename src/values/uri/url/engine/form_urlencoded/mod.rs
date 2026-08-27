@@ -14,7 +14,11 @@ pub(super) fn parse(input: &str) -> Vec<(String, String)> {
     if input.is_empty() {
         return Vec::new();
     }
-    input.split('&').map(parse_sequence).collect()
+    input
+        .split('&')
+        .filter(|sequence| !sequence.is_empty())
+        .map(parse_sequence)
+        .collect()
 }
 
 fn parse_sequence(sequence: &str) -> (String, String) {

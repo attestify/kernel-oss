@@ -21,9 +21,12 @@ pub(super) enum Host {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum Validation {
     StrictIdna,
+    DomainPercentEncoded,
+    Ipv4NonAsciiInput,
     Ipv4NonDecimal,
     Ipv4Shortened,
     Ipv4TrailingDot,
+    InvalidUrlUnit,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -42,13 +45,20 @@ pub(super) enum Error {
 pub(super) fn parse_special(input: &str) -> Result<Outcome, Error> {
     let bytes = percent_encoding::decode_bytes(input);
     let decoded = percent_encoding::decode_utf8(&bytes).map_err(|_| Error::Invalid)?;
+    let decoded_has_non_ascii = !decoded.is_ascii();
     let strict_failed = idna::to_ascii(decoded, true).is_err();
     let domain = idna::domain_to_ascii(decoded, false).map_err(|_| Error::Invalid)?;
     let mut validations = Vec::new();
     if strict_failed {
         validations.push(Validation::StrictIdna);
     }
+    if has_valid_percent_triplet(input) {
+        validations.push(Validation::DomainPercentEncoded);
+    }
     if ends_in_number(&domain) {
+        if decoded_has_non_ascii {
+            validations.push(Validation::Ipv4NonAsciiInput);
+        }
         let (value, mut ipv4_validations) = parse_ipv4(&domain)?;
         validations.append(&mut ipv4_validations);
         return Ok(Outcome {
@@ -67,12 +77,16 @@ pub(super) fn parse_opaque(input: &str) -> Result<Outcome, Error> {
     if input.chars().any(forbidden_opaque) {
         return Err(Error::Invalid);
     }
+    let mut validations = Vec::new();
+    if input.chars().any(non_url_code_point) || has_malformed_percent_triplet(input) {
+        validations.push(Validation::InvalidUrlUnit);
+    }
     Ok(Outcome {
         value: Host::Opaque(super::percent_encoding::encode(
             input,
             super::percent_encoding::EncodeSet::C0Control,
         )),
-        validations: Vec::new(),
+        validations,
     })
 }
 
@@ -86,8 +100,8 @@ pub(super) fn parse_ipv6(input: &str) -> Result<Host, Error> {
     } else {
         (input, "", false)
     };
-    let left = parse_ipv6_side(left)?;
-    let right = parse_ipv6_side(right)?;
+    let left = parse_ipv6_side(left, !compressed && right.is_empty())?;
+    let right = parse_ipv6_side(right, true)?;
     let count = left.len().checked_add(right.len()).ok_or(Error::Overflow)?;
     if count > 8 || (!compressed && count != 8) || (compressed && count == 8) {
         return Err(Error::Invalid);
@@ -118,7 +132,7 @@ pub(super) fn serialize(host: &Host) -> String {
     }
 }
 
-fn parse_ipv6_side(side: &str) -> Result<Vec<u16>, Error> {
+fn parse_ipv6_side(side: &str, embedded_ipv4_allowed: bool) -> Result<Vec<u16>, Error> {
     if side.is_empty() {
         return Ok(Vec::new());
     }
@@ -129,12 +143,12 @@ fn parse_ipv6_side(side: &str) -> Result<Vec<u16>, Error> {
             return Err(Error::Invalid);
         }
         if segment.contains('.') {
-            if index + 1 != segments.len() {
+            if !embedded_ipv4_allowed || index + 1 != segments.len() {
                 return Err(Error::Invalid);
             }
-            let (address, _) = parse_ipv4(segment)?;
-            pieces.push(u16::try_from(address >> 16).map_err(|_| Error::Overflow)?);
-            pieces.push(u16::try_from(address & 0xffff).map_err(|_| Error::Overflow)?);
+            let [first, second] = parse_embedded_ipv4(segment)?;
+            pieces.push(first);
+            pieces.push(second);
         } else if segment.len() > 4 {
             return Err(Error::Invalid);
         } else {
@@ -151,10 +165,8 @@ fn ends_in_number(domain: &str) -> bool {
         .rsplit('.')
         .next()
         .unwrap_or_default();
-    label.parse::<u32>().is_ok()
-        || label.starts_with("0x")
-        || label.starts_with("0X")
-        || label.starts_with('0')
+    !label.is_empty()
+        && (label.bytes().all(|byte| byte.is_ascii_digit()) || parse_ipv4_number(label).is_ok())
 }
 
 fn parse_ipv4(input: &str) -> Result<(u32, Vec<Validation>), Error> {
@@ -173,47 +185,142 @@ fn parse_ipv4(input: &str) -> Result<(u32, Vec<Validation>), Error> {
     }
     let mut values = Vec::new();
     for part in parts {
-        let (radix, digits, non_decimal) =
-            if let Some(value) = part.strip_prefix("0x").or_else(|| part.strip_prefix("0X")) {
-                (16, value, true)
-            } else if part.len() > 1 && part.starts_with('0') {
-                (8, &part[1..], true)
-            } else {
-                (10, part, false)
-            };
-        if digits.is_empty() {
-            return Err(Error::Invalid);
-        }
+        let (value, non_decimal) = parse_ipv4_number(part)?;
         if non_decimal {
             validations.push(Validation::Ipv4NonDecimal);
         }
-        values.push(u32::from_str_radix(digits, radix).map_err(|_| Error::Invalid)?);
+        values.push(value);
     }
     if values[..values.len() - 1].iter().any(|value| *value > 255) {
         return Err(Error::Invalid);
     }
-    let last_limit = 1u32
-        .checked_shl(8 * (5 - u32::try_from(values.len()).map_err(|_| Error::Overflow)?))
-        .ok_or(Error::Overflow)?;
-    if *values.last().ok_or(Error::Invalid)? >= last_limit {
+    let part_count = values.len();
+    let last_maximum = if part_count == 1 {
+        u64::from(u32::MAX)
+    } else {
+        let part_count = u32::try_from(part_count).map_err(|_| Error::Overflow)?;
+        let remaining = 5u32.checked_sub(part_count).ok_or(Error::Overflow)?;
+        let shift = 8u32.checked_mul(remaining).ok_or(Error::Overflow)?;
+        1u64.checked_shl(shift).ok_or(Error::Overflow)? - 1
+    };
+    if *values.last().ok_or(Error::Invalid)? > last_maximum {
         return Err(Error::Invalid);
     }
     let mut value = *values.last().ok_or(Error::Invalid)?;
     for (index, part) in values[..values.len() - 1].iter().enumerate() {
-        let shift = 8 * (3 - u32::try_from(index).map_err(|_| Error::Overflow)?);
+        let index = u32::try_from(index).map_err(|_| Error::Overflow)?;
+        let remaining = 3u32.checked_sub(index).ok_or(Error::Overflow)?;
+        let shift = 8u32.checked_mul(remaining).ok_or(Error::Overflow)?;
         value = value
             .checked_add(part.checked_shl(shift).ok_or(Error::Overflow)?)
             .ok_or(Error::Overflow)?;
     }
-    Ok((value, validations))
+    Ok((
+        u32::try_from(value).map_err(|_| Error::Overflow)?,
+        validations,
+    ))
 }
 
 fn forbidden_opaque(character: char) -> bool {
-    u32::from(character) <= 0x20
-        || matches!(
-            character,
-            '#' | '/' | ':' | '<' | '>' | '?' | '@' | '[' | '\\' | ']' | '^' | '|'
-        )
+    matches!(
+        character,
+        ' ' | '#' | '/' | ':' | '<' | '>' | '?' | '@' | '[' | '\\' | ']' | '^' | '|'
+    )
+}
+
+fn non_url_code_point(character: char) -> bool {
+    character.is_ascii_control() || !character.is_ascii()
+}
+
+fn has_valid_percent_triplet(input: &str) -> bool {
+    input.as_bytes().windows(3).any(|window| {
+        window[0] == b'%' && from_hex(window[1]).is_some() && from_hex(window[2]).is_some()
+    })
+}
+
+fn has_malformed_percent_triplet(input: &str) -> bool {
+    let bytes = input.as_bytes();
+    bytes.iter().enumerate().any(|(index, byte)| {
+        *byte == b'%'
+            && !matches!(
+                (bytes.get(index + 1), bytes.get(index + 2)),
+                (Some(high), Some(low)) if from_hex(*high).is_some() && from_hex(*low).is_some()
+            )
+    })
+}
+
+fn parse_ipv4_number(input: &str) -> Result<(u64, bool), Error> {
+    let (radix, digits, non_decimal) = if let Some(value) = input
+        .strip_prefix("0x")
+        .or_else(|| input.strip_prefix("0X"))
+    {
+        (16u8, value, true)
+    } else if input.len() > 1 && input.starts_with('0') {
+        (8u8, &input[1..], true)
+    } else {
+        (10u8, input, false)
+    };
+    if digits.is_empty() {
+        return if non_decimal && radix == 16 {
+            Ok((0, true))
+        } else {
+            Err(Error::Invalid)
+        };
+    }
+    let mut value = 0u64;
+    for byte in digits.bytes() {
+        let digit = match byte {
+            b'0'..=b'9' => u64::from(byte - b'0'),
+            b'a'..=b'f' => u64::from(byte - b'a' + 10),
+            b'A'..=b'F' => u64::from(byte - b'A' + 10),
+            _ => return Err(Error::Invalid),
+        };
+        if digit >= u64::from(radix) {
+            return Err(Error::Invalid);
+        }
+        value = value
+            .checked_mul(u64::from(radix))
+            .and_then(|current| current.checked_add(digit))
+            .ok_or(Error::Overflow)?;
+    }
+    Ok((value, non_decimal))
+}
+
+fn parse_embedded_ipv4(input: &str) -> Result<[u16; 2], Error> {
+    let parts: Vec<&str> = input.split('.').collect();
+    if parts.len() != 4 || parts.iter().any(|part| part.is_empty()) {
+        return Err(Error::Invalid);
+    }
+    let mut octets = [0u8; 4];
+    for (index, part) in parts.iter().enumerate() {
+        let mut value = 0u16;
+        for byte in part.bytes() {
+            if !byte.is_ascii_digit() {
+                return Err(Error::Invalid);
+            }
+            value = value
+                .checked_mul(10)
+                .and_then(|current| current.checked_add(u16::from(byte - b'0')))
+                .ok_or(Error::Overflow)?;
+            if value > 255 {
+                return Err(Error::Invalid);
+            }
+        }
+        octets[index] = u8::try_from(value).map_err(|_| Error::Overflow)?;
+    }
+    Ok([
+        (u16::from(octets[0]) << 8) | u16::from(octets[1]),
+        (u16::from(octets[2]) << 8) | u16::from(octets[3]),
+    ])
+}
+
+fn from_hex(byte: u8) -> Option<u8> {
+    match byte {
+        b'0'..=b'9' => Some(byte - b'0'),
+        b'a'..=b'f' => Some(byte - b'a' + 10),
+        b'A'..=b'F' => Some(byte - b'A' + 10),
+        _ => None,
+    }
 }
 
 fn serialize_ipv6(pieces: &[u16; 8]) -> String {
