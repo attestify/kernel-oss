@@ -244,29 +244,33 @@ fn forbidden_opaque(character: char) -> bool {
 }
 
 fn non_url_code_point(character: char) -> bool {
-    !(character.is_ascii_alphanumeric()
-        || matches!(
-            character,
-            '!' | '$'
-                | '&'
-                | '\''
-                | '('
-                | ')'
-                | '*'
-                | '+'
-                | ','
-                | '-'
-                | '.'
-                | '/'
-                | ':'
-                | ';'
-                | '='
-                | '?'
-                | '@'
-                | '_'
-                | '~'
-        )
-        || u32::from(character) >= 0x00a0)
+    let value = u32::from(character);
+    let noncharacter =
+        (0xfdd0..=0xfdef).contains(&value) || matches!(value & 0xffff, 0xfffe | 0xffff);
+    noncharacter
+        || !(character.is_ascii_alphanumeric()
+            || matches!(
+                character,
+                '!' | '$'
+                    | '&'
+                    | '\''
+                    | '('
+                    | ')'
+                    | '*'
+                    | '+'
+                    | ','
+                    | '-'
+                    | '.'
+                    | '/'
+                    | ':'
+                    | ';'
+                    | '='
+                    | '?'
+                    | '@'
+                    | '_'
+                    | '~'
+            )
+            || value >= 0x00a0)
 }
 
 fn has_valid_percent_triplet(input: &str) -> bool {
@@ -330,6 +334,9 @@ fn parse_embedded_ipv4(input: &str) -> Result<[u16; 2], Error> {
     }
     let mut octets = [0u8; 4];
     for (index, part) in parts.iter().enumerate() {
+        if part.len() > 1 && part.starts_with('0') {
+            return Err(Error::Invalid);
+        }
         let mut value = 0u16;
         for byte in part.bytes() {
             if !byte.is_ascii_digit() {

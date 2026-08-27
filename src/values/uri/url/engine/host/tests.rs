@@ -130,6 +130,17 @@ fn opaque_host_nonfatal_validation_success() {
         parse_opaque("é").map(|outcome| (serialize(&outcome.value), outcome.validations)),
         Ok(("%C3%A9".to_owned(), Vec::new()))
     );
+    for (input, expected) in [("\u{fdd0}", "%EF%B7%90"), ("\u{10ffff}", "%F4%8F%BF%BF")] {
+        assert_eq!(
+            parse_opaque(input).map(|outcome| (serialize(&outcome.value), outcome.validations)),
+            Ok((expected.to_owned(), vec![Validation::InvalidUrlUnit])),
+            "{input:?}"
+        );
+    }
+    assert_eq!(
+        parse_opaque("\u{10fffd}").map(|outcome| (serialize(&outcome.value), outcome.validations)),
+        Ok(("%F4%8F%BF%BD".to_owned(), Vec::new()))
+    );
 }
 #[test]
 /// Verifies forbidden opaque host characters fail.
@@ -170,6 +181,10 @@ fn ipv6_parsing_success() {
         parse_ipv6("::").map(|host| serialize(&host)),
         Ok("[::]".to_owned())
     );
+    assert_eq!(
+        parse_ipv6("::ffff:0.0.0.0").map(|host| serialize(&host)),
+        Ok("[::ffff:0:0]".to_owned())
+    );
 }
 
 #[test]
@@ -181,6 +196,8 @@ fn ipv6_invalid_error() {
     assert!(parse_ipv6("::ffff:0x7f.1").is_err());
     assert!(parse_ipv6("::ffff:127.1").is_err());
     assert!(parse_ipv6("::ffff:192.0.2.999").is_err());
+    assert!(parse_ipv6("::ffff:127.00.0.1").is_err());
+    assert!(parse_ipv6("::ffff:01.2.3.4").is_err());
     assert!(parse_ipv6("192.0.2.1::").is_err());
     assert!(parse_ipv6("1:::2").is_err());
     assert!(parse_ipv6("1:2:3:4:5:6:7:8:9").is_err());
