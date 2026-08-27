@@ -1,8 +1,4 @@
 //! Private application/x-www-form-urlencoded parsing.
-#![cfg_attr(
-    not(test),
-    expect(dead_code, reason = "P3 private primitives are wired by P4 parsing.")
-)]
 
 #[cfg(test)]
 mod tests;
@@ -10,7 +6,7 @@ mod tests;
 use super::percent_encoding::{decode_bytes, decode_utf8_replacement};
 
 /// Parses ordered form pairs with one percent-decoding pass and UTF-8 replacement.
-pub(super) fn parse(input: &str) -> Vec<(String, String)> {
+pub(in crate::values::uri::url) fn parse(input: &str) -> Vec<(String, String)> {
     if input.is_empty() {
         return Vec::new();
     }

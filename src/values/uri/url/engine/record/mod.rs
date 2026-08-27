@@ -1,11 +1,4 @@
 //! Private canonical URL state shared by the P4 parser, resolver, and serializer.
-#![cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "P4 private URL state is wired to the public facade in P5."
-    )
-)]
 
 #[cfg(test)]
 mod tests;
@@ -17,7 +10,7 @@ use super::{
 
 /// The mutually exclusive canonical path representations defined by the URL model.
 #[derive(Clone, Eq, PartialEq)]
-pub(super) enum Path {
+pub(in crate::values::uri::url) enum Path {
     /// A slash-separated hierarchical path. Empty segments preserve delimiters.
     Segments(Vec<String>),
     /// An opaque path for cannot-be-a-base URLs.
@@ -26,7 +19,7 @@ pub(super) enum Path {
 
 /// Canonical, private URL state. It deliberately implements no diagnostic formatting.
 #[derive(Clone, Eq, PartialEq)]
-pub(super) struct Record {
+pub(in crate::values::uri::url) struct Record {
     scheme: String,
     authority: Option<Authority>,
     path: Path,
@@ -122,7 +115,7 @@ impl Record {
     }
 
     /// Returns the canonical scheme.
-    pub(super) fn scheme(&self) -> &str {
+    pub(in crate::values::uri::url) fn scheme(&self) -> &str {
         &self.scheme
     }
 
@@ -137,46 +130,46 @@ impl Record {
     }
 
     /// Returns whether this record contains authority state.
-    pub(super) fn has_authority(&self) -> bool {
+    pub(in crate::values::uri::url) fn has_authority(&self) -> bool {
         self.authority.is_some()
     }
 
     /// Returns the canonical username, or an empty value when authority is absent.
-    pub(super) fn username(&self) -> &str {
+    pub(in crate::values::uri::url) fn username(&self) -> &str {
         self.authority
             .as_ref()
             .map_or("", |authority| &authority.username)
     }
 
     /// Returns the canonical optional password.
-    pub(super) fn password(&self) -> Option<&str> {
+    pub(in crate::values::uri::url) fn password(&self) -> Option<&str> {
         self.authority
             .as_ref()
             .and_then(|authority| authority.password.as_deref())
     }
 
     /// Returns the authority host when present.
-    pub(super) fn host(&self) -> Option<&Host> {
+    pub(in crate::values::uri::url) fn host(&self) -> Option<&Host> {
         self.authority.as_ref().map(|authority| &authority.host)
     }
 
     /// Returns the canonical non-default port when present.
-    pub(super) fn port(&self) -> Option<u16> {
+    pub(in crate::values::uri::url) fn port(&self) -> Option<u16> {
         self.authority.as_ref().and_then(|authority| authority.port)
     }
 
     /// Returns the canonical path.
-    pub(super) fn path(&self) -> &Path {
+    pub(in crate::values::uri::url) fn path(&self) -> &Path {
         &self.path
     }
 
     /// Returns the canonical optional query.
-    pub(super) fn query(&self) -> Option<&str> {
+    pub(in crate::values::uri::url) fn query(&self) -> Option<&str> {
         self.query.as_deref()
     }
 
     /// Returns the canonical optional fragment.
-    pub(super) fn fragment(&self) -> Option<&str> {
+    pub(in crate::values::uri::url) fn fragment(&self) -> Option<&str> {
         self.fragment.as_deref()
     }
 
@@ -214,7 +207,7 @@ impl Record {
     }
 
     /// Returns whether this record cannot serve as a relative-resolution base.
-    pub(super) fn has_opaque_path(&self) -> bool {
+    pub(in crate::values::uri::url) fn has_opaque_path(&self) -> bool {
         matches!(self.path, Path::Opaque(_))
     }
 }

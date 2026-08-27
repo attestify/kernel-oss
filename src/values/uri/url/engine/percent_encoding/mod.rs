@@ -8,7 +8,7 @@
 mod tests;
 
 #[derive(Clone, Copy)]
-pub(super) enum EncodeSet {
+pub(in crate::values::uri::url) enum EncodeSet {
     C0Control,
     Fragment,
     Query,
@@ -20,7 +20,7 @@ pub(super) enum EncodeSet {
 }
 
 /// Encodes UTF-8 bytes using the selected WHATWG percent-encode set.
-pub(super) fn encode(input: &str, set: EncodeSet) -> String {
+pub(in crate::values::uri::url) fn encode(input: &str, set: EncodeSet) -> String {
     let mut output = String::new();
     for byte in input.bytes() {
         if must_encode(byte, set) {

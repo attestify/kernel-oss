@@ -106,7 +106,7 @@ fn builder_success() {
     );
     assert_eq!(report.subject().nrn.value, "nrn:procedure:example");
     assert_eq!(report.subject().id.value, "somesubjectid");
-    assert_eq!(report.procedure().repository, "https://some-location.com");
+    assert_eq!(report.procedure().repository, "https://some-location.com/");
     assert_eq!(report.activities().action_count(), 1);
     assert_eq!(report.additional_info().count(), 1);
     assert_eq!(
@@ -189,7 +189,7 @@ fn builder_multiple_metadata_activities_actions_and_additional_information_succe
     );
     assert_eq!(report.subject().nrn.value, "nrn:procedure:example");
     assert_eq!(report.subject().id.value, "somesubjectid");
-    assert_eq!(report.procedure().repository, "https://some-location.com");
+    assert_eq!(report.procedure().repository, "https://some-location.com/");
     assert_eq!(report.activities().list().len(), 5);
     assert_eq!(report.activities().list()[0].name.value, "activity");
     assert_eq!(report.activities().list()[1].name.value, "activity-1");
@@ -229,7 +229,7 @@ fn use_functions_override_success() {
         "overridesubjectid"
     ));
     let overriding_procedure = is_ok!(Procedure::try_new(
-        "https://some-override-location.com",
+        "https://some-override-location.com/",
         "some/override/location"
     ));
 
@@ -318,7 +318,7 @@ fn use_functions_override_success() {
     assert_eq!(report.subject().id.value, "overridesubjectid");
     assert_eq!(
         report.procedure().repository,
-        "https://some-override-location.com"
+        "https://some-override-location.com/"
     );
     assert_eq!(report.procedure().directory, "some/override/location");
     assert_eq!(report.activities().action_count(), 4);

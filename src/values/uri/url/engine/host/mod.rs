@@ -1,8 +1,4 @@
 //! Private WHATWG host parsing, validation outcomes, and IP serialization.
-#![cfg_attr(
-    not(test),
-    expect(dead_code, reason = "P3 private primitives are wired by P4 parsing.")
-)]
 
 #[cfg(test)]
 mod tests;
@@ -10,7 +6,7 @@ mod tests;
 use super::{idna, percent_encoding};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(super) enum Host {
+pub(in crate::values::uri::url) enum Host {
     Domain(String),
     Ipv4(u32),
     Ipv6([u16; 8]),
@@ -126,7 +122,7 @@ pub(super) fn ipv6_piece_has_leading_zero(input: &str) -> bool {
     })
 }
 
-pub(super) fn serialize(host: &Host) -> String {
+pub(in crate::values::uri::url) fn serialize(host: &Host) -> String {
     match host {
         Host::Domain(value) | Host::Opaque(value) => value.clone(),
         Host::Ipv4(value) => format!(

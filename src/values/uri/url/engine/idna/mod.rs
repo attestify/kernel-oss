@@ -33,26 +33,12 @@ pub(super) enum Error {
 /// records a private failure. The WHATWG wrappers decide whether that failure
 /// is fatal for their operation.
 #[derive(Debug, Eq, PartialEq)]
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "P2 retains raw ToUnicode outcomes for P3 host processing."
-    )
-)]
 struct UnicodeOutcome {
     value: String,
     error: Option<Error>,
 }
 
 /// Applies the WHATWG domain parser's nontransitional UTS #46 ToASCII path.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "P2 private IDNA engine is wired by P3 host parsing."
-    )
-)]
 pub(super) fn to_ascii(domain: &str, be_strict: bool) -> Result<String, Error> {
     let mapped = map(domain, be_strict)?;
     if mapped.is_empty() {
@@ -108,13 +94,6 @@ pub(super) fn to_ascii(domain: &str, be_strict: bool) -> Result<String, Error> {
 }
 
 /// Applies the WHATWG wrapper, including its relaxed all-ASCII compatibility path.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "P2 private IDNA engine is wired by P3 host parsing."
-    )
-)]
 pub(super) fn domain_to_ascii(domain: &str, be_strict: bool) -> Result<String, Error> {
     let strict_result = to_ascii(domain, true);
     if be_strict {

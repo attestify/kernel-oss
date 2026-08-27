@@ -1,11 +1,4 @@
 //! Private canonical URL serialization.
-#![cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "P4 serializer is wired to the public facade in P5."
-    )
-)]
 
 #[cfg(test)]
 mod tests;
@@ -16,7 +9,7 @@ use super::{
 };
 
 /// Serializes one private canonical URL record without interpreting components again.
-pub(super) fn serialize(record: &Record) -> String {
+pub(in crate::values::uri::url) fn serialize(record: &Record) -> String {
     let mut output = String::new();
     output.push_str(record.scheme());
     output.push(':');

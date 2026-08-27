@@ -14,7 +14,7 @@ use test_framework_oss::{is_error, is_ok, kernel_error_eq};
 fn new_procedure_success() {
     let result = Procedure::try_new("https://example.com", "some/directory");
     let procedure = is_ok!(result);
-    assert_eq!(procedure.repository, "https://example.com");
+    assert_eq!(procedure.repository, "https://example.com/");
     assert_eq!(procedure.directory, "some/directory");
 }
 #[test]
@@ -22,7 +22,7 @@ fn new_procedure_success() {
 fn new_procedure_empty_directory_success() {
     let result = Procedure::try_new("https://example.com", "");
     let procedure = is_ok!(result);
-    assert_eq!(procedure.repository, "https://example.com");
+    assert_eq!(procedure.repository, "https://example.com/");
     assert_eq!(procedure.directory, "/");
 }
 #[test]
@@ -30,22 +30,24 @@ fn new_procedure_empty_directory_success() {
 fn new_procedure_root_directory_success() {
     let result = Procedure::try_new("https://example.com", "/");
     let procedure = is_ok!(result);
-    assert_eq!(procedure.repository, "https://example.com");
+    assert_eq!(procedure.repository, "https://example.com/");
     assert_eq!(procedure.directory, "/");
 }
 
 #[test]
 /// Requirement validation: verifies an empty repository is rejected.
 fn new_procedure_invalid_repository_error() {
-    let result = Procedure::try_new("", "some/directory");
+    let result = Procedure::try_new(
+        "canaryuser:canarypass@[::zzz]?canaryquery#canaryfragment",
+        "some/directory",
+    );
     let error = is_error!(result);
     assert_eq!(error.audience, Audience::User);
     assert_eq!(error.kind, Kind::InvalidInput);
-    assert!(
-        error
-            .message
-            .contains("'' is not a valid procedure location: ")
-    );
+    assert_eq!(error.message, "Procedure repository validation failed.");
+    for canary in ["canaryuser", "canarypass", "canaryquery", "canaryfragment"] {
+        assert!(!error.message.contains(canary));
+    }
 }
 #[test]
 /// Requirement validation: verifies contiguous slashes are rejected in the directory path.

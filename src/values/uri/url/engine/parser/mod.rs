@@ -33,14 +33,14 @@ pub(super) enum Validation {
 
 /// A successful private parse together with all nonfatal validation conditions.
 #[derive(Clone, Eq, PartialEq)]
-pub(super) struct Outcome {
-    pub(super) record: Record,
+pub(in crate::values::uri::url) struct Outcome {
+    pub(in crate::values::uri::url) record: Record,
     pub(super) validations: Vec<Validation>,
 }
 
 /// Private parse failure without supplied text or private-state diagnostics.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(super) enum Error {
+pub(in crate::values::uri::url) enum Error {
     Invalid,
     Overflow,
 }
@@ -71,7 +71,10 @@ enum State {
 }
 
 /// Parses one UTF-8 URL input against an optional private base record.
-pub(super) fn parse(input: &str, base: Option<&Record>) -> Result<Outcome, Error> {
+pub(in crate::values::uri::url) fn parse(
+    input: &str,
+    base: Option<&Record>,
+) -> Result<Outcome, Error> {
     Machine::new(input, base).run()
 }
 

@@ -49,7 +49,7 @@ impl Procedure {
         let valid_repo = validate_repository_link(repository)?;
         let valid_directory = validate_directory(directory)?;
         Ok(Procedure {
-            repository: valid_repo.to_string(),
+            repository: valid_repo.url().value().to_owned(),
             directory: valid_directory,
         })
     }
@@ -65,13 +65,10 @@ fn validate_repository_link(link: &str) -> Result<RepositoryLink, Error> {
         .default_scheme(default_schema)
         .repo_link(link)
         .build()
-        .map_err(|e| {
+        .map_err(|_| {
             Error::for_user(
                 Kind::InvalidInput,
-                format!(
-                    "'{}' is not a valid procedure location: {}",
-                    link, e.message
-                ),
+                "Procedure repository validation failed.",
             )
         })
 }

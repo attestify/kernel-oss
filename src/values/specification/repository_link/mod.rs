@@ -1,6 +1,6 @@
 //! Repository link value and builder.
 
-use crate::error::{Error, Kind};
+use crate::error::{Audience, Error, Kind};
 use crate::values::uri::url::URL;
 use std::fmt;
 
@@ -9,7 +9,7 @@ use std::fmt;
 /// # Assumptions
 ///  * This defaults all schemes to **git://** if a scheme is not provided.
 ///  * This allows url inputs values such as **localhost** to be valid.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Eq, Hash, PartialEq)]
 pub struct RepositoryLink {
     /// Parsed repository URL.
     url: URL,
@@ -17,7 +17,13 @@ pub struct RepositoryLink {
 
 impl fmt::Display for RepositoryLink {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.url.value.value())
+        f.write_str("RepositoryLink([REDACTED])")
+    }
+}
+
+impl fmt::Debug for RepositoryLink {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("RepositoryLink([REDACTED])")
     }
 }
 
@@ -68,54 +74,30 @@ impl RepositoryLinkBuilder {
         let allowed_schema = self.verify_allowed_schema()?;
         let default_schema = self.verify_default_scheme(&allowed_schema)?;
         let repo_link = self.verify_repo_link(&allowed_schema, &default_schema)?;
-        let url = URL::new(&repo_link).map_err(|error| {
-            Error::for_system(
-                Kind::InvalidInput,
-                format!(
-                    "The provided repository link [{}] is malformed. {}",
-                    repo_link, error
-                ),
-            )
-        })?;
+        let url = URL::try_new(&repo_link).map_err(|_| repository_error(Audience::System))?;
 
         Ok(RepositoryLink { url })
     }
 
     fn verify_allowed_schema(&self) -> Result<Vec<String>, Error> {
         if self.allowed_schema.is_empty() {
-            return Err(Error::for_system(
-                Kind::InvalidInput,
-                "No allowed schemes were provided, please provide at least one allowed scheme.",
-            ));
+            return Err(repository_error(Audience::System));
         }
         Ok(self.allowed_schema.clone())
     }
 
     fn verify_default_scheme(&mut self, allowed_schema: &[String]) -> Result<String, Error> {
-        let default_scheme = self.default_scheme.take().ok_or_else(|| {
-            Error::for_user(
-                Kind::InvalidInput,
-                "A default scheme was not provided. Please provide a default scheme.",
-            )
-        })?;
+        let default_scheme = self
+            .default_scheme
+            .take()
+            .ok_or_else(|| repository_error(Audience::User))?;
 
         if default_scheme.trim().is_empty() {
-            return Err(Error::for_system(
-                Kind::InvalidInput,
-                "The provided default scheme is empty or all whitespace. Please provide a non-empty default scheme.",
-            ));
+            return Err(repository_error(Audience::System));
         }
 
         if !allowed_schema.contains(&default_scheme) {
-            return Err(Error::for_system(
-                Kind::InvalidInput,
-                format!(
-                    "The provided default scheme '{}' is not in the list of allowed schemes: {:?}. \
-                Either provide a default scheme that is in the list of allowed schemes, or update the list of \
-                allowed schema to include the default schema.",
-                    default_scheme, allowed_schema
-                ),
-            ));
+            return Err(repository_error(Audience::System));
         }
         Ok(default_scheme)
     }
@@ -125,18 +107,13 @@ impl RepositoryLinkBuilder {
         allowed_schema: &[String],
         default_schema: &str,
     ) -> Result<String, Error> {
-        let existing_link = self.repo_link.take().ok_or_else(|| {
-            Error::for_system(
-                Kind::InvalidInput,
-                "A repository link was not provided. Please provide a repository link.",
-            )
-        })?;
+        let existing_link = self
+            .repo_link
+            .take()
+            .ok_or_else(|| repository_error(Audience::System))?;
 
         if existing_link.trim().is_empty() {
-            return Err(Error::for_system(
-                Kind::InvalidInput,
-                "The provided repository link is empty or all whitespace. Please provide a non-empty repository link.",
-            ));
+            return Err(repository_error(Audience::System));
         }
 
         self.verify_repo_link_not_malformed(&existing_link)?;
@@ -144,11 +121,7 @@ impl RepositoryLinkBuilder {
         let repo_link_with_scheme =
             self.apply_default_scheme_to_repo_link(&existing_link, default_schema);
 
-        self.verify_repo_link_scheme_is_allowed(
-            repo_link_with_scheme.as_str(),
-            allowed_schema,
-            default_schema,
-        )?;
+        self.verify_repo_link_scheme_is_allowed(repo_link_with_scheme.as_str(), allowed_schema)?;
 
         Ok(repo_link_with_scheme)
     }
@@ -166,14 +139,7 @@ impl RepositoryLinkBuilder {
             // Must contain a proper scheme separator '://'
             let parts: Vec<&str> = repo_link.split("://").collect();
             if parts.len() != 2 || parts[1].is_empty() {
-                return Err(Error::for_system(
-                    Kind::InvalidInput,
-                    format!(
-                        "The repository link [{}] is malformed. It must either start with a scheme separator '://' \
-            or be formatted as [scheme]://[host] per for the RFC 3986 specification.",
-                        repo_link
-                    ),
-                ));
+                return Err(repository_error(Audience::System));
             }
             Ok(())
         }
@@ -199,20 +165,12 @@ impl RepositoryLinkBuilder {
         &self,
         verified_repo_link: &str,
         allowed_schemes: &[String],
-        default_scheme: &str,
     ) -> Result<(), Error> {
         let repo_link_schema = self.extract_repo_link_schema(verified_repo_link);
         if allowed_schemes.contains(&repo_link_schema) {
             Ok(())
         } else {
-            Err(Error::for_system(
-                Kind::InvalidInput,
-                format!(
-                    "The url scheme '{}' is not allowed. Allowed schemes are {:?} \
-                    and the default scheme is '{}'.",
-                    repo_link_schema, allowed_schemes, default_scheme
-                ),
-            ))
+            Err(repository_error(Audience::System))
         }
     }
 
@@ -220,6 +178,14 @@ impl RepositoryLinkBuilder {
         let url_parts: Vec<&str> = link.split("://").collect();
         url_parts[0].to_string()
     }
+}
+
+fn repository_error(audience: Audience) -> Error {
+    Error::new(
+        audience,
+        Kind::InvalidInput,
+        "Repository link validation failed.",
+    )
 }
 
 #[cfg(test)]
