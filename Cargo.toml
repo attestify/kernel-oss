@@ -19,7 +19,9 @@ include = [
     "/THIRD_PARTY_NOTICES.md",
     "/third-party/**",
     "/tools/unicode-nfc/**",
+    "/tools/url-data/**",
     "/test_data/nfc/**",
+    "/test_data/url/**",
     "/tests/nfc_text_unicode_17_conformance.rs",
 ]
 

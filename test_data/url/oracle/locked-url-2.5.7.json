@@ -1,0 +1,5 @@
+[
+{"id":"SYN-001","input":"https://example.test/","url_parse":"success","serialized":"https://example.test/","scheme":"https","host":"example.test","port":0,"path":"/","query":"","fragment":"","kernel_facade":"success"},
+{"id":"SYN-002","input":"https://user:pass@example.test:8443/a?x=1&x=2#f","url_parse":"success","serialized":"https://user:pass@example.test:8443/a?x=1&x=2#f","scheme":"https","host":"example.test","port":8443,"path":"/a","query":"x=1&x=2","fragment":"f","kernel_facade":"success"},
+{"id":"SYN-003","input":"not a url","url_parse":"failure","kernel_facade":"failure"}
+]

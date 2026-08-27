@@ -1,0 +1,2 @@
+id	count	authority	operation	security
+SYNTHETIC-URL-001	3	locked url 2.5.7 black-box and current Kernel facade	parse serialization components	all values synthetic
