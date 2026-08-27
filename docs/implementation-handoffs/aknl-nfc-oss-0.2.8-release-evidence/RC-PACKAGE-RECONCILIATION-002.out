@@ -1,0 +1,12 @@
+--- /private/tmp/aknl-nfc-package-evidence.TMaYsJ/package-paths.txt	2026-08-26 20:09:30
++++ /private/tmp/aknl-nfc-package-evidence.TMaYsJ/archive-paths.txt	2026-08-26 20:09:30
+@@ -24,6 +24,7 @@
+ docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-METADATA-001.out
+ docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-PACKAGE-001.out
+ docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-PACKAGE-LIST-001.out
++docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-PACKAGE-LIST-002.out
+ docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-PACKAGE-RECONCILIATION-001.out
+ docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-PROTECTED-NFC-DIFF-001.out
+ docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/RC-PUBLIC-SURFACE-001.out
+package_list_entries=     324
+archive_entries=     325

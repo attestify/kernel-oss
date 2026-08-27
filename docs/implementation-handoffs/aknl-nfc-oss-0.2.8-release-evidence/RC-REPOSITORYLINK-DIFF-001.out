@@ -1,0 +1,13 @@
+diff --git a/src/values/specification/repository_link/mod.rs b/src/values/specification/repository_link/mod.rs
+index 7669dd6..40a202e 100644
+--- a/src/values/specification/repository_link/mod.rs
++++ b/src/values/specification/repository_link/mod.rs
+@@ -73,7 +73,7 @@ impl RepositoryLinkBuilder {
+                 Kind::InvalidInput,
+                 format!(
+                     "The provided repository link [{}] is malformed. {}",
+-                    &repo_link, error
++                    repo_link, error
+                 ),
+             )
+         })?;

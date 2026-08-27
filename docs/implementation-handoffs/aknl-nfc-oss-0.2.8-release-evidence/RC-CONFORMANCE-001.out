@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running tests/nfc_text_unicode_17_conformance.rs (target/debug/deps/nfc_text_unicode_17_conformance-e2e4866b3a08f54b)
+
+running 8 tests
+test invalid_part_one_oracle_sources_return_contextual_errors_error ... ok
+test malformed_fixture_structure_returns_contextual_errors_error ... ok
+test malformed_scalar_columns_return_contextual_errors_error ... ok
+test official_unicode_17_fixture_census_success ... ok
+test official_unicode_17_rows_construct_expected_public_values_success ... ok
+test official_unicode_17_rows_report_expected_public_nfc_state_success ... ok
+test every_valid_unicode_scalar_reports_expected_public_nfc_state_success ... ok
+test every_valid_unicode_scalar_constructs_expected_public_value_success ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.49s
+

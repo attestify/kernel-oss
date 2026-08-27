@@ -1,0 +1,11 @@
+7:kernel_oss-0.2.8/THIRD_PARTY_NOTICES.md
+311:kernel_oss-0.2.8/src/values/text/nfc_text/mod.rs
+313:kernel_oss-0.2.8/src/values/text/nfc_text/normalization/tables.rs
+319:kernel_oss-0.2.8/test_data/nfc/unicode/DerivedNormalizationProps-17.0.0.txt
+320:kernel_oss-0.2.8/test_data/nfc/unicode/NormalizationTest-17.0.0.txt
+322:kernel_oss-0.2.8/test_data/nfc/unicode/UnicodeData-17.0.0.txt
+323:kernel_oss-0.2.8/tests/nfc_text_unicode_17_conformance.rs
+324:kernel_oss-0.2.8/third-party/licenses/Unicode-3.0.txt
+325:kernel_oss-0.2.8/third-party/licenses/unicode-normalization-MIT.txt
+327:kernel_oss-0.2.8/tools/unicode-nfc/checksums.sha256
+328:kernel_oss-0.2.8/tools/unicode-nfc/generate_tables.py
