@@ -1,7 +1,7 @@
 //! Tests for private canonical URL record invariants.
 
 use super::{Authority, Error, Path, Record};
-use crate::values::uri::url::engine::host::Host;
+use crate::values::uri::url::engine::{host::Host, parser, serializer};
 
 #[test]
 /// Verifies special records reject opaque hosts.
@@ -213,5 +213,213 @@ fn serialize_parse_stable_record_states_error() {
         Path::Segments(vec!["path".to_owned()]),
     ] {
         assert!(Record::new("custom".to_owned(), None, path, None, None).is_err());
+    }
+}
+
+#[test]
+/// Verifies constructor input is already in each component's canonical lexical form.
+fn noncanonical_record_components_error() {
+    let rooted = Path::Segments(vec![String::new(), "path".to_owned()]);
+    for host in [
+        Host::Domain(String::new()),
+        Host::Domain("EXAMPLE.TEST".to_owned()),
+        Host::Domain("127.0.0.1".to_owned()),
+    ] {
+        assert!(
+            Record::new(
+                "http".to_owned(),
+                Some(Authority::new(String::new(), None, host, None)),
+                rooted.clone(),
+                None,
+                None,
+            )
+            .is_err()
+        );
+    }
+    for host in [
+        Host::Opaque(String::new()),
+        Host::Opaque("forbidden/path".to_owned()),
+    ] {
+        assert!(
+            Record::new(
+                "custom".to_owned(),
+                Some(Authority::new(String::new(), None, host, None)),
+                Path::Segments(Vec::new()),
+                None,
+                None,
+            )
+            .is_err()
+        );
+    }
+    for authority in [
+        Authority::new(
+            "user@name".to_owned(),
+            None,
+            Host::Domain("example.test".to_owned()),
+            None,
+        ),
+        Authority::new(
+            String::new(),
+            Some("pass/word".to_owned()),
+            Host::Domain("example.test".to_owned()),
+            None,
+        ),
+    ] {
+        assert!(
+            Record::new(
+                "http".to_owned(),
+                Some(authority),
+                rooted.clone(),
+                None,
+                None
+            )
+            .is_err()
+        );
+    }
+    for path in [
+        Path::Segments(vec![String::new(), "a/b".to_owned()]),
+        Path::Segments(vec![String::new(), "has space".to_owned()]),
+        Path::Opaque("opaque ".to_owned()),
+    ] {
+        assert!(Record::new("custom".to_owned(), None, path, None, None).is_err());
+    }
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Opaque("opaque".to_owned()),
+            Some("raw#hash".to_owned()),
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Opaque("opaque".to_owned()),
+            None,
+            Some("raw\"quote".to_owned()),
+        )
+        .is_err()
+    );
+}
+
+#[test]
+/// Verifies accepted constructor examples are stable after private serialization and parsing.
+fn canonical_record_component_examples_round_trip_success() {
+    let records = [
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(
+                "user%20name".to_owned(),
+                Some("pass%20word".to_owned()),
+                Host::Domain("example.test".to_owned()),
+                None,
+            )),
+            Path::Segments(vec![String::new(), "path%20part".to_owned()]),
+            Some("query=%2F".to_owned()),
+            Some("fragment%23".to_owned()),
+        ),
+        Record::new(
+            "file".to_owned(),
+            Some(Authority::new(String::new(), None, Host::Empty, None)),
+            Path::Segments(vec![String::new(), "C:".to_owned(), "path".to_owned()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Ipv4(0x7f000001),
+                None,
+            )),
+            Path::Segments(vec![String::new(), String::new()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "http".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Ipv6([0, 0, 0, 0, 0, 0, 0, 1]),
+                None,
+            )),
+            Path::Segments(vec![String::new(), String::new()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "file".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Domain("example.test".to_owned()),
+                None,
+            )),
+            Path::Segments(vec![String::new(), "share".to_owned()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Opaque("opaque-host".to_owned()),
+                None,
+            )),
+            Path::Segments(Vec::new()),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(String::new(), None, Host::Empty, None)),
+            Path::Segments(Vec::new()),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Ipv6([0, 0, 0, 0, 0, 0, 0, 1]),
+                None,
+            )),
+            Path::Segments(Vec::new()),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Segments(vec![String::new(), "rooted".to_owned()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Opaque("opaque path".to_owned()),
+            None,
+            None,
+        ),
+    ];
+    for record in records {
+        let record = match record {
+            Ok(record) => record,
+            Err(_) => panic!(),
+        };
+        let serialized = serializer::serialize(&record);
+        let reparsed = match parser::parse(&serialized, None) {
+            Ok(outcome) => outcome.record,
+            Err(_) => panic!("{serialized}"),
+        };
+        assert!(reparsed == record, "{serialized}");
     }
 }

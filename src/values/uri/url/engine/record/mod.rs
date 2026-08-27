@@ -10,7 +10,10 @@
 #[cfg(test)]
 mod tests;
 
-use super::host::Host;
+use super::{
+    host::{self, Host},
+    percent_encoding::{self, EncodeSet},
+};
 
 /// The mutually exclusive canonical path representations defined by the URL model.
 #[derive(Clone, Eq, PartialEq)]
@@ -92,12 +95,22 @@ impl Record {
             {
                 return Err(Error::Invalid);
             }
+            if !is_canonical_authority(&scheme, authority) {
+                return Err(Error::Invalid);
+            }
             if authority.password.as_deref() == Some("") {
                 authority.password = None;
             }
             if is_special_scheme(&scheme) && default_port(&scheme) == authority.port {
                 authority.port = None;
             }
+        }
+        if !is_canonical_path(&path)
+            || !is_canonical_opaque_path(&path)
+            || !is_canonical_query(query.as_deref(), is_special_scheme(&scheme))
+            || !is_canonical_fragment(fragment.as_deref())
+        {
+            return Err(Error::Invalid);
         }
         Ok(Self {
             scheme,
@@ -204,6 +217,65 @@ impl Record {
     pub(super) fn has_opaque_path(&self) -> bool {
         matches!(self.path, Path::Opaque(_))
     }
+}
+
+fn is_canonical_authority(scheme: &str, authority: &Authority) -> bool {
+    if percent_encoding::encode(&authority.username, EncodeSet::UserInfo) != authority.username
+        || authority.password.as_ref().is_some_and(|password| {
+            percent_encoding::encode(password, EncodeSet::UserInfo) != *password
+        })
+    {
+        return false;
+    }
+    let canonical_host = match &authority.host {
+        Host::Domain(value) => {
+            !value.is_empty()
+                && !(scheme == "file" && value == "localhost")
+                && host::parse_special(value).is_ok_and(|outcome| outcome.value == authority.host)
+        }
+        Host::Opaque(value) => {
+            !value.is_empty()
+                && host::parse_opaque(value).is_ok_and(|outcome| outcome.value == authority.host)
+        }
+        Host::Ipv4(_) | Host::Ipv6(_) | Host::Empty => true,
+    };
+    canonical_host
+        && (scheme != "file" || authority.username.is_empty() && authority.password.is_none())
+}
+
+fn is_canonical_path(path: &Path) -> bool {
+    match path {
+        Path::Segments(segments) => segments.iter().all(|segment| {
+            !segment.contains('/') && percent_encoding::encode(segment, EncodeSet::Path) == *segment
+        }),
+        Path::Opaque(_) => true,
+    }
+}
+
+fn is_canonical_opaque_path(path: &Path) -> bool {
+    match path {
+        Path::Segments(_) => true,
+        Path::Opaque(value) => {
+            !value.ends_with(' ') && percent_encoding::encode(value, EncodeSet::C0Control) == *value
+        }
+    }
+}
+
+fn is_canonical_query(value: Option<&str>, special: bool) -> bool {
+    value.is_none_or(|value| {
+        percent_encoding::encode(
+            value,
+            if special {
+                EncodeSet::SpecialQuery
+            } else {
+                EncodeSet::Query
+            },
+        ) == value
+    })
+}
+
+fn is_canonical_fragment(value: Option<&str>) -> bool {
+    value.is_none_or(|value| percent_encoding::encode(value, EncodeSet::Fragment) == value)
 }
 
 impl Authority {

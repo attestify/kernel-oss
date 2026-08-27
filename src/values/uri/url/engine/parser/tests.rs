@@ -235,6 +235,96 @@ fn file_state_validation_sets_success() {
 }
 
 #[test]
+/// Verifies absolute special and file-state delimiters retain their exact validation sets.
+fn absolute_special_and_file_state_validation_sets_success() {
+    let absolute = [
+        (r"http:\foo", "http://foo/"),
+        (r"http:\\foo", "http://foo/"),
+        (r"http:/\foo", "http://foo/"),
+        ("http:///foo", "http://foo/"),
+    ];
+    for (input, expected) in absolute {
+        let outcome = match parse(input, None) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("{input}"),
+        };
+        assert_eq!(serializer::serialize(&outcome.record), expected, "{input}");
+        assert_eq!(
+            outcome.validations,
+            vec![Validation::SpecialSchemeMissingFollowingSolidus],
+            "{input}"
+        );
+    }
+    let host_path = match parse(r"http://host\path", None) {
+        Ok(outcome) => outcome,
+        Err(_) => panic!(),
+    };
+    assert_eq!(serializer::serialize(&host_path.record), "http://host/path");
+    assert_eq!(
+        host_path.validations,
+        vec![Validation::InvalidReverseSolidus]
+    );
+
+    let base = match parse("file:///a/b", None) {
+        Ok(outcome) => outcome.record,
+        Err(_) => panic!(),
+    };
+    let file_vectors = [
+        (
+            "file:g",
+            "file:///a/g",
+            vec![Validation::SpecialSchemeMissingFollowingSolidus],
+        ),
+        (
+            r"file:\g",
+            "file:///g",
+            vec![
+                Validation::SpecialSchemeMissingFollowingSolidus,
+                Validation::InvalidReverseSolidus,
+            ],
+        ),
+        (
+            "/C:/x",
+            "file:///C:/x",
+            vec![Validation::FileInvalidWindowsDriveLetter],
+        ),
+    ];
+    for (input, expected, validations) in file_vectors {
+        let outcome = match parse(input, Some(&base)) {
+            Ok(outcome) => outcome,
+            Err(_) => panic!("{input}"),
+        };
+        assert_eq!(serializer::serialize(&outcome.record), expected, "{input}");
+        assert_eq!(outcome.validations, validations, "{input}");
+    }
+}
+
+#[test]
+/// Verifies absolute non-special hierarchical paths shorten dot segments canonically.
+fn nonspecial_absolute_dot_segments_success() {
+    let vectors = [
+        ("custom:/a/./b", "custom:/a/b"),
+        ("custom:/a/../b", "custom:/b"),
+        ("custom:/a/%2e/b", "custom:/a/b"),
+        ("custom:/a/.%2e/b", "custom:/b"),
+        ("custom:/../x", "custom:/x"),
+        ("custom:/..//x", "custom:/.//x"),
+        ("custom:/.//", "custom:/.//"),
+        ("non-spec:/.//", "non-spec:/.//"),
+        ("custom:/a/..//", "custom:/.//"),
+    ];
+    for (input, expected) in vectors {
+        assert!(
+            matches!(
+                parse(input, None).map(|outcome| serializer::serialize(&outcome.record)),
+                Ok(value) if value == expected
+            ),
+            "{input}"
+        );
+    }
+}
+
+#[test]
 /// Verifies file states reject userinfo and every explicit port spelling.
 fn file_state_authority_rejections_error() {
     for input in [

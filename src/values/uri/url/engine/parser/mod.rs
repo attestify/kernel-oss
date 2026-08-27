@@ -194,6 +194,8 @@ impl<'a> Machine<'a> {
                         && base.scheme() == scheme
                         && !self.remainder.starts_with("//")
                     {
+                        self.validations
+                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
                         return resolve_relative(
                             base,
                             &self.remainder,
@@ -204,10 +206,6 @@ impl<'a> Machine<'a> {
                     } else if scheme == "file" {
                         self.state = State::File;
                     } else if is_special(scheme) {
-                        if !self.remainder.starts_with("//") && !self.remainder.starts_with('\\') {
-                            self.validations
-                                .push(Validation::SpecialSchemeMissingFollowingSolidus);
-                        }
                         self.state = State::SpecialAuthoritySlashes;
                     } else if self.remainder.starts_with("//") {
                         self.state = State::PathOrAuthority;
@@ -289,16 +287,22 @@ impl<'a> Machine<'a> {
                     self.state = State::Authority;
                 }
                 State::SpecialAuthoritySlashes => {
-                    if self.remainder.starts_with("///") {
+                    if let Some(remainder) = self.remainder.strip_prefix("//") {
+                        self.remainder = remainder.to_owned();
+                        self.state = State::SpecialAuthorityIgnoreSlashes;
+                    } else {
+                        self.validations
+                            .push(Validation::SpecialSchemeMissingFollowingSolidus);
+                        self.remainder = self.remainder.trim_start_matches(['/', '\\']).to_owned();
+                        self.state = State::Authority;
+                    }
+                }
+                State::SpecialAuthorityIgnoreSlashes => {
+                    if self.remainder.starts_with(['/', '\\']) {
                         self.validations
                             .push(Validation::SpecialSchemeMissingFollowingSolidus);
                     }
-                    self.remainder =
-                        normalize_special_separators(&self.remainder, &mut self.validations);
-                    self.state = State::SpecialAuthorityIgnoreSlashes;
-                }
-                State::SpecialAuthorityIgnoreSlashes => {
-                    self.remainder = self.remainder.trim_start_matches('/').to_owned();
+                    self.remainder = self.remainder.trim_start_matches(['/', '\\']).to_owned();
                     self.state = State::Authority;
                 }
                 State::PathOrAuthority => {
@@ -748,9 +752,7 @@ fn resolve_relative(
     }
     if base.is_file() && begins_windows_drive(reference.trim_start_matches('/')) {
         validate_component(&reference, validations);
-        if reference.trim_start_matches('/').as_bytes().get(1) == Some(&b'|') {
-            validations.push(Validation::FileInvalidWindowsDriveLetter);
-        }
+        validations.push(Validation::FileInvalidWindowsDriveLetter);
         let record = base.with_path(Path::Segments(parse_file_segments(
             &format!(
                 "/{}",
@@ -1005,12 +1007,22 @@ fn parse_segments_inner(
             if is_double_dot(segment) {
                 if output.len() > usize::from(rooted) {
                     output.pop();
-                    output.push(".".to_owned());
+                    if segments.get(index + 1) == Some(&"") && segments.get(index + 2).is_some() {
+                        // Shortening must not turn a hierarchical non-special
+                        // path into authority when a second solidus follows.
+                        output.push(".".to_owned());
+                    }
                 } else if segments.get(index + 2).is_some() {
                     // The non-special path state retains a leading dot segment
                     // when a root-level double-dot is followed by a second
                     // separator. This preserves the distinction between `/../`
                     // and `/..//` in the URL record.
+                    output.push(".".to_owned());
+                }
+            } else if is_single_dot(segment) {
+                if output.len() == usize::from(rooted) && segments.get(index + 1) == Some(&"") {
+                    // A leading single-dot segment before a second slash keeps
+                    // a non-special hierarchical URL from becoming authority.
                     output.push(".".to_owned());
                 }
             } else {
