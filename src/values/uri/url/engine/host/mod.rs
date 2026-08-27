@@ -76,6 +76,33 @@ pub(super) fn parse_opaque(input: &str) -> Result<Outcome, Error> {
     })
 }
 
+/// Parses one bracket-content IPv6 address into exactly eight numeric pieces.
+pub(super) fn parse_ipv6(input: &str) -> Result<Host, Error> {
+    if input.is_empty() || input.contains('%') || input.matches("::").count() > 1 {
+        return Err(Error::Invalid);
+    }
+    let (left, right, compressed) = if let Some((left, right)) = input.split_once("::") {
+        (left, right, true)
+    } else {
+        (input, "", false)
+    };
+    let left = parse_ipv6_side(left)?;
+    let right = parse_ipv6_side(right)?;
+    let count = left.len().checked_add(right.len()).ok_or(Error::Overflow)?;
+    if count > 8 || (!compressed && count != 8) || (compressed && count == 8) {
+        return Err(Error::Invalid);
+    }
+    let mut pieces = [0u16; 8];
+    for (index, piece) in left.iter().enumerate() {
+        pieces[index] = *piece;
+    }
+    let right_start = 8usize.checked_sub(right.len()).ok_or(Error::Overflow)?;
+    for (offset, piece) in right.iter().enumerate() {
+        pieces[right_start.checked_add(offset).ok_or(Error::Overflow)?] = *piece;
+    }
+    Ok(Host::Ipv6(pieces))
+}
+
 pub(super) fn serialize(host: &Host) -> String {
     match host {
         Host::Domain(value) | Host::Opaque(value) => value.clone(),
@@ -89,6 +116,32 @@ pub(super) fn serialize(host: &Host) -> String {
         Host::Ipv6(pieces) => format!("[{}]", serialize_ipv6(pieces)),
         Host::Empty => String::new(),
     }
+}
+
+fn parse_ipv6_side(side: &str) -> Result<Vec<u16>, Error> {
+    if side.is_empty() {
+        return Ok(Vec::new());
+    }
+    let segments: Vec<&str> = side.split(':').collect();
+    let mut pieces = Vec::new();
+    for (index, segment) in segments.iter().enumerate() {
+        if segment.is_empty() {
+            return Err(Error::Invalid);
+        }
+        if segment.contains('.') {
+            if index + 1 != segments.len() {
+                return Err(Error::Invalid);
+            }
+            let (address, _) = parse_ipv4(segment)?;
+            pieces.push(u16::try_from(address >> 16).map_err(|_| Error::Overflow)?);
+            pieces.push(u16::try_from(address & 0xffff).map_err(|_| Error::Overflow)?);
+        } else if segment.len() > 4 {
+            return Err(Error::Invalid);
+        } else {
+            pieces.push(u16::from_str_radix(segment, 16).map_err(|_| Error::Invalid)?);
+        }
+    }
+    Ok(pieces)
 }
 
 fn ends_in_number(domain: &str) -> bool {

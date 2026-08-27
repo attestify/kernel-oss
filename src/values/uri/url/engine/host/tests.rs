@@ -1,5 +1,5 @@
 //! Tests for private host parsing and serialization.
-use super::{Host, Validation, parse_opaque, parse_special, serialize};
+use super::{Host, Validation, parse_ipv6, parse_opaque, parse_special, serialize};
 
 #[test]
 /// Verifies shortened hexadecimal IPv4 uses canonical dotted decimal.
@@ -32,4 +32,25 @@ fn ipv6_serialization_success() {
         "[1::2:0:0:3:4]"
     );
     assert_eq!(serialize(&Host::Empty), "");
+}
+
+#[test]
+/// Verifies compressed and embedded-IPv4 IPv6 forms use canonical lowercase output.
+fn ipv6_parsing_success() {
+    assert_eq!(
+        parse_ipv6("2001:0db8::1").map(|host| serialize(&host)),
+        Ok("[2001:db8::1]".to_owned())
+    );
+    assert_eq!(
+        parse_ipv6("::ffff:192.0.2.128").map(|host| serialize(&host)),
+        Ok("[::ffff:c000:280]".to_owned())
+    );
+}
+
+#[test]
+/// Verifies malformed and zone-identified IPv6 values are rejected.
+fn ipv6_invalid_error() {
+    assert!(parse_ipv6("1:2:3:4:5:6:7").is_err());
+    assert!(parse_ipv6("fe80::1%25en0").is_err());
+    assert!(parse_ipv6("1::2::3").is_err());
 }
