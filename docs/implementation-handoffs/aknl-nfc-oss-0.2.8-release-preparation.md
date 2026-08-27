@@ -39,6 +39,7 @@ The local release-preparation commits are:
 - `d921a94` — package and root-lockfile version preparation
 - `43bad55` — the sole RepositoryLink formatting-borrow lint correction
 - `edf984b` — release-preparation documentation
+- `4130f10d488d5f5c6dc887085a2619162d3ab01d` — initial release-qualification record
 
 The locked/offline qualification passed strict clippy, 381 unit tests, 8 NFC
 integration tests, 17 doctests, and 5 generator tests. The public compile
@@ -47,20 +48,38 @@ exact redacted `Debug` output. Generator output reproduced twice and matched
 the committed 109,191-byte table with SHA-256
 `7189aab455a06fa193b001a6d72fd8cc4033f21f60f8b46f960a68346c4ac254`.
 
-The final package snapshot reconciles 329 `cargo package --list` paths with
-329 `.crate` archive paths and contains zero AppleDouble, `.DS_Store`, Python
-cache, or `.pyc` artifacts. NFC source, Unicode inputs, generator assets,
-conformance test, notices, and both license files are present.
+The 329-path package/archive snapshot was valid for the earlier intermediate
+candidate, but it is not final-candidate package evidence: `Cargo.toml`
+includes `/docs/**`, and later evidence records changed package contents. The
+final package qualification therefore occurs only after this correction is
+committed, with raw output held outside this repository in the external review
+packet. That packet records the exact final commit, archive reconciliation,
+archive hygiene, NFC-custody presence, and `.cargo_vcs_info.json` commit.
 
-Three evidence-capture preflights are retained as failures: two package-list /
-archive comparisons where an in-package raw-output file was created between
-the commands, and one temporary Rust file with an invalid inferred crate name.
-They are superseded by the external-output package snapshot and explicit
-crate-name public compile check; none reflects a product or package failure.
+Four immutable failed evidence-capture preflights are retained and explicitly
+classified as `EXPECTED_FAILURE`, not as qualification failures:
 
-The release evidence ledger records 43 passing commands and 4 retained failed
-preflights. The 49-entry detached evidence checksum manifest has SHA-256
-`7207aaaa9cb9ae6fdb6e890d6c6abbf04009e783022b6b5b770972a6553e3b26`
-and verifies successfully. The qualification commit that records these files
-is local only and remains subject to release review; it does not create the
-`0.2.8` tag.
+- `RC-PACKAGE-RECONCILIATION-001` — an in-package raw output was created
+  between list and archive capture; replaced by the deferred-output
+  reconciliation `RC-PACKAGE-RECONCILIATION-003`.
+- `RC-PACKAGE-RECONCILIATION-002` — moving the list output into the included
+  documentation tree before packaging changed the archive; replaced by
+  `RC-PACKAGE-RECONCILIATION-003`.
+- `RC-ARCHIVE-HYGIENE-001` — a shell count treated an empty `rg -c` result as
+  nonzero despite no metadata match; replaced by `RC-ARCHIVE-HYGIENE-003`.
+- `RC-PUBLIC-ABI-COMPILE-001` — the temporary Rust filename produced an
+  invalid inferred crate name; replaced by the explicit-crate-name
+  `RC-PUBLIC-ABI-COMPILE-002`.
+
+The intermediate `RC-LOCAL-COMMITS-001`, `RC-CHANGED-PATHS-001`,
+`RC-STATUS-001`, and `RC-GIT-DIFF-CHECK-001` records are retained unchanged
+but are `SUPERSEDED`: they do not describe the final correction commit. The
+unqualified final base-to-HEAD whitespace check is expected to report immutable
+raw `.out` evidence; the final external packet records both that result and a
+passing scoped check which excludes only those raw outputs. The correction
+commit and every final candidate commit are recorded in that external packet.
+
+The in-repository evidence manifest is regenerated after this record and its
+lifecycle ledgers are final. Its detached verifier is excluded from the
+manifest it verifies. The qualification commits are local only and remain
+subject to release review; no `0.2.8` tag is created.
