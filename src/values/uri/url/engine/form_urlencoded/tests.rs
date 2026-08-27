@@ -35,3 +35,9 @@ fn decoding_success() {
 fn repeated_delimiters_success() {
     assert_eq!(parse("&&"), vec![("".to_owned(), "".to_owned()); 3]);
 }
+
+#[test]
+/// Verifies an empty query has no form sequences.
+fn empty_input_success() {
+    assert!(parse("").is_empty());
+}

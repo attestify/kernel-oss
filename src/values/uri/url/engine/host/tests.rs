@@ -11,6 +11,40 @@ fn ipv4_non_decimal_success() {
     );
     assert!(result.is_ok_and(|outcome| outcome.validations.contains(&Validation::Ipv4NonDecimal)));
 }
+
+#[test]
+/// Verifies octal, shortened, and trailing-dot IPv4 conditions are preserved.
+fn ipv4_validation_conditions_success() {
+    let result = parse_special("0177.1.");
+    assert_eq!(
+        result.as_ref().map(|outcome| serialize(&outcome.value)),
+        Ok("127.0.0.1".to_owned())
+    );
+    assert!(result.is_ok_and(|outcome| {
+        outcome.validations.contains(&Validation::Ipv4NonDecimal)
+            && outcome.validations.contains(&Validation::Ipv4Shortened)
+            && outcome.validations.contains(&Validation::Ipv4TrailingDot)
+    }));
+}
+
+#[test]
+/// Verifies special-host IDNA strict diagnostics survive relaxed compatibility.
+fn strict_idna_validation_is_preserved_success() {
+    let result = parse_special("under_score.example");
+    assert_eq!(
+        result.as_ref().map(|outcome| serialize(&outcome.value)),
+        Ok("under_score.example".to_owned())
+    );
+    assert!(result.is_ok_and(|outcome| outcome.validations.contains(&Validation::StrictIdna)));
+}
+
+#[test]
+/// Verifies invalid numeric hosts and large inputs return without panicking.
+fn numeric_host_and_long_input_error() {
+    assert!(parse_special("256.0.0.1").is_err());
+    assert!(parse_special("1.2.3.4.5").is_err());
+    assert!(parse_special(&"a".repeat(16_384)).is_ok());
+}
 #[test]
 /// Verifies opaque hosts do not apply IDNA or IPv4 parsing.
 fn opaque_host_success() {
