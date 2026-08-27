@@ -2,7 +2,7 @@
 
 [package]
 name = "kernel_oss"
-version = "0.2.8"
+version = "0.3.0"
 edition = "2024"
 description = "Shared Attestify kernel traits, values, errors, and gateway/use case seams."
 license-file = "LICENSE"
@@ -13,7 +13,10 @@ include = [
     "/Cargo.lock",
     "/LICENSE",
     "/README.md",
-    "/docs/**",
+    "/docs/*.md",
+    "/docs/implementation-handoffs/*.json",
+    "/docs/implementation-handoffs/*.md",
+    "/docs/implementation-handoffs/*.puml",
     "/src/**",
     "/examples/**",
     "/THIRD_PARTY_NOTICES.md",
@@ -25,8 +28,9 @@ include = [
     "/tests/nfc_text_unicode_17_conformance.rs",
 ]
 
-[dependencies]
-url = "2.5.4"
+[[bin]]
+name = "kernel_oss_url_performance"
+path = "tools/url-data/url_performance.rs"
 
 [dev-dependencies]
 test_framework_oss = { git = "https://github.com/attestify/test-framework-oss.git", tag = "0.2.4" }

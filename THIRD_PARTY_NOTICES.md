@@ -13,8 +13,11 @@ The data supports the private normalization engine behind
 `kernel_oss::values::text::NfcText`. It does not expose a public Unicode or
 normalization API.
 
-Unicode 17.0 URL/IDNA inputs under `test_data/url/unicode/` are also retained
-under this same License v3 custody for private future URL-domain processing.
+Unicode 17.0 URL/IDNA inputs under `test_data/url/unicode/` are retained under
+this same License v3 custody for the private dependency-free URL-domain and
+IDNA implementation. The pinned WPT URL fixtures and their license are retained
+under `test_data/url/` for conformance qualification; the former external `url`
+crate is not packaged or used by Kernel OSS 0.3.0.
 
 ## unicode-normalization 0.1.25
 

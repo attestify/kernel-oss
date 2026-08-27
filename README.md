@@ -38,9 +38,22 @@ Supporting roles:
 `kernel_oss::values::text::NfcText` owns one immutable Unicode 17.0 NFC value.
 Construction and `is_nfc` use the same private shared engine; normalization
 tables and engine APIs are not public. The capability was relocated into Kernel
-OSS with recorded MIT-derived influence and Unicode License v3 custody. Future
-URL/IDNA work may consume it internally, while URL integration and Proprietary
-migration remain separate tasks.
+OSS with recorded MIT-derived influence and Unicode License v3 custody. The
+private URL/IDNA engine consumes this one crate-private NFC seam; it does not
+add a second normalizer, NFC table set, or public normalization surface.
+
+## URL values
+
+`kernel_oss::values::uri::url::URL` is a dependency-free, immutable WHATWG URL
+value. Construct it with `URL::try_new`, resolve references with
+`try_resolve`, and use `mutator()` for one final validated immutable component
+replacement. Component accessors are borrowed and distinguish absence from an
+empty value. `query_pairs()` returns borrowed decoded pairs in source order.
+
+`URL::value()` intentionally returns the complete canonical serialization and
+can contain credentials, query data, and a fragment; treat it as sensitive.
+Automatic URL formatting is redacted (`URL([REDACTED])`) and `URL` deliberately
+does not implement `Display`. RepositoryLink formatting is likewise redacted.
 
 ## Gateway Migrations
 

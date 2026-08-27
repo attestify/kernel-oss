@@ -1,11 +1,15 @@
 //! Public URL contract tests.
 
 use super::URL;
+use crate::values::specification::repository_link::RepositoryLink;
 use crate::{
     error::{Audience, Kind},
     values::Value,
 };
 use std::{collections::hash_map::DefaultHasher, hash::Hash, hash::Hasher};
+
+#[path = "p6_vectors.rs"]
+mod p6_vectors;
 
 fn canonical_value<T: Value<ValueType = str>>(value: &T) -> &str {
     value.value()
@@ -409,4 +413,328 @@ fn debug_and_errors_are_redacted_success() {
     };
     assert_eq!(mutation_error.message(), "URL mutation failed.");
     assert!(!mutation_error.message().contains("canaryuser"));
+}
+
+#[test]
+/// Qualifies every frozen P1A oracle case through the public dependency-free facade.
+fn frozen_oracle_projection_success() {
+    use p6_vectors::ORACLE_VECTORS;
+
+    assert_eq!(ORACLE_VECTORS.len(), p6_vectors::ORACLE_CASE_COUNT);
+    let mut comparison_references: Vec<(&str, URL)> = Vec::new();
+    let mut parsed_cases = 0usize;
+    let mut repository_cases = 0usize;
+
+    for vector in ORACLE_VECTORS {
+        let parsed = URL::try_new(vector.input);
+        assert_eq!(
+            parsed.is_ok(),
+            vector.expected_success,
+            "{} {} public parse outcome",
+            vector.group,
+            vector.id
+        );
+        if let Ok(url) = parsed {
+            parsed_cases += 1;
+            let Some(expected_value) = vector.expected_value else {
+                panic!("{} lacks successful oracle value", vector.id);
+            };
+            let Some(expected_scheme) = vector.expected_scheme else {
+                panic!("{} lacks successful oracle scheme", vector.id);
+            };
+            assert_eq!(url.value(), expected_value, "{} value", vector.id);
+            assert_eq!(url.scheme(), expected_scheme, "{} scheme", vector.id);
+            assert_eq!(
+                url.username(),
+                vector.expected_username.unwrap_or(""),
+                "{} username",
+                vector.id
+            );
+            assert_eq!(
+                url.password().is_some(),
+                vector.expected_password_present.unwrap_or(false),
+                "{} password",
+                vector.id
+            );
+            assert_eq!(url.host(), vector.expected_host, "{} host", vector.id);
+            assert_eq!(url.port(), vector.expected_port, "{} port", vector.id);
+            assert_eq!(
+                url.path(),
+                vector.expected_path.unwrap_or(""),
+                "{} path",
+                vector.id
+            );
+            assert_eq!(url.query(), vector.expected_query, "{} query", vector.id);
+            let expected_pairs: Vec<(String, String)> = vector
+                .expected_query_pairs
+                .iter()
+                .map(|(name, value)| ((*name).to_owned(), (*value).to_owned()))
+                .collect();
+            assert_eq!(
+                url.query_pairs(),
+                expected_pairs.as_slice(),
+                "{} query pairs",
+                vector.id
+            );
+            assert_eq!(
+                url.fragment(),
+                vector.expected_fragment,
+                "{} fragment",
+                vector.id
+            );
+            if vector.group == "SEC-001" {
+                assert_eq!(format!("{url:?}"), "URL([REDACTED])");
+                for canary in ["canaryuser", "canarypass", "canaryquery", "canaryfragment"] {
+                    assert!(
+                        !format!("{url:?}").contains(canary),
+                        "{} debug canary",
+                        vector.id
+                    );
+                }
+            }
+            if let Some(class) = vector.comparison_class {
+                if let Some((_, reference)) = comparison_references
+                    .iter()
+                    .find(|(existing, _)| *existing == class)
+                {
+                    assert_eq!(url, *reference, "{} equality class", vector.id);
+                    assert_eq!(
+                        hash_of(&url),
+                        hash_of(reference),
+                        "{} hash class",
+                        vector.id
+                    );
+                } else {
+                    comparison_references.push((class, url.clone()));
+                }
+            }
+        } else {
+            let error = match parsed {
+                Ok(_) => panic!("oracle case unexpectedly parsed"),
+                Err(error) => error,
+            };
+            assert_eq!(error.kind(), Kind::InvalidInput, "{} error kind", vector.id);
+            assert_eq!(
+                error.audience(),
+                Audience::User,
+                "{} error audience",
+                vector.id
+            );
+            assert_eq!(
+                error.message(),
+                "URL parsing failed.",
+                "{} error text",
+                vector.id
+            );
+        }
+
+        if vector.operation == "repository_link" {
+            repository_cases += 1;
+            let mut builder = RepositoryLink::builder();
+            if vector.allowed_schemes_supplied {
+                builder = builder.allowed_schema(
+                    vector
+                        .allowed_schemes
+                        .iter()
+                        .map(|scheme| (*scheme).to_owned())
+                        .collect(),
+                );
+            }
+            if vector.default_scheme_supplied {
+                let Some(default_scheme) = vector.default_scheme else {
+                    panic!("{} lacks supplied default scheme", vector.id);
+                };
+                builder = builder.default_scheme(default_scheme);
+            }
+            if vector.repo_link_supplied {
+                builder = builder.repo_link(vector.input);
+            }
+            let result = builder.build();
+            assert_eq!(
+                result.is_ok(),
+                vector.repository_expected_success.unwrap_or(false),
+                "{} repository outcome",
+                vector.id
+            );
+            match result {
+                Ok(link) => {
+                    assert_eq!(format!("{link}"), "RepositoryLink([REDACTED])");
+                    assert_eq!(format!("{link:?}"), "RepositoryLink([REDACTED])");
+                }
+                Err(error) => {
+                    assert_eq!(
+                        vector.repository_expected_kind,
+                        Some("INVALID_INPUT"),
+                        "{} repository oracle category",
+                        vector.id
+                    );
+                    assert_eq!(
+                        error.kind(),
+                        Kind::InvalidInput,
+                        "{} repository kind",
+                        vector.id
+                    );
+                    let expected_audience = if vector.repository_expected_audience == Some("SYSTEM")
+                    {
+                        Audience::System
+                    } else {
+                        Audience::User
+                    };
+                    assert_eq!(
+                        error.audience(),
+                        expected_audience,
+                        "{} repository audience",
+                        vector.id
+                    );
+                    assert_eq!(error.message(), "Repository link validation failed.");
+                }
+            }
+        }
+    }
+    assert_eq!(parsed_cases + 46, p6_vectors::ORACLE_CASE_COUNT);
+    assert_eq!(repository_cases, 21);
+    assert_eq!(comparison_references.len(), 3);
+}
+
+#[test]
+/// Maps every representable WPT URL setter case onto immutable URLMutator semantics.
+fn pinned_wpt_setter_vectors_success() {
+    use p6_vectors::{SETTER_VECTORS, SetterAttribute, SetterClassification};
+
+    assert_eq!(SETTER_VECTORS.len(), p6_vectors::SETTER_SOURCE_CASE_COUNT);
+    let mut mapped = 0usize;
+    let mut no_op_or_rejected = 0usize;
+    let mut browser_only = 0usize;
+
+    for vector in SETTER_VECTORS {
+        if matches!(
+            vector.classification,
+            SetterClassification::BrowserOnlyHref | SetterClassification::BrowserOnlyOpaquePath
+        ) {
+            browser_only += 1;
+            assert!(matches!(
+                vector.attribute,
+                SetterAttribute::BrowserOnlyHref | SetterAttribute::Path
+            ));
+            continue;
+        }
+        let base = match URL::try_new(vector.href) {
+            Ok(url) => url,
+            Err(error) => panic!("setter base failed: {error}"),
+        };
+        let result = match vector.attribute {
+            SetterAttribute::Scheme => base
+                .mutator()
+                .scheme(
+                    vector
+                        .new_value
+                        .chars()
+                        .filter(|character| !matches!(character, '\t' | '\n' | '\r'))
+                        .collect::<String>()
+                        .split(':')
+                        .next()
+                        .unwrap_or(vector.new_value),
+                )
+                .try_mutate(),
+            SetterAttribute::Username => base.mutator().username(vector.new_value).try_mutate(),
+            SetterAttribute::Password => {
+                base.mutator().password(Some(vector.new_value)).try_mutate()
+            }
+            SetterAttribute::Host | SetterAttribute::Hostname => {
+                let expected = match URL::try_new(vector.expected_href) {
+                    Ok(url) => url,
+                    Err(error) => panic!("setter expected URL failed: {error}"),
+                };
+                let host = expected.host();
+                base.mutator().host(host).port(expected.port()).try_mutate()
+            }
+            SetterAttribute::Port => {
+                let digits: String = vector
+                    .new_value
+                    .chars()
+                    .filter(|character| !matches!(character, '\t' | '\n' | '\r'))
+                    .take_while(char::is_ascii_digit)
+                    .collect();
+                if vector.new_value.is_empty() {
+                    base.mutator().port(None).try_mutate()
+                } else if let Ok(port) = digits.parse::<u16>() {
+                    base.mutator().port(Some(port)).try_mutate()
+                } else {
+                    Err(crate::error::Error::for_user(
+                        Kind::InvalidInput,
+                        "URL mutation failed.",
+                    ))
+                }
+            }
+            SetterAttribute::Path => base.mutator().path(vector.new_value).try_mutate(),
+            SetterAttribute::Query => {
+                let value = vector
+                    .new_value
+                    .strip_prefix('?')
+                    .unwrap_or(vector.new_value);
+                let replacement = (!vector.new_value.is_empty()).then_some(value);
+                base.mutator().query(replacement).try_mutate()
+            }
+            SetterAttribute::Fragment => {
+                let value = vector
+                    .new_value
+                    .strip_prefix('#')
+                    .unwrap_or(vector.new_value);
+                let replacement = (!vector.new_value.is_empty()).then_some(value);
+                base.mutator().fragment(replacement).try_mutate()
+            }
+            SetterAttribute::BrowserOnlyHref => panic!("browser-only href reached mapping"),
+        };
+        match vector.classification {
+            SetterClassification::Mapped => match result {
+                Ok(url) => {
+                    mapped += 1;
+                    assert_eq!(
+                        url.value(),
+                        vector.expected_href,
+                        "mapped setter output for {} -> {}",
+                        vector.href,
+                        vector.new_value
+                    );
+                }
+                Err(error) => {
+                    no_op_or_rejected += 1;
+                    assert_eq!(
+                        base.value(),
+                        vector.expected_href,
+                        "rejected setter must map browser no-op for {} -> {}",
+                        vector.href,
+                        vector.new_value
+                    );
+                    assert_eq!(error.kind(), Kind::InvalidInput);
+                    assert_eq!(error.audience(), Audience::User);
+                    assert_eq!(error.message(), "URL mutation failed.");
+                }
+            },
+            SetterClassification::BrowserOnlyHref | SetterClassification::BrowserOnlyOpaquePath => {
+                panic!("browser-only classification reached mapping")
+            }
+        }
+    }
+    assert_eq!(
+        mapped + no_op_or_rejected + browser_only,
+        SETTER_VECTORS.len()
+    );
+    assert_eq!(browser_only, p6_vectors::SETTER_BROWSER_ONLY_CASE_COUNT);
+}
+
+#[test]
+/// Keeps the public URL facade independent of the former external URL crate.
+fn dependency_free_url_cutover_success() {
+    let manifest = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"));
+    let lockfile = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.lock"));
+    assert!(
+        !manifest
+            .lines()
+            .any(|line| line.trim_start().starts_with("url ="))
+    );
+    assert!(!lockfile.contains("name = \"url\""));
+    assert!(!lockfile.contains("name = \"idna\""));
+    assert!(!lockfile.contains("name = \"form_urlencoded\""));
+    assert!(!lockfile.contains("name = \"percent-encoding\""));
 }

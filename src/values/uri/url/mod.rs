@@ -354,11 +354,19 @@ impl URLMutator {
 
     /// Reconstructs and validates one new canonical URL from all replacements.
     pub fn try_mutate(self) -> Result<URL, Error> {
+        let scheme_replaced = self.scheme.is_some();
         let scheme = self
             .scheme
             .unwrap_or_else(|| self.url.scheme().to_owned())
             .to_ascii_lowercase();
         if !is_bare_scheme(&scheme) {
+            return Err(mutation_error());
+        }
+        if scheme_replaced
+            && (is_special_scheme(&scheme) != is_special_scheme(self.url.scheme())
+                || scheme == "file"
+                || self.url.scheme() == "file")
+        {
             return Err(mutation_error());
         }
 
@@ -372,7 +380,7 @@ impl URLMutator {
         let raw_host = self
             .host
             .unwrap_or_else(|| self.url.host().map(str::to_owned));
-        let host = if host_replaced {
+        let host = if host_replaced || scheme_replaced {
             raw_host
                 .as_deref()
                 .map(|value| canonicalize_host(&scheme, value))
@@ -381,13 +389,20 @@ impl URLMutator {
             raw_host
         };
         let port = self.port.unwrap_or_else(|| self.url.port());
-        let path = self.path.unwrap_or_else(|| self.url.path().to_owned());
+        let path_replaced = self.path.is_some();
+        let mut path =
+            strip_url_whitespace(&self.path.unwrap_or_else(|| self.url.path().to_owned()));
+        if path_replaced && is_special_scheme(&scheme) {
+            path = path.replace('\\', "/");
+        }
         let query = self
             .query
-            .unwrap_or_else(|| self.url.query().map(str::to_owned));
+            .unwrap_or_else(|| self.url.query().map(str::to_owned))
+            .map(|value| strip_url_whitespace(&value));
         let fragment = self
             .fragment
-            .unwrap_or_else(|| self.url.fragment().map(str::to_owned));
+            .unwrap_or_else(|| self.url.fragment().map(str::to_owned))
+            .map(|value| strip_url_whitespace(&value));
         let has_authority = if host_replaced {
             host.is_some()
         } else {
@@ -424,7 +439,11 @@ impl URLMutator {
         if has_authority && !path.is_empty() && !path.starts_with('/') {
             value.push('/');
         }
-        value.push_str(&percent_encoding::encode(&path, EncodeSet::Path));
+        if !has_authority && self.url.has_opaque_path() && !path_replaced {
+            value.push_str(&path);
+        } else {
+            value.push_str(&percent_encoding::encode(&path, EncodeSet::Path));
+        }
         if let Some(query) = query {
             value.push('?');
             let set = if is_special_scheme(&scheme) {
@@ -446,6 +465,13 @@ fn is_bare_scheme(value: &str) -> bool {
     let mut bytes = value.bytes();
     matches!(bytes.next(), Some(b'A'..=b'Z' | b'a'..=b'z'))
         && bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'+' | b'-' | b'.'))
+}
+
+fn strip_url_whitespace(value: &str) -> String {
+    value
+        .chars()
+        .filter(|character| !matches!(character, '\t' | '\n' | '\r'))
+        .collect()
 }
 
 fn canonicalize_host(scheme: &str, value: &str) -> Result<String, Error> {
