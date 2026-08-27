@@ -337,6 +337,24 @@ fn file_state_authority_rejections_error() {
 }
 
 #[test]
+/// Verifies Windows-drive spelling is normalized only by the private file path seam.
+fn file_only_windows_drive_normalization_success() {
+    for (input, expected) in [
+        ("http://example.test/C|", "http://example.test/C|"),
+        ("ftp://example.test/C|", "ftp://example.test/C|"),
+        ("file:///C|/x", "file:///C:/x"),
+    ] {
+        assert!(
+            matches!(
+                parse(input, None).map(|outcome| serializer::serialize(&outcome.record)),
+                Ok(value) if value == expected
+            ),
+            "{input}"
+        );
+    }
+}
+
+#[test]
 /// Verifies representative valid record shapes survive serializer/parser round trips.
 fn canonical_record_shapes_round_trip_success() {
     let records = [

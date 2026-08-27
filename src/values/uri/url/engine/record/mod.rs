@@ -246,6 +246,9 @@ fn is_canonical_authority(scheme: &str, authority: &Authority) -> bool {
 fn is_canonical_path(path: &Path, scheme: &str, no_authority: bool) -> bool {
     match path {
         Path::Segments(segments) => {
+            if segments.len() == 1 && segments.first().is_some_and(String::is_empty) {
+                return false;
+            }
             let ambiguity_guard = !is_special_scheme(scheme)
                 && no_authority
                 && matches!(segments.as_slice(), [first, dot, empty, ..]
@@ -264,7 +267,12 @@ fn is_canonical_path(path: &Path, scheme: &str, no_authority: bool) -> bool {
                 && segments
                     .get(1)
                     .is_some_and(|segment| is_pipe_windows_drive(segment));
-            segments_are_canonical && !authority_ambiguous && !noncanonical_file_drive
+            let special_path_backslash =
+                is_special_scheme(scheme) && segments.iter().any(|segment| segment.contains('\\'));
+            segments_are_canonical
+                && !authority_ambiguous
+                && !noncanonical_file_drive
+                && !special_path_backslash
         }
         Path::Opaque(_) => true,
     }
@@ -286,7 +294,10 @@ fn is_canonical_opaque_path(path: &Path) -> bool {
     match path {
         Path::Segments(_) => true,
         Path::Opaque(value) => {
-            !value.ends_with(' ') && percent_encoding::encode(value, EncodeSet::C0Control) == *value
+            !value.starts_with('/')
+                && !value.contains(['?', '#'])
+                && !value.ends_with(' ')
+                && percent_encoding::encode(value, EncodeSet::C0Control) == *value
         }
     }
 }

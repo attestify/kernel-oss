@@ -1034,7 +1034,7 @@ fn parse_segments_inner(
     for raw_segment in content.split('/') {
         let normalized_segment;
         let raw_segment =
-            if special && rooted && output.len() == 1 && begins_windows_drive(raw_segment) {
+            if preserve_drive && rooted && output.len() == 1 && begins_windows_drive(raw_segment) {
                 normalized_segment = normalize_windows_drive(raw_segment);
                 &normalized_segment
             } else {
