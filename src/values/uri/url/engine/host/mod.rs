@@ -27,19 +27,19 @@ pub(super) enum Validation {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(super) struct Outcome {
-    pub(super) value: Host,
+pub(in crate::values::uri::url) struct Outcome {
+    pub(in crate::values::uri::url) value: Host,
     pub(super) validations: Vec<Validation>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(super) enum Error {
+pub(in crate::values::uri::url) enum Error {
     Invalid,
     Overflow,
 }
 
 /// Parses a special-scheme host through percent decoding, IDNA, and IPv4 dispatch.
-pub(super) fn parse_special(input: &str) -> Result<Outcome, Error> {
+pub(in crate::values::uri::url) fn parse_special(input: &str) -> Result<Outcome, Error> {
     let bytes = percent_encoding::decode_bytes(input);
     let decoded = percent_encoding::decode_utf8(&bytes).map_err(|_| Error::Invalid)?;
     let decoded_has_non_ascii = !decoded.is_ascii();
@@ -70,7 +70,7 @@ pub(super) fn parse_special(input: &str) -> Result<Outcome, Error> {
 }
 
 /// Parses an opaque host without IDNA or numeric-host interpretation.
-pub(super) fn parse_opaque(input: &str) -> Result<Outcome, Error> {
+pub(in crate::values::uri::url) fn parse_opaque(input: &str) -> Result<Outcome, Error> {
     if input.chars().any(forbidden_opaque) {
         return Err(Error::Invalid);
     }
@@ -88,7 +88,7 @@ pub(super) fn parse_opaque(input: &str) -> Result<Outcome, Error> {
 }
 
 /// Parses one bracket-content IPv6 address into exactly eight numeric pieces.
-pub(super) fn parse_ipv6(input: &str) -> Result<Host, Error> {
+pub(in crate::values::uri::url) fn parse_ipv6(input: &str) -> Result<Host, Error> {
     if input.is_empty() || input.contains('%') || input.matches("::").count() > 1 {
         return Err(Error::Invalid);
     }

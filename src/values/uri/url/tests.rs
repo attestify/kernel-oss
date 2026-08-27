@@ -161,6 +161,184 @@ fn mutator_rejects_structural_component_injection_error() {
 }
 
 #[test]
+/// Keeps host replacement bounded to one canonical host component.
+fn mutator_host_boundary_success() {
+    let base =
+        URL::try_new("https://user%40name:pass%3Aword@example.test/a%2Fb?stable=%25#stable%23");
+    assert!(base.is_ok());
+    let base = match base {
+        Ok(url) => url,
+        Err(error) => panic!("unexpected URL parse failure: {error}"),
+    };
+
+    for value in ["attacker.test:4444", "[::1]:4444"] {
+        let result = base.mutator().host(Some(value)).try_mutate();
+        assert!(result.is_err());
+        let error = match result {
+            Ok(_) => panic!("host carrying a port unexpectedly succeeded"),
+            Err(error) => error,
+        };
+        assert_eq!(error.message(), "URL mutation failed.");
+    }
+    for value in ["host\tname", "host\nname", "host\rname"] {
+        assert!(base.mutator().host(Some(value)).try_mutate().is_err());
+    }
+    for value in [
+        "user@example.test",
+        "example.test/path",
+        "example.test?query",
+        "example.test#fragment",
+    ] {
+        assert!(base.mutator().host(Some(value)).try_mutate().is_err());
+    }
+
+    let domain = base.mutator().host(Some("attacker.test")).try_mutate();
+    assert!(domain.is_ok());
+    let domain = match domain {
+        Ok(url) => url,
+        Err(error) => panic!("valid domain replacement failed: {error}"),
+    };
+    assert_eq!(domain.host(), Some("attacker.test"));
+    assert_eq!(domain.username(), "user%40name");
+    assert_eq!(domain.password(), Some("pass%3Aword"));
+    assert_eq!(domain.path(), "/a%2Fb");
+    assert_eq!(domain.query(), Some("stable=%25"));
+    assert_eq!(domain.fragment(), Some("stable%23"));
+    assert_eq!(
+        domain.value(),
+        "https://user%40name:pass%3Aword@attacker.test/a%2Fb?stable=%25#stable%23"
+    );
+
+    let unicode = base.mutator().host(Some("bücher.example")).try_mutate();
+    assert!(unicode.is_ok());
+    let unicode = match unicode {
+        Ok(url) => url,
+        Err(error) => panic!("valid IDNA replacement failed: {error}"),
+    };
+    assert_eq!(unicode.host(), Some("xn--bcher-kva.example"));
+    let ipv4 = base.mutator().host(Some("127.0.0.1")).try_mutate();
+    assert!(ipv4.is_ok());
+    let ipv4 = match ipv4 {
+        Ok(url) => url,
+        Err(error) => panic!("valid IPv4 replacement failed: {error}"),
+    };
+    assert_eq!(ipv4.host(), Some("127.0.0.1"));
+    let ipv6 = base.mutator().host(Some("[::1]")).try_mutate();
+    assert!(ipv6.is_ok());
+    let ipv6 = match ipv6 {
+        Ok(url) => url,
+        Err(error) => panic!("valid IPv6 replacement failed: {error}"),
+    };
+    assert_eq!(ipv6.host(), Some("[::1]"));
+
+    let with_port = base
+        .mutator()
+        .host(Some("attacker.test"))
+        .port(Some(4444))
+        .try_mutate();
+    assert!(with_port.is_ok());
+    let with_port = match with_port {
+        Ok(url) => url,
+        Err(error) => panic!("independent host and port mutation failed: {error}"),
+    };
+    assert_eq!(with_port.host(), Some("attacker.test"));
+    assert_eq!(with_port.port(), Some(4444));
+
+    let first = base
+        .mutator()
+        .host(Some("attacker.test"))
+        .port(Some(4444))
+        .query(Some("x=1"))
+        .try_mutate();
+    let second = base
+        .mutator()
+        .query(Some("x=1"))
+        .port(Some(4444))
+        .host(Some("attacker.test"))
+        .try_mutate();
+    assert!(first.is_ok());
+    assert!(second.is_ok());
+    let first = match first {
+        Ok(url) => url,
+        Err(error) => panic!("first setter order failed: {error}"),
+    };
+    let second = match second {
+        Ok(url) => url,
+        Err(error) => panic!("second setter order failed: {error}"),
+    };
+    assert_eq!(first, second);
+}
+
+#[test]
+/// Preserves the permitted empty file host while canonicalizing it through mutation.
+fn mutator_permitted_empty_file_host_success() {
+    let file = URL::try_new("file:///a");
+    assert!(file.is_ok());
+    let file = match file {
+        Ok(url) => url,
+        Err(error) => panic!("unexpected file URL parse failure: {error}"),
+    };
+    let replaced = file.mutator().host(Some("")).try_mutate();
+    assert!(replaced.is_ok());
+    let replaced = match replaced {
+        Ok(url) => url,
+        Err(error) => panic!("empty file host mutation failed: {error}"),
+    };
+    assert_eq!(replaced.host(), Some(""));
+    assert_eq!(replaced.value(), "file:///a");
+}
+
+#[test]
+/// Audits the public source declarations for unapproved URL surface additions.
+fn public_abi_source_audit_success() {
+    let source = include_str!("mod.rs");
+    let declarations = source
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.starts_with("///"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let public_lines: Vec<&str> = source
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("pub struct ") || line.starts_with("pub fn "))
+        .collect();
+    assert_eq!(
+        public_lines,
+        [
+            "pub struct URL {",
+            "pub struct URLMutator {",
+            "pub fn try_new(value: &str) -> Result<Self, Error> {",
+            "pub fn value(&self) -> &str {",
+            "pub fn scheme(&self) -> &str {",
+            "pub fn username(&self) -> &str {",
+            "pub fn password(&self) -> Option<&str> {",
+            "pub fn host(&self) -> Option<&str> {",
+            "pub fn port(&self) -> Option<u16> {",
+            "pub fn path(&self) -> &str {",
+            "pub fn query(&self) -> Option<&str> {",
+            "pub fn query_pairs(&self) -> &[(String, String)] {",
+            "pub fn fragment(&self) -> Option<&str> {",
+            "pub fn has_opaque_path(&self) -> bool {",
+            "pub fn try_resolve(&self, reference: &str) -> Result<Self, Error> {",
+            "pub fn mutator(&self) -> URLMutator {",
+            "pub fn scheme(self, value: &str) -> Self {",
+            "pub fn username(self, value: &str) -> Self {",
+            "pub fn password(self, value: Option<&str>) -> Self {",
+            "pub fn host(self, value: Option<&str>) -> Self {",
+            "pub fn port(self, value: Option<u16>) -> Self {",
+            "pub fn path(self, value: &str) -> Self {",
+            "pub fn query(self, value: Option<&str>) -> Self {",
+            "pub fn fragment(self, value: Option<&str>) -> Self {",
+            "pub fn try_mutate(self) -> Result<URL, Error> {",
+        ]
+    );
+    for prohibited in ["pub mod engine", "pub use engine", "serde", "url::"] {
+        assert!(!declarations.contains(prohibited));
+    }
+}
+
+#[test]
 /// Uses complete canonical values for equality and hash consistency.
 fn equality_and_hash_success() {
     let first = URL::try_new("HTTP://example.test/path?x=1#part");

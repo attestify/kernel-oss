@@ -24,47 +24,110 @@ use engine::{
 
 /// A finalized, canonical URL with private representation state.
 ///
-/// # Intentionally absent legacy surfaces
+/// # External caller contract
 ///
-/// Construction is fallible and there is no `URL::new` compatibility shim.
+/// ```
+/// use kernel_oss::{values::uri::url::URL, values::Value};
+/// use std::{collections::hash_map::DefaultHasher, hash::{Hash, Hasher}};
+///
+/// fn borrowed<T: Value<ValueType = str>>(value: &T) -> &str { value.value() }
+/// let url = URL::try_new("https://user:pass@example.test:8443/a?x=1#f").unwrap();
+/// let _: &str = borrowed(&url);
+/// let _ = (url.scheme(), url.username(), url.password(), url.host(), url.port());
+/// let _ = (url.path(), url.query(), url.query_pairs(), url.fragment(), url.has_opaque_path());
+/// let resolved = url.try_resolve("next").unwrap();
+/// let mutated = url.mutator().scheme("https").username("user").password(None)
+///     .host(Some("example.test")).port(Some(8443)).path("/a").query(Some("x=1"))
+///     .fragment(Some("f")).try_mutate().unwrap();
+/// assert_eq!(url, url.clone());
+/// let mut hasher = DefaultHasher::new();
+/// mutated.hash(&mut hasher);
+/// assert_eq!(format!("{resolved:?}"), "URL([REDACTED])");
+/// ```
+///
+/// # Independently qualified absent surfaces
+///
+/// API-F-001: `URL::new` is absent.
 /// ```compile_fail
 /// use kernel_oss::values::uri::url::URL;
 /// let _ = URL::new("https://example.test/");
 /// ```
 ///
-/// State is private, and the former `line` projection is not part of this API.
+/// API-F-002: URL fields are private.
 /// ```compile_fail
 /// use kernel_oss::values::uri::url::URL;
 /// let url = URL::try_new("https://example.test/").unwrap();
 /// let _ = url.host;
+/// ```
+///
+/// API-F-003: `line` is absent.
+/// ```compile_fail
+/// use kernel_oss::values::uri::url::URL;
+/// let url = URL::try_new("https://example.test/").unwrap();
 /// let _ = url.line();
 /// ```
 ///
-/// Automatic string formatting is deliberately unavailable for sensitive URLs.
+/// API-F-004: URL does not implement `Display`.
 /// ```compile_fail
 /// use kernel_oss::values::uri::url::URL;
 /// let url = URL::try_new("https://example.test/").unwrap();
 /// let _ = format!("{url}");
 /// ```
 ///
-/// URL does not implement copy, default, ordering, or parsing conversion traits.
+/// API-F-005: URL does not implement `Copy`.
+/// ```compile_fail
+/// use kernel_oss::values::uri::url::URL;
+/// fn requires_copy<T: Copy>() {}
+/// requires_copy::<URL>();
+/// ```
+///
+/// API-F-006: URL does not implement `Default`.
+/// ```compile_fail
+/// use kernel_oss::values::uri::url::URL;
+/// fn requires_default<T: Default>() {}
+/// requires_default::<URL>();
+/// ```
+///
+/// API-F-007a: URL does not implement `PartialOrd`.
+/// ```compile_fail
+/// use kernel_oss::values::uri::url::URL;
+/// fn requires_partial_order<T: PartialOrd>() {}
+/// requires_partial_order::<URL>();
+/// ```
+///
+/// API-F-007b: URL does not implement `Ord`.
+/// ```compile_fail
+/// use kernel_oss::values::uri::url::URL;
+/// fn requires_order<T: Ord>() {}
+/// requires_order::<URL>();
+/// ```
+///
+/// API-F-008: URL does not implement `FromStr`.
 /// ```compile_fail
 /// use kernel_oss::values::uri::url::URL;
 /// use std::str::FromStr;
-/// fn needs_copy<T: Copy>() {}
-/// fn needs_default<T: Default>() {}
-/// fn needs_order<T: Ord>() {}
-/// needs_copy::<URL>();
-/// needs_default::<URL>();
-/// needs_order::<URL>();
-/// let _ = URL::from_str("https://example.test/");
+/// let _ = <URL as FromStr>::from_str("https://example.test/");
 /// ```
 ///
-/// The mutator's fields and private engine representations are not public.
+/// API-F-009: URL does not implement public `TryFrom` conversions.
+/// ```compile_fail
+/// use kernel_oss::values::uri::url::URL;
+/// use std::convert::TryFrom;
+/// let _ = <URL as TryFrom<&str>>::try_from("https://example.test/");
+/// ```
+///
+/// API-F-010: the companion source/API audit confirms that this module exposes
+/// no serde declaration or conversion surface without adding a serde dependency.
+///
+/// API-F-011: URLMutator fields are private.
 /// ```compile_fail
 /// use kernel_oss::values::uri::url::URL;
 /// let mutator = URL::try_new("https://example.test/").unwrap().mutator();
 /// let _ = mutator.host;
+/// ```
+///
+/// API-F-012: private engine representations are not nameable by callers.
+/// ```compile_fail
 /// let _ = kernel_oss::values::uri::url::engine::parser::parse;
 /// ```
 #[derive(Clone)]
@@ -306,9 +369,17 @@ impl URLMutator {
             .password
             .unwrap_or_else(|| self.url.password().map(str::to_owned));
         let host_replaced = self.host.is_some();
-        let host = self
+        let raw_host = self
             .host
             .unwrap_or_else(|| self.url.host().map(str::to_owned));
+        let host = if host_replaced {
+            raw_host
+                .as_deref()
+                .map(|value| canonicalize_host(&scheme, value))
+                .transpose()?
+        } else {
+            raw_host
+        };
         let port = self.port.unwrap_or_else(|| self.url.port());
         let path = self.path.unwrap_or_else(|| self.url.path().to_owned());
         let query = self
@@ -323,10 +394,7 @@ impl URLMutator {
             self.url.record.has_authority()
         };
 
-        if host
-            .as_deref()
-            .is_some_and(|value| !is_host_component(value))
-            || !has_authority && (!username.is_empty() || password.is_some() || port.is_some())
+        if !has_authority && (!username.is_empty() || password.is_some() || port.is_some())
             || is_special_scheme(&scheme) && !has_authority
             || !has_authority && path.starts_with("//")
         {
@@ -380,10 +448,35 @@ fn is_bare_scheme(value: &str) -> bool {
         && bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'+' | b'-' | b'.'))
 }
 
-fn is_host_component(value: &str) -> bool {
-    !value
+fn canonicalize_host(scheme: &str, value: &str) -> Result<String, Error> {
+    if value
         .chars()
-        .any(|character| matches!(character, '@' | '/' | '\\' | '?' | '#'))
+        .any(|character| matches!(character, '\t' | '\n' | '\r' | '@' | '/' | '\\' | '?' | '#'))
+    {
+        return Err(mutation_error());
+    }
+    if value.is_empty() {
+        return if scheme == "file" || !is_special_scheme(scheme) {
+            Ok(String::new())
+        } else {
+            Err(mutation_error())
+        };
+    }
+    if let Some(payload) = value
+        .strip_prefix('[')
+        .and_then(|value| value.strip_suffix(']'))
+    {
+        return host::parse_ipv6(payload)
+            .map(|host| host::serialize(&host))
+            .map_err(|_| mutation_error());
+    }
+    let outcome = if is_special_scheme(scheme) {
+        host::parse_special(value)
+    } else {
+        host::parse_opaque(value)
+    }
+    .map_err(|_| mutation_error())?;
+    Ok(host::serialize(&outcome.value))
 }
 
 fn is_special_scheme(value: &str) -> bool {

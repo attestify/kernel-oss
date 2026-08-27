@@ -6,6 +6,11 @@ borrowed, absence-aware accessors. `try_new` and `try_resolve` enter the same
 private parser/resolver, and `URLMutator` gathers copied component replacements
 before one final parse-and-validation reconstruction.
 
+Mutator host replacements are validated and canonicalized through the private
+host seam before reconstruction. A host replacement cannot introduce
+credentials, a port, path, query, fragment, or preprocessing controls; `port()`
+is the only port replacement operation.
+
 `URL::value()` returns the complete canonical serialization and is explicitly
 sensitive. Automatic `Debug` is exactly `URL([REDACTED])`; `URL` intentionally
 has no `Display`. Public parsing, resolution, and mutation failures are
