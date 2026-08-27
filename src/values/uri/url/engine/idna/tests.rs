@@ -139,7 +139,13 @@ fn unicode_17_uts46_success_vectors_success() {
 /// Records that only ill-formed UTF-16 source vectors are inapplicable to Rust strings.
 fn unicode_17_ill_formed_utf16_vectors_are_recorded_success() {
     assert_eq!(fixture_vectors::UTS46_ILL_FORMED_SKIPPED_COUNT, 2);
-    assert!(fixture_vectors::UTS46_TO_UNICODE_ONLY_COUNT > 0);
+    assert_eq!(
+        fixture_vectors::UTS46_SUCCESS_CASE_COUNT
+            + fixture_vectors::UTS46_ERROR_CASE_COUNT
+            + fixture_vectors::UTS46_TO_UNICODE_ONLY_COUNT
+            + fixture_vectors::UTS46_ILL_FORMED_SKIPPED_COUNT,
+        6_391
+    );
 }
 
 #[test]

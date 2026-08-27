@@ -30,10 +30,10 @@ def render() -> str:
     cases = [item for item in raw if isinstance(item, dict)]
     skipped = [item for item in cases if any(0xD800 <= ord(character) <= 0xDFFF for character in item["input"])]
     cases = [item for item in cases if item not in skipped]
-    lines = ["//! Generated from WPT IdnaTestV2.json; do not edit.", f"pub(super) const WPT_IDNA_V2_CASE_COUNT: usize = {len(cases)};", f"pub(super) const WPT_IDNA_V2_ILL_FORMED_SKIPPED_COUNT: usize = {len(skipped)};", "pub(super) static WPT_IDNA_V2_CASES: &[(&str, Option<&str>)] = &["]
+    lines = ["//! Generated from WPT IdnaTestV2.json; do not edit.", f"pub(super) const WPT_IDNA_V2_CASE_COUNT: usize = {len(cases)};", f"pub(super) const WPT_IDNA_V2_ILL_FORMED_SKIPPED_COUNT: usize = {len(skipped)};", "#[rustfmt::skip]", "pub(super) static WPT_IDNA_V2_CASES: &[(&str, Option<&str>)] = &["]
     for case in cases:
         expected = "None" if case["output"] is None else f"Some({rust(case['output'])})"
-        lines.append(f"    ({rust(case['input'])}, {expected}),")
+        lines.extend(["    (", f"        {rust(case['input'])},", f"        {expected},", "    ),"])
     lines.extend(["];", ""])
     return "\n".join(lines)
 

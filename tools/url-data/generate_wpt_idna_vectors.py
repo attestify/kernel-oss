@@ -30,10 +30,10 @@ def render() -> str:
     cases = [item for item in data if isinstance(item, dict) and "input" in item and "output" in item]
     skipped = len([item for item in cases if any(0xD800 <= ord(character) <= 0xDFFF for character in item["input"])])
     cases = [item for item in cases if not any(0xD800 <= ord(character) <= 0xDFFF for character in item["input"])]
-    lines = ["//! Generated from WPT toascii.json; do not edit.", f"pub(super) const WPT_TOASCII_CASE_COUNT: usize = {len(cases)};", f"pub(super) const WPT_TOASCII_ILL_FORMED_SKIPPED_COUNT: usize = {skipped};", "pub(super) static WPT_TOASCII_CASES: &[(&str, Option<&str>, bool)] = &["]
+    lines = ["//! Generated from WPT toascii.json; do not edit.", f"pub(super) const WPT_TOASCII_CASE_COUNT: usize = {len(cases)};", f"pub(super) const WPT_TOASCII_ILL_FORMED_SKIPPED_COUNT: usize = {skipped};", "#[rustfmt::skip]", "pub(super) static WPT_TOASCII_CASES: &[(&str, Option<&str>, bool)] = &["]
     for case in cases:
         expected = "None" if case["output"] is None else f"Some({rust(case['output'])})"
-        lines.append(f"    ({rust(case['input'])}, {expected}, {str(bool(case.get('urlStandardOnly'))).lower()}),")
+        lines.extend(["    (", f"        {rust(case['input'])},", f"        {expected},", f"        {str(bool(case.get('urlStandardOnly'))).lower()},", "    ),"])
     lines.extend(["];", ""])
     return "\n".join(lines)
 

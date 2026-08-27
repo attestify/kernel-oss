@@ -3,40 +3,140 @@ pub(super) const UTS46_SUCCESS_CASE_COUNT: usize = 661;
 pub(super) const UTS46_ERROR_CASE_COUNT: usize = 361;
 pub(super) const UTS46_ILL_FORMED_SKIPPED_COUNT: usize = 2;
 pub(super) const UTS46_TO_UNICODE_ONLY_COUNT: usize = 5367;
+#[rustfmt::skip]
 pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
-    ("fass.de", "fass.de"),
-    ("fa\u{df}.de", "xn--fa-hia.de"),
-    ("Fa\u{df}.de", "xn--fa-hia.de"),
-    ("xn--fa-hia.de", "xn--fa-hia.de"),
-    ("\u{e0}.\u{5d0}\u{308}", "xn--0ca.xn--ssa73l"),
-    ("a\u{300}.\u{5d0}\u{308}", "xn--0ca.xn--ssa73l"),
-    ("A\u{300}.\u{5d0}\u{308}", "xn--0ca.xn--ssa73l"),
-    ("\u{c0}.\u{5d0}\u{308}", "xn--0ca.xn--ssa73l"),
-    ("xn--0ca.xn--ssa73l", "xn--0ca.xn--ssa73l"),
-    ("\u{e0}\u{308}.\u{5d0}", "xn--0ca81i.xn--4db"),
-    ("a\u{300}\u{308}.\u{5d0}", "xn--0ca81i.xn--4db"),
-    ("A\u{300}\u{308}.\u{5d0}", "xn--0ca81i.xn--4db"),
-    ("\u{c0}\u{308}.\u{5d0}", "xn--0ca81i.xn--4db"),
-    ("xn--0ca81i.xn--4db", "xn--0ca81i.xn--4db"),
-    ("ab", "ab"),
-    ("a\u{94d}\u{200c}b", "xn--ab-fsf604u"),
-    ("A\u{94d}\u{200c}B", "xn--ab-fsf604u"),
-    ("A\u{94d}\u{200c}b", "xn--ab-fsf604u"),
-    ("xn--ab-fsf", "xn--ab-fsf"),
-    ("a\u{94d}b", "xn--ab-fsf"),
-    ("A\u{94d}B", "xn--ab-fsf"),
-    ("A\u{94d}b", "xn--ab-fsf"),
-    ("xn--ab-fsf604u", "xn--ab-fsf604u"),
-    ("a\u{94d}\u{200d}b", "xn--ab-fsf014u"),
-    ("A\u{94d}\u{200d}B", "xn--ab-fsf014u"),
-    ("A\u{94d}\u{200d}b", "xn--ab-fsf014u"),
-    ("xn--ab-fsf014u", "xn--ab-fsf014u"),
-    ("\u{a1}", "xn--7a"),
-    ("xn--7a", "xn--7a"),
-    ("\u{19da}", "xn--pkf"),
-    ("xn--pkf", "xn--pkf"),
-    ("\u{ab60}", "xn--3y9a"),
-    ("xn--3y9a", "xn--3y9a"),
+    (
+        "fass.de",
+        "fass.de",
+    ),
+    (
+        "fa\u{df}.de",
+        "xn--fa-hia.de",
+    ),
+    (
+        "Fa\u{df}.de",
+        "xn--fa-hia.de",
+    ),
+    (
+        "xn--fa-hia.de",
+        "xn--fa-hia.de",
+    ),
+    (
+        "\u{e0}.\u{5d0}\u{308}",
+        "xn--0ca.xn--ssa73l",
+    ),
+    (
+        "a\u{300}.\u{5d0}\u{308}",
+        "xn--0ca.xn--ssa73l",
+    ),
+    (
+        "A\u{300}.\u{5d0}\u{308}",
+        "xn--0ca.xn--ssa73l",
+    ),
+    (
+        "\u{c0}.\u{5d0}\u{308}",
+        "xn--0ca.xn--ssa73l",
+    ),
+    (
+        "xn--0ca.xn--ssa73l",
+        "xn--0ca.xn--ssa73l",
+    ),
+    (
+        "\u{e0}\u{308}.\u{5d0}",
+        "xn--0ca81i.xn--4db",
+    ),
+    (
+        "a\u{300}\u{308}.\u{5d0}",
+        "xn--0ca81i.xn--4db",
+    ),
+    (
+        "A\u{300}\u{308}.\u{5d0}",
+        "xn--0ca81i.xn--4db",
+    ),
+    (
+        "\u{c0}\u{308}.\u{5d0}",
+        "xn--0ca81i.xn--4db",
+    ),
+    (
+        "xn--0ca81i.xn--4db",
+        "xn--0ca81i.xn--4db",
+    ),
+    (
+        "ab",
+        "ab",
+    ),
+    (
+        "a\u{94d}\u{200c}b",
+        "xn--ab-fsf604u",
+    ),
+    (
+        "A\u{94d}\u{200c}B",
+        "xn--ab-fsf604u",
+    ),
+    (
+        "A\u{94d}\u{200c}b",
+        "xn--ab-fsf604u",
+    ),
+    (
+        "xn--ab-fsf",
+        "xn--ab-fsf",
+    ),
+    (
+        "a\u{94d}b",
+        "xn--ab-fsf",
+    ),
+    (
+        "A\u{94d}B",
+        "xn--ab-fsf",
+    ),
+    (
+        "A\u{94d}b",
+        "xn--ab-fsf",
+    ),
+    (
+        "xn--ab-fsf604u",
+        "xn--ab-fsf604u",
+    ),
+    (
+        "a\u{94d}\u{200d}b",
+        "xn--ab-fsf014u",
+    ),
+    (
+        "A\u{94d}\u{200d}B",
+        "xn--ab-fsf014u",
+    ),
+    (
+        "A\u{94d}\u{200d}b",
+        "xn--ab-fsf014u",
+    ),
+    (
+        "xn--ab-fsf014u",
+        "xn--ab-fsf014u",
+    ),
+    (
+        "\u{a1}",
+        "xn--7a",
+    ),
+    (
+        "xn--7a",
+        "xn--7a",
+    ),
+    (
+        "\u{19da}",
+        "xn--pkf",
+    ),
+    (
+        "xn--pkf",
+        "xn--pkf",
+    ),
+    (
+        "\u{ab60}",
+        "xn--3y9a",
+    ),
+    (
+        "xn--3y9a",
+        "xn--3y9a",
+    ),
     (
         "1234567890\u{e4}1234567890123456789012345678901234567890123456",
         "xn--12345678901234567890123456789012345678901234567890123456-fxe",
@@ -57,23 +157,74 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "xn--12345678901234567890123456789012345678901234567890123456-fxe",
         "xn--12345678901234567890123456789012345678901234567890123456-fxe",
     ),
-    ("www.eXample.cOm", "www.example.com"),
-    ("B\u{fc}cher.de", "xn--bcher-kva.de"),
-    ("Bu\u{308}cher.de", "xn--bcher-kva.de"),
-    ("bu\u{308}cher.de", "xn--bcher-kva.de"),
-    ("b\u{fc}cher.de", "xn--bcher-kva.de"),
-    ("B\u{dc}CHER.DE", "xn--bcher-kva.de"),
-    ("BU\u{308}CHER.DE", "xn--bcher-kva.de"),
-    ("xn--bcher-kva.de", "xn--bcher-kva.de"),
-    ("\u{d6}BB", "xn--bb-eka"),
-    ("O\u{308}BB", "xn--bb-eka"),
-    ("o\u{308}bb", "xn--bb-eka"),
-    ("\u{f6}bb", "xn--bb-eka"),
-    ("\u{d6}bb", "xn--bb-eka"),
-    ("O\u{308}bb", "xn--bb-eka"),
-    ("xn--bb-eka", "xn--bb-eka"),
-    ("FA\u{1e9e}.de", "xn--fa-hia.de"),
-    ("FA\u{1e9e}.DE", "xn--fa-hia.de"),
+    (
+        "www.eXample.cOm",
+        "www.example.com",
+    ),
+    (
+        "B\u{fc}cher.de",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "Bu\u{308}cher.de",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "bu\u{308}cher.de",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "b\u{fc}cher.de",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "B\u{dc}CHER.DE",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "BU\u{308}CHER.DE",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "xn--bcher-kva.de",
+        "xn--bcher-kva.de",
+    ),
+    (
+        "\u{d6}BB",
+        "xn--bb-eka",
+    ),
+    (
+        "O\u{308}BB",
+        "xn--bb-eka",
+    ),
+    (
+        "o\u{308}bb",
+        "xn--bb-eka",
+    ),
+    (
+        "\u{f6}bb",
+        "xn--bb-eka",
+    ),
+    (
+        "\u{d6}bb",
+        "xn--bb-eka",
+    ),
+    (
+        "O\u{308}bb",
+        "xn--bb-eka",
+    ),
+    (
+        "xn--bb-eka",
+        "xn--bb-eka",
+    ),
+    (
+        "FA\u{1e9e}.de",
+        "xn--fa-hia.de",
+    ),
+    (
+        "FA\u{1e9e}.DE",
+        "xn--fa-hia.de",
+    ),
     (
         "\u{3b2}\u{3cc}\u{3bb}\u{3bf}\u{3c2}.com",
         "xn--nxasmm1c.com",
@@ -106,7 +257,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{392}\u{3cc}\u{3bb}\u{3bf}\u{3c3}.com",
         "xn--nxasmq6b.com",
     ),
-    ("xn--nxasmq6b.com", "xn--nxasmq6b.com"),
+    (
+        "xn--nxasmq6b.com",
+        "xn--nxasmq6b.com",
+    ),
     (
         "\u{392}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c2}.com",
         "xn--nxasmm1c.com",
@@ -115,19 +269,58 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{392}\u{3cc}\u{3bb}\u{3bf}\u{3c2}.com",
         "xn--nxasmm1c.com",
     ),
-    ("xn--nxasmm1c.com", "xn--nxasmm1c.com"),
-    ("xn--nxasmm1c", "xn--nxasmm1c"),
-    ("\u{3b2}\u{3cc}\u{3bb}\u{3bf}\u{3c2}", "xn--nxasmm1c"),
-    ("\u{3b2}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c2}", "xn--nxasmm1c"),
-    ("\u{392}\u{39f}\u{301}\u{39b}\u{39f}\u{3a3}", "xn--nxasmq6b"),
-    ("\u{392}\u{38c}\u{39b}\u{39f}\u{3a3}", "xn--nxasmq6b"),
-    ("\u{3b2}\u{3cc}\u{3bb}\u{3bf}\u{3c3}", "xn--nxasmq6b"),
-    ("\u{3b2}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c3}", "xn--nxasmq6b"),
-    ("\u{392}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c3}", "xn--nxasmq6b"),
-    ("\u{392}\u{3cc}\u{3bb}\u{3bf}\u{3c3}", "xn--nxasmq6b"),
-    ("xn--nxasmq6b", "xn--nxasmq6b"),
-    ("\u{392}\u{3cc}\u{3bb}\u{3bf}\u{3c2}", "xn--nxasmm1c"),
-    ("\u{392}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c2}", "xn--nxasmm1c"),
+    (
+        "xn--nxasmm1c.com",
+        "xn--nxasmm1c.com",
+    ),
+    (
+        "xn--nxasmm1c",
+        "xn--nxasmm1c",
+    ),
+    (
+        "\u{3b2}\u{3cc}\u{3bb}\u{3bf}\u{3c2}",
+        "xn--nxasmm1c",
+    ),
+    (
+        "\u{3b2}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c2}",
+        "xn--nxasmm1c",
+    ),
+    (
+        "\u{392}\u{39f}\u{301}\u{39b}\u{39f}\u{3a3}",
+        "xn--nxasmq6b",
+    ),
+    (
+        "\u{392}\u{38c}\u{39b}\u{39f}\u{3a3}",
+        "xn--nxasmq6b",
+    ),
+    (
+        "\u{3b2}\u{3cc}\u{3bb}\u{3bf}\u{3c3}",
+        "xn--nxasmq6b",
+    ),
+    (
+        "\u{3b2}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c3}",
+        "xn--nxasmq6b",
+    ),
+    (
+        "\u{392}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c3}",
+        "xn--nxasmq6b",
+    ),
+    (
+        "\u{392}\u{3cc}\u{3bb}\u{3bf}\u{3c3}",
+        "xn--nxasmq6b",
+    ),
+    (
+        "xn--nxasmq6b",
+        "xn--nxasmq6b",
+    ),
+    (
+        "\u{392}\u{3cc}\u{3bb}\u{3bf}\u{3c2}",
+        "xn--nxasmm1c",
+    ),
+    (
+        "\u{392}\u{3bf}\u{301}\u{3bb}\u{3bf}\u{3c2}",
+        "xn--nxasmm1c",
+    ),
     (
         "www.\u{dc1}\u{dca}\u{200d}\u{dbb}\u{dd3}.com",
         "www.xn--10cl1a0b660p.com",
@@ -140,7 +333,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "Www.\u{dc1}\u{dca}\u{200d}\u{dbb}\u{dd3}.com",
         "www.xn--10cl1a0b660p.com",
     ),
-    ("www.xn--10cl1a0b.com", "www.xn--10cl1a0b.com"),
+    (
+        "www.xn--10cl1a0b.com",
+        "www.xn--10cl1a0b.com",
+    ),
     (
         "www.\u{dc1}\u{dca}\u{dbb}\u{dd3}.com",
         "www.xn--10cl1a0b.com",
@@ -153,18 +349,30 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "Www.\u{dc1}\u{dca}\u{dbb}\u{dd3}.com",
         "www.xn--10cl1a0b.com",
     ),
-    ("www.xn--10cl1a0b660p.com", "www.xn--10cl1a0b660p.com"),
+    (
+        "www.xn--10cl1a0b660p.com",
+        "www.xn--10cl1a0b660p.com",
+    ),
     (
         "\u{646}\u{627}\u{645}\u{647}\u{200c}\u{627}\u{6cc}",
         "xn--mgba3gch31f060k",
     ),
-    ("xn--mgba3gch31f", "xn--mgba3gch31f"),
+    (
+        "xn--mgba3gch31f",
+        "xn--mgba3gch31f",
+    ),
     (
         "\u{646}\u{627}\u{645}\u{647}\u{627}\u{6cc}",
         "xn--mgba3gch31f",
     ),
-    ("xn--mgba3gch31f060k", "xn--mgba3gch31f060k"),
-    ("xn--mgba3gch31f060k.com", "xn--mgba3gch31f060k.com"),
+    (
+        "xn--mgba3gch31f060k",
+        "xn--mgba3gch31f060k",
+    ),
+    (
+        "xn--mgba3gch31f060k.com",
+        "xn--mgba3gch31f060k.com",
+    ),
     (
         "\u{646}\u{627}\u{645}\u{647}\u{200c}\u{627}\u{6cc}.com",
         "xn--mgba3gch31f060k.com",
@@ -173,7 +381,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{646}\u{627}\u{645}\u{647}\u{200c}\u{627}\u{6cc}.COM",
         "xn--mgba3gch31f060k.com",
     ),
-    ("xn--mgba3gch31f.com", "xn--mgba3gch31f.com"),
+    (
+        "xn--mgba3gch31f.com",
+        "xn--mgba3gch31f.com",
+    ),
     (
         "\u{646}\u{627}\u{645}\u{647}\u{627}\u{6cc}.com",
         "xn--mgba3gch31f.com",
@@ -182,40 +393,130 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{646}\u{627}\u{645}\u{647}\u{627}\u{6cc}.COM",
         "xn--mgba3gch31f.com",
     ),
-    ("a.b\u{ff0e}c\u{3002}d\u{ff61}", "a.b.c.d."),
-    ("a.b.c\u{3002}d\u{3002}", "a.b.c.d."),
-    ("A.B.C\u{3002}D\u{3002}", "a.b.c.d."),
-    ("A.b.c\u{3002}D\u{3002}", "a.b.c.d."),
-    ("a.b.c.d.", "a.b.c.d."),
-    ("A.B\u{ff0e}C\u{3002}D\u{ff61}", "a.b.c.d."),
-    ("A.b\u{ff0e}c\u{3002}D\u{ff61}", "a.b.c.d."),
-    ("U\u{308}.xn--tda", "xn--tda.xn--tda"),
-    ("\u{dc}.xn--tda", "xn--tda.xn--tda"),
-    ("\u{fc}.xn--tda", "xn--tda.xn--tda"),
-    ("u\u{308}.xn--tda", "xn--tda.xn--tda"),
-    ("U\u{308}.XN--TDA", "xn--tda.xn--tda"),
-    ("\u{dc}.XN--TDA", "xn--tda.xn--tda"),
-    ("\u{dc}.xn--Tda", "xn--tda.xn--tda"),
-    ("U\u{308}.xn--Tda", "xn--tda.xn--tda"),
-    ("xn--tda.xn--tda", "xn--tda.xn--tda"),
-    ("\u{fc}.\u{fc}", "xn--tda.xn--tda"),
-    ("u\u{308}.u\u{308}", "xn--tda.xn--tda"),
-    ("U\u{308}.U\u{308}", "xn--tda.xn--tda"),
-    ("\u{dc}.\u{dc}", "xn--tda.xn--tda"),
-    ("\u{dc}.\u{fc}", "xn--tda.xn--tda"),
-    ("U\u{308}.u\u{308}", "xn--tda.xn--tda"),
-    ("a1.com", "a1.com"),
+    (
+        "a.b\u{ff0e}c\u{3002}d\u{ff61}",
+        "a.b.c.d.",
+    ),
+    (
+        "a.b.c\u{3002}d\u{3002}",
+        "a.b.c.d.",
+    ),
+    (
+        "A.B.C\u{3002}D\u{3002}",
+        "a.b.c.d.",
+    ),
+    (
+        "A.b.c\u{3002}D\u{3002}",
+        "a.b.c.d.",
+    ),
+    (
+        "a.b.c.d.",
+        "a.b.c.d.",
+    ),
+    (
+        "A.B\u{ff0e}C\u{3002}D\u{ff61}",
+        "a.b.c.d.",
+    ),
+    (
+        "A.b\u{ff0e}c\u{3002}D\u{ff61}",
+        "a.b.c.d.",
+    ),
+    (
+        "U\u{308}.xn--tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{dc}.xn--tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{fc}.xn--tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "u\u{308}.xn--tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "U\u{308}.XN--TDA",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{dc}.XN--TDA",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{dc}.xn--Tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "U\u{308}.xn--Tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "xn--tda.xn--tda",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{fc}.\u{fc}",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "u\u{308}.u\u{308}",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "U\u{308}.U\u{308}",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{dc}.\u{dc}",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "\u{dc}.\u{fc}",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "U\u{308}.u\u{308}",
+        "xn--tda.xn--tda",
+    ),
+    (
+        "a1.com",
+        "a1.com",
+    ),
     (
         "\u{65e5}\u{672c}\u{8a9e}\u{3002}\u{ff2a}\u{ff30}",
         "xn--wgv71a119e.jp",
     ),
-    ("\u{65e5}\u{672c}\u{8a9e}\u{3002}JP", "xn--wgv71a119e.jp"),
-    ("\u{65e5}\u{672c}\u{8a9e}\u{3002}jp", "xn--wgv71a119e.jp"),
-    ("\u{65e5}\u{672c}\u{8a9e}\u{3002}Jp", "xn--wgv71a119e.jp"),
-    ("xn--wgv71a119e.jp", "xn--wgv71a119e.jp"),
-    ("\u{65e5}\u{672c}\u{8a9e}.jp", "xn--wgv71a119e.jp"),
-    ("\u{65e5}\u{672c}\u{8a9e}.JP", "xn--wgv71a119e.jp"),
-    ("\u{65e5}\u{672c}\u{8a9e}.Jp", "xn--wgv71a119e.jp"),
+    (
+        "\u{65e5}\u{672c}\u{8a9e}\u{3002}JP",
+        "xn--wgv71a119e.jp",
+    ),
+    (
+        "\u{65e5}\u{672c}\u{8a9e}\u{3002}jp",
+        "xn--wgv71a119e.jp",
+    ),
+    (
+        "\u{65e5}\u{672c}\u{8a9e}\u{3002}Jp",
+        "xn--wgv71a119e.jp",
+    ),
+    (
+        "xn--wgv71a119e.jp",
+        "xn--wgv71a119e.jp",
+    ),
+    (
+        "\u{65e5}\u{672c}\u{8a9e}.jp",
+        "xn--wgv71a119e.jp",
+    ),
+    (
+        "\u{65e5}\u{672c}\u{8a9e}.JP",
+        "xn--wgv71a119e.jp",
+    ),
+    (
+        "\u{65e5}\u{672c}\u{8a9e}.Jp",
+        "xn--wgv71a119e.jp",
+    ),
     (
         "\u{65e5}\u{672c}\u{8a9e}\u{3002}\u{ff4a}\u{ff50}",
         "xn--wgv71a119e.jp",
@@ -224,8 +525,14 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{65e5}\u{672c}\u{8a9e}\u{3002}\u{ff2a}\u{ff50}",
         "xn--wgv71a119e.jp",
     ),
-    ("\u{2615}", "xn--53h"),
-    ("xn--53h", "xn--53h"),
+    (
+        "\u{2615}",
+        "xn--53h",
+    ),
+    (
+        "xn--53h",
+        "xn--53h",
+    ),
     (
         "1.xn--assbcssssssssdssssssssssssssssessssssssssssssssssssxssssssssssssssssssssysssssssssssssssssz-pxq1419aa",
         "1.xn--assbcssssssssdssssssssssssssssessssssssssssssssssssxssssssssssssssssssssysssssssssssssssssz-pxq1419aa",
@@ -254,8 +561,14 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "1.Assbcssssssssd\u{3c3}\u{3c3}ssssssssssssssssessssssssssssssssssssxssssssssssssssssssssyssssssssssssssss\u{302}ssz",
         "1.xn--assbcssssssssdssssssssssssssssessssssssssssssssssssxssssssssssssssssssssysssssssssssssssssz-pxq1419aa",
     ),
-    ("xn--bss", "xn--bss"),
-    ("\u{5919}", "xn--bss"),
+    (
+        "xn--bss",
+        "xn--bss",
+    ),
+    (
+        "\u{5919}",
+        "xn--bss",
+    ),
     (
         "\u{2e3}\u{34f}\u{2115}\u{200b}\u{fe63}\u{ad}\u{ff0d}\u{180c}\u{212c}\u{fe00}\u{17f}\u{2064}\u{1d530}\u{e01ef}\u{fb04}",
         "xn--bssffl",
@@ -276,8 +589,14 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "X\u{34f}n\u{200b}-\u{ad}-\u{180c}B\u{fe00}s\u{2064}s\u{e01ef}ffl",
         "xn--bssffl",
     ),
-    ("xn--bssffl", "xn--bssffl"),
-    ("\u{5921}\u{591e}\u{591c}\u{5919}", "xn--bssffl"),
+    (
+        "xn--bssffl",
+        "xn--bssffl",
+    ),
+    (
+        "\u{5921}\u{591e}\u{591c}\u{5919}",
+        "xn--bssffl",
+    ),
     (
         "\u{2e3}\u{34f}\u{2115}\u{200b}\u{fe63}\u{ad}\u{ff0d}\u{180c}\u{212c}\u{fe00}S\u{2064}\u{1d530}\u{e01ef}FFL",
         "xn--bssffl",
@@ -454,52 +773,190 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "123456789012345678901234567890123456789012345678901234567890123.xn--12345678901234567890123456789012345678901234567890123456-fxe.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890b",
         "123456789012345678901234567890123456789012345678901234567890123.xn--12345678901234567890123456789012345678901234567890123456-fxe.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890b",
     ),
-    ("A0", "a0"),
-    ("0A", "0a"),
-    ("\u{5d0}\u{5c7}", "xn--vdbr"),
-    ("xn--vdbr", "xn--vdbr"),
-    ("\u{5d0}9\u{5c7}", "xn--9-ihcz"),
-    ("xn--9-ihcz", "xn--9-ihcz"),
-    ("\u{5d0}\u{5ea}", "xn--4db6c"),
-    ("xn--4db6c", "xn--4db6c"),
-    ("\u{5d0}\u{5f3}\u{5ea}", "xn--4db6c0a"),
-    ("xn--4db6c0a", "xn--4db6c0a"),
-    ("\u{5d0}7\u{5ea}", "xn--7-zhc3f"),
-    ("xn--7-zhc3f", "xn--7-zhc3f"),
-    ("\u{5d0}\u{667}\u{5ea}", "xn--4db6c6t"),
-    ("xn--4db6c6t", "xn--4db6c6t"),
-    ("\u{bb9}\u{bcd}\u{200d}", "xn--dmc4b194h"),
-    ("xn--dmc4b", "xn--dmc4b"),
-    ("\u{bb9}\u{bcd}", "xn--dmc4b"),
-    ("xn--dmc4b194h", "xn--dmc4b194h"),
-    ("xn--dmc", "xn--dmc"),
-    ("\u{bb9}", "xn--dmc"),
-    ("\u{bb9}\u{bcd}\u{200c}", "xn--dmc4by94h"),
-    ("xn--dmc4by94h", "xn--dmc4by94h"),
-    ("\u{644}\u{670}\u{200c}\u{6ed}\u{6ef}", "xn--ghb2gxqia7523a"),
-    ("xn--ghb2gxqia", "xn--ghb2gxqia"),
-    ("\u{644}\u{670}\u{6ed}\u{6ef}", "xn--ghb2gxqia"),
-    ("xn--ghb2gxqia7523a", "xn--ghb2gxqia7523a"),
-    ("\u{644}\u{670}\u{200c}\u{6ef}", "xn--ghb2g3qq34f"),
-    ("xn--ghb2g3q", "xn--ghb2g3q"),
-    ("\u{644}\u{670}\u{6ef}", "xn--ghb2g3q"),
-    ("xn--ghb2g3qq34f", "xn--ghb2g3qq34f"),
-    ("\u{644}\u{200c}\u{6ed}\u{6ef}", "xn--ghb25aga828w"),
-    ("xn--ghb25aga", "xn--ghb25aga"),
-    ("\u{644}\u{6ed}\u{6ef}", "xn--ghb25aga"),
-    ("xn--ghb25aga828w", "xn--ghb25aga828w"),
-    ("\u{644}\u{200c}\u{6ef}", "xn--ghb65a953d"),
-    ("xn--ghb65a", "xn--ghb65a"),
-    ("\u{644}\u{6ef}", "xn--ghb65a"),
-    ("xn--ghb65a953d", "xn--ghb65a953d"),
-    ("xn--ghb2gxq", "xn--ghb2gxq"),
-    ("\u{644}\u{670}\u{6ed}", "xn--ghb2gxq"),
-    ("xn--cmba", "xn--cmba"),
-    ("\u{6ef}\u{6ef}", "xn--cmba"),
-    ("xn--ghb", "xn--ghb"),
-    ("\u{644}", "xn--ghb"),
-    ("ascii", "ascii"),
-    ("unicode.org", "unicode.org"),
+    (
+        "A0",
+        "a0",
+    ),
+    (
+        "0A",
+        "0a",
+    ),
+    (
+        "\u{5d0}\u{5c7}",
+        "xn--vdbr",
+    ),
+    (
+        "xn--vdbr",
+        "xn--vdbr",
+    ),
+    (
+        "\u{5d0}9\u{5c7}",
+        "xn--9-ihcz",
+    ),
+    (
+        "xn--9-ihcz",
+        "xn--9-ihcz",
+    ),
+    (
+        "\u{5d0}\u{5ea}",
+        "xn--4db6c",
+    ),
+    (
+        "xn--4db6c",
+        "xn--4db6c",
+    ),
+    (
+        "\u{5d0}\u{5f3}\u{5ea}",
+        "xn--4db6c0a",
+    ),
+    (
+        "xn--4db6c0a",
+        "xn--4db6c0a",
+    ),
+    (
+        "\u{5d0}7\u{5ea}",
+        "xn--7-zhc3f",
+    ),
+    (
+        "xn--7-zhc3f",
+        "xn--7-zhc3f",
+    ),
+    (
+        "\u{5d0}\u{667}\u{5ea}",
+        "xn--4db6c6t",
+    ),
+    (
+        "xn--4db6c6t",
+        "xn--4db6c6t",
+    ),
+    (
+        "\u{bb9}\u{bcd}\u{200d}",
+        "xn--dmc4b194h",
+    ),
+    (
+        "xn--dmc4b",
+        "xn--dmc4b",
+    ),
+    (
+        "\u{bb9}\u{bcd}",
+        "xn--dmc4b",
+    ),
+    (
+        "xn--dmc4b194h",
+        "xn--dmc4b194h",
+    ),
+    (
+        "xn--dmc",
+        "xn--dmc",
+    ),
+    (
+        "\u{bb9}",
+        "xn--dmc",
+    ),
+    (
+        "\u{bb9}\u{bcd}\u{200c}",
+        "xn--dmc4by94h",
+    ),
+    (
+        "xn--dmc4by94h",
+        "xn--dmc4by94h",
+    ),
+    (
+        "\u{644}\u{670}\u{200c}\u{6ed}\u{6ef}",
+        "xn--ghb2gxqia7523a",
+    ),
+    (
+        "xn--ghb2gxqia",
+        "xn--ghb2gxqia",
+    ),
+    (
+        "\u{644}\u{670}\u{6ed}\u{6ef}",
+        "xn--ghb2gxqia",
+    ),
+    (
+        "xn--ghb2gxqia7523a",
+        "xn--ghb2gxqia7523a",
+    ),
+    (
+        "\u{644}\u{670}\u{200c}\u{6ef}",
+        "xn--ghb2g3qq34f",
+    ),
+    (
+        "xn--ghb2g3q",
+        "xn--ghb2g3q",
+    ),
+    (
+        "\u{644}\u{670}\u{6ef}",
+        "xn--ghb2g3q",
+    ),
+    (
+        "xn--ghb2g3qq34f",
+        "xn--ghb2g3qq34f",
+    ),
+    (
+        "\u{644}\u{200c}\u{6ed}\u{6ef}",
+        "xn--ghb25aga828w",
+    ),
+    (
+        "xn--ghb25aga",
+        "xn--ghb25aga",
+    ),
+    (
+        "\u{644}\u{6ed}\u{6ef}",
+        "xn--ghb25aga",
+    ),
+    (
+        "xn--ghb25aga828w",
+        "xn--ghb25aga828w",
+    ),
+    (
+        "\u{644}\u{200c}\u{6ef}",
+        "xn--ghb65a953d",
+    ),
+    (
+        "xn--ghb65a",
+        "xn--ghb65a",
+    ),
+    (
+        "\u{644}\u{6ef}",
+        "xn--ghb65a",
+    ),
+    (
+        "xn--ghb65a953d",
+        "xn--ghb65a953d",
+    ),
+    (
+        "xn--ghb2gxq",
+        "xn--ghb2gxq",
+    ),
+    (
+        "\u{644}\u{670}\u{6ed}",
+        "xn--ghb2gxq",
+    ),
+    (
+        "xn--cmba",
+        "xn--cmba",
+    ),
+    (
+        "\u{6ef}\u{6ef}",
+        "xn--cmba",
+    ),
+    (
+        "xn--ghb",
+        "xn--ghb",
+    ),
+    (
+        "\u{644}",
+        "xn--ghb",
+    ),
+    (
+        "ascii",
+        "ascii",
+    ),
+    (
+        "unicode.org",
+        "unicode.org",
+    ),
     (
         "\u{f951}\u{2f868}\u{2f874}\u{2f91f}\u{2f95f}\u{2f9bf}",
         "xn--snl253bgitxhzwu2arn60c",
@@ -508,23 +965,62 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{964b}\u{36fc}\u{5f53}\u{243ab}\u{7aee}\u{45d7}",
         "xn--snl253bgitxhzwu2arn60c",
     ),
-    ("xn--snl253bgitxhzwu2arn60c", "xn--snl253bgitxhzwu2arn60c"),
+    (
+        "xn--snl253bgitxhzwu2arn60c",
+        "xn--snl253bgitxhzwu2arn60c",
+    ),
     (
         "\u{96fb}\u{2136a}\u{5f33}\u{43ab}\u{7aae}\u{4d57}",
         "xn--kbo60w31ob3z6t3av9z5b",
     ),
-    ("xn--kbo60w31ob3z6t3av9z5b", "xn--kbo60w31ob3z6t3av9z5b"),
-    ("xn--A-1ga", "xn--a-1ga"),
-    ("a\u{f6}", "xn--a-1ga"),
-    ("ao\u{308}", "xn--a-1ga"),
-    ("AO\u{308}", "xn--a-1ga"),
-    ("A\u{d6}", "xn--a-1ga"),
-    ("A\u{f6}", "xn--a-1ga"),
-    ("Ao\u{308}", "xn--a-1ga"),
-    ("\u{ff1d}\u{338}", "xn--1ch"),
-    ("\u{2260}", "xn--1ch"),
-    ("=\u{338}", "xn--1ch"),
-    ("xn--1ch", "xn--1ch"),
+    (
+        "xn--kbo60w31ob3z6t3av9z5b",
+        "xn--kbo60w31ob3z6t3av9z5b",
+    ),
+    (
+        "xn--A-1ga",
+        "xn--a-1ga",
+    ),
+    (
+        "a\u{f6}",
+        "xn--a-1ga",
+    ),
+    (
+        "ao\u{308}",
+        "xn--a-1ga",
+    ),
+    (
+        "AO\u{308}",
+        "xn--a-1ga",
+    ),
+    (
+        "A\u{d6}",
+        "xn--a-1ga",
+    ),
+    (
+        "A\u{f6}",
+        "xn--a-1ga",
+    ),
+    (
+        "Ao\u{308}",
+        "xn--a-1ga",
+    ),
+    (
+        "\u{ff1d}\u{338}",
+        "xn--1ch",
+    ),
+    (
+        "\u{2260}",
+        "xn--1ch",
+    ),
+    (
+        "=\u{338}",
+        "xn--1ch",
+    ),
+    (
+        "xn--1ch",
+        "xn--1ch",
+    ),
     (
         "123456789012345678901234567890123456789012345678901234567890123.1234567890A\u{308}123456789012345678901234567890123456789012345.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890b",
         "123456789012345678901234567890123456789012345678901234567890123.xn--1234567890123456789012345678901234567890123456789012345-kue.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890b",
@@ -573,8 +1069,14 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "123456789012345678901234567890123456789012345678901234567890123.1234567890\u{c4}1234567890123456789012345678901234567890123456.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890b",
         "123456789012345678901234567890123456789012345678901234567890123.xn--12345678901234567890123456789012345678901234567890123456-fxe.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890b",
     ),
-    ("\u{a863}.\u{7cf}", "xn--8c9a.xn--qsb"),
-    ("xn--8c9a.xn--qsb", "xn--8c9a.xn--qsb"),
+    (
+        "\u{a863}.\u{7cf}",
+        "xn--8c9a.xn--qsb",
+    ),
+    (
+        "xn--8c9a.xn--qsb",
+        "xn--8c9a.xn--qsb",
+    ),
     (
         "xn--jbf911clb.xn----p9j493ivi4l",
         "xn--jbf911clb.xn----p9j493ivi4l",
@@ -595,17 +1097,50 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{2260}\u{1899}\u{226f}.\u{c1a3}-\u{1874}\u{10a0}",
         "xn--jbf911clb.xn----p9j493ivi4l",
     ),
-    ("\u{7e71}\u{115bf}\u{200d}.8\u{3002}", "xn--1ug6928ac48e.8."),
-    ("xn--gl0as212a.i.", "xn--gl0as212a.i."),
-    ("\u{7e71}\u{115bf}.i.", "xn--gl0as212a.i."),
-    ("\u{7e71}\u{115bf}.I.", "xn--gl0as212a.i."),
-    ("xn--1ug6928ac48e.i.", "xn--1ug6928ac48e.i."),
-    ("\u{7e71}\u{115bf}\u{200d}.i.", "xn--1ug6928ac48e.i."),
-    ("\u{7e71}\u{115bf}\u{200d}.I.", "xn--1ug6928ac48e.i."),
-    ("xn--ss-59d.", "xn--ss-59d."),
-    ("ss\u{6eb}.", "xn--ss-59d."),
-    ("SS\u{6eb}.", "xn--ss-59d."),
-    ("Ss\u{6eb}.", "xn--ss-59d."),
+    (
+        "\u{7e71}\u{115bf}\u{200d}.8\u{3002}",
+        "xn--1ug6928ac48e.8.",
+    ),
+    (
+        "xn--gl0as212a.i.",
+        "xn--gl0as212a.i.",
+    ),
+    (
+        "\u{7e71}\u{115bf}.i.",
+        "xn--gl0as212a.i.",
+    ),
+    (
+        "\u{7e71}\u{115bf}.I.",
+        "xn--gl0as212a.i.",
+    ),
+    (
+        "xn--1ug6928ac48e.i.",
+        "xn--1ug6928ac48e.i.",
+    ),
+    (
+        "\u{7e71}\u{115bf}\u{200d}.i.",
+        "xn--1ug6928ac48e.i.",
+    ),
+    (
+        "\u{7e71}\u{115bf}\u{200d}.I.",
+        "xn--1ug6928ac48e.i.",
+    ),
+    (
+        "xn--ss-59d.",
+        "xn--ss-59d.",
+    ),
+    (
+        "ss\u{6eb}.",
+        "xn--ss-59d.",
+    ),
+    (
+        "SS\u{6eb}.",
+        "xn--ss-59d.",
+    ),
+    (
+        "Ss\u{6eb}.",
+        "xn--ss-59d.",
+    ),
     (
         "\u{1e937}.\u{10b90}\u{1e881}\u{10e60}\u{624}",
         "xn--ve6h.xn--jgb1694kz0b2176a",
@@ -646,10 +1181,22 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{1e903}\u{e016e}.\u{1844}\u{2d0e}",
         "xn--de6h.xn--37e857h",
     ),
-    ("xn--de6h.xn--37e857h", "xn--de6h.xn--37e857h"),
-    ("\u{1e925}.\u{1844}\u{2d0e}", "xn--de6h.xn--37e857h"),
-    ("\u{1e903}.\u{1844}\u{10ae}", "xn--de6h.xn--37e857h"),
-    ("\u{1e903}.\u{1844}\u{2d0e}", "xn--de6h.xn--37e857h"),
+    (
+        "xn--de6h.xn--37e857h",
+        "xn--de6h.xn--37e857h",
+    ),
+    (
+        "\u{1e925}.\u{1844}\u{2d0e}",
+        "xn--de6h.xn--37e857h",
+    ),
+    (
+        "\u{1e903}.\u{1844}\u{10ae}",
+        "xn--de6h.xn--37e857h",
+    ),
+    (
+        "\u{1e903}.\u{1844}\u{2d0e}",
+        "xn--de6h.xn--37e857h",
+    ),
     (
         "\u{1e925}\u{e016e}\u{ff0e}\u{1844}\u{2d0e}",
         "xn--de6h.xn--37e857h",
@@ -662,10 +1209,22 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{1e903}\u{e016e}\u{ff0e}\u{1844}\u{2d0e}",
         "xn--de6h.xn--37e857h",
     ),
-    ("\u{1e925}.\u{1844}\u{10ae}", "xn--de6h.xn--37e857h"),
-    ("xn--9ob.xn--4xa", "xn--9ob.xn--4xa"),
-    ("\u{756}.\u{3c3}", "xn--9ob.xn--4xa"),
-    ("\u{756}.\u{3a3}", "xn--9ob.xn--4xa"),
+    (
+        "\u{1e925}.\u{1844}\u{10ae}",
+        "xn--de6h.xn--37e857h",
+    ),
+    (
+        "xn--9ob.xn--4xa",
+        "xn--9ob.xn--4xa",
+    ),
+    (
+        "\u{756}.\u{3c3}",
+        "xn--9ob.xn--4xa",
+    ),
+    (
+        "\u{756}.\u{3a3}",
+        "xn--9ob.xn--4xa",
+    ),
     (
         "\u{df}\u{ff61}\u{102f3}\u{10ac}\u{fb8}",
         "xn--zca.xn--lgd921mvv0m",
@@ -678,22 +1237,58 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{df}\u{3002}\u{102f3}\u{2d0c}\u{fb8}",
         "xn--zca.xn--lgd921mvv0m",
     ),
-    ("SS\u{3002}\u{102f3}\u{10ac}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("ss\u{3002}\u{102f3}\u{2d0c}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("Ss\u{3002}\u{102f3}\u{10ac}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("ss.xn--lgd921mvv0m", "ss.xn--lgd921mvv0m"),
-    ("ss.\u{102f3}\u{2d0c}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("SS.\u{102f3}\u{10ac}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("Ss.\u{102f3}\u{10ac}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("xn--zca.xn--lgd921mvv0m", "xn--zca.xn--lgd921mvv0m"),
-    ("\u{df}.\u{102f3}\u{2d0c}\u{fb8}", "xn--zca.xn--lgd921mvv0m"),
+    (
+        "SS\u{3002}\u{102f3}\u{10ac}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "ss\u{3002}\u{102f3}\u{2d0c}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "Ss\u{3002}\u{102f3}\u{10ac}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "ss.xn--lgd921mvv0m",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "ss.\u{102f3}\u{2d0c}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "SS.\u{102f3}\u{10ac}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "Ss.\u{102f3}\u{10ac}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "xn--zca.xn--lgd921mvv0m",
+        "xn--zca.xn--lgd921mvv0m",
+    ),
+    (
+        "\u{df}.\u{102f3}\u{2d0c}\u{fb8}",
+        "xn--zca.xn--lgd921mvv0m",
+    ),
     (
         "\u{df}\u{ff61}\u{102f3}\u{2d0c}\u{fb8}",
         "xn--zca.xn--lgd921mvv0m",
     ),
-    ("SS\u{ff61}\u{102f3}\u{10ac}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("ss\u{ff61}\u{102f3}\u{2d0c}\u{fb8}", "ss.xn--lgd921mvv0m"),
-    ("Ss\u{ff61}\u{102f3}\u{10ac}\u{fb8}", "ss.xn--lgd921mvv0m"),
+    (
+        "SS\u{ff61}\u{102f3}\u{10ac}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "ss\u{ff61}\u{102f3}\u{2d0c}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
+    (
+        "Ss\u{ff61}\u{102f3}\u{10ac}\u{fb8}",
+        "ss.xn--lgd921mvv0m",
+    ),
     (
         "\u{16ad}\u{ff61}\u{1d320}\u{df}\u{16af1}",
         "xn--hwe.xn--zca4946pblnc",
@@ -714,11 +1309,26 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{16ad}\u{3002}\u{1d320}Ss\u{16af1}",
         "xn--hwe.xn--ss-ci1ub261a",
     ),
-    ("xn--hwe.xn--ss-ci1ub261a", "xn--hwe.xn--ss-ci1ub261a"),
-    ("\u{16ad}.\u{1d320}ss\u{16af1}", "xn--hwe.xn--ss-ci1ub261a"),
-    ("\u{16ad}.\u{1d320}SS\u{16af1}", "xn--hwe.xn--ss-ci1ub261a"),
-    ("\u{16ad}.\u{1d320}Ss\u{16af1}", "xn--hwe.xn--ss-ci1ub261a"),
-    ("xn--hwe.xn--zca4946pblnc", "xn--hwe.xn--zca4946pblnc"),
+    (
+        "xn--hwe.xn--ss-ci1ub261a",
+        "xn--hwe.xn--ss-ci1ub261a",
+    ),
+    (
+        "\u{16ad}.\u{1d320}ss\u{16af1}",
+        "xn--hwe.xn--ss-ci1ub261a",
+    ),
+    (
+        "\u{16ad}.\u{1d320}SS\u{16af1}",
+        "xn--hwe.xn--ss-ci1ub261a",
+    ),
+    (
+        "\u{16ad}.\u{1d320}Ss\u{16af1}",
+        "xn--hwe.xn--ss-ci1ub261a",
+    ),
+    (
+        "xn--hwe.xn--zca4946pblnc",
+        "xn--hwe.xn--zca4946pblnc",
+    ),
     (
         "\u{16ad}.\u{1d320}\u{df}\u{16af1}",
         "xn--hwe.xn--zca4946pblnc",
@@ -735,9 +1345,18 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{16ad}\u{ff61}\u{1d320}Ss\u{16af1}",
         "xn--hwe.xn--ss-ci1ub261a",
     ),
-    ("\u{1e953}\u{ff0e}\u{718}", "xn--of6h.xn--inb"),
-    ("\u{1e953}.\u{718}", "xn--of6h.xn--inb"),
-    ("xn--of6h.xn--inb", "xn--of6h.xn--inb"),
+    (
+        "\u{1e953}\u{ff0e}\u{718}",
+        "xn--of6h.xn--inb",
+    ),
+    (
+        "\u{1e953}.\u{718}",
+        "xn--of6h.xn--inb",
+    ),
+    (
+        "xn--of6h.xn--inb",
+        "xn--of6h.xn--inb",
+    ),
     (
         "\u{10ba}\u{102f8}\u{e0104}\u{3002}\u{1d7dd}\u{d7f6}\u{103a}",
         "xn--ilj2659d.xn--5-dug9054m",
@@ -750,7 +1369,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{2d1a}\u{102f8}\u{e0104}\u{3002}5\u{d7f6}\u{103a}",
         "xn--ilj2659d.xn--5-dug9054m",
     ),
-    ("xn--ilj2659d.xn--5-dug9054m", "xn--ilj2659d.xn--5-dug9054m"),
+    (
+        "xn--ilj2659d.xn--5-dug9054m",
+        "xn--ilj2659d.xn--5-dug9054m",
+    ),
     (
         "\u{2d1a}\u{102f8}.5\u{d7f6}\u{103a}",
         "xn--ilj2659d.xn--5-dug9054m",
@@ -763,21 +1385,42 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{2d1a}\u{102f8}\u{e0104}\u{3002}\u{1d7dd}\u{d7f6}\u{103a}",
         "xn--ilj2659d.xn--5-dug9054m",
     ),
-    ("\u{2260}.\u{183f}", "xn--1ch.xn--y7e"),
-    ("=\u{338}.\u{183f}", "xn--1ch.xn--y7e"),
-    ("xn--1ch.xn--y7e", "xn--1ch.xn--y7e"),
-    ("\u{723}\u{5a3}\u{ff61}\u{332a}", "xn--ucb18e.xn--eck4c5a"),
+    (
+        "\u{2260}.\u{183f}",
+        "xn--1ch.xn--y7e",
+    ),
+    (
+        "=\u{338}.\u{183f}",
+        "xn--1ch.xn--y7e",
+    ),
+    (
+        "xn--1ch.xn--y7e",
+        "xn--1ch.xn--y7e",
+    ),
+    (
+        "\u{723}\u{5a3}\u{ff61}\u{332a}",
+        "xn--ucb18e.xn--eck4c5a",
+    ),
     (
         "\u{723}\u{5a3}\u{3002}\u{30cf}\u{30a4}\u{30c4}",
         "xn--ucb18e.xn--eck4c5a",
     ),
-    ("xn--ucb18e.xn--eck4c5a", "xn--ucb18e.xn--eck4c5a"),
+    (
+        "xn--ucb18e.xn--eck4c5a",
+        "xn--ucb18e.xn--eck4c5a",
+    ),
     (
         "\u{723}\u{5a3}.\u{30cf}\u{30a4}\u{30c4}",
         "xn--ucb18e.xn--eck4c5a",
     ),
-    ("xn--skb", "xn--skb"),
-    ("\u{6b9}", "xn--skb"),
+    (
+        "xn--skb",
+        "xn--skb",
+    ),
+    (
+        "\u{6b9}",
+        "xn--skb",
+    ),
     (
         "\u{df}\u{9c1}\u{1ded}\u{3002}\u{620}8\u{2085}",
         "xn--zca266bwrr.xn--85-psd",
@@ -798,11 +1441,26 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "Ss\u{9c1}\u{1ded}\u{3002}\u{620}85",
         "xn--ss-e2f077r.xn--85-psd",
     ),
-    ("xn--ss-e2f077r.xn--85-psd", "xn--ss-e2f077r.xn--85-psd"),
-    ("ss\u{9c1}\u{1ded}.\u{620}85", "xn--ss-e2f077r.xn--85-psd"),
-    ("SS\u{9c1}\u{1ded}.\u{620}85", "xn--ss-e2f077r.xn--85-psd"),
-    ("Ss\u{9c1}\u{1ded}.\u{620}85", "xn--ss-e2f077r.xn--85-psd"),
-    ("xn--zca266bwrr.xn--85-psd", "xn--zca266bwrr.xn--85-psd"),
+    (
+        "xn--ss-e2f077r.xn--85-psd",
+        "xn--ss-e2f077r.xn--85-psd",
+    ),
+    (
+        "ss\u{9c1}\u{1ded}.\u{620}85",
+        "xn--ss-e2f077r.xn--85-psd",
+    ),
+    (
+        "SS\u{9c1}\u{1ded}.\u{620}85",
+        "xn--ss-e2f077r.xn--85-psd",
+    ),
+    (
+        "Ss\u{9c1}\u{1ded}.\u{620}85",
+        "xn--ss-e2f077r.xn--85-psd",
+    ),
+    (
+        "xn--zca266bwrr.xn--85-psd",
+        "xn--zca266bwrr.xn--85-psd",
+    ),
     (
         "\u{df}\u{9c1}\u{1ded}.\u{620}85",
         "xn--zca266bwrr.xn--85-psd",
@@ -819,12 +1477,30 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "Ss\u{9c1}\u{1ded}\u{3002}\u{620}8\u{2085}",
         "xn--ss-e2f077r.xn--85-psd",
     ),
-    ("\u{fe0d}\u{a9b}\u{3002}\u{5d68}", "xn--6dc.xn--tot"),
-    ("xn--6dc.xn--tot", "xn--6dc.xn--tot"),
-    ("\u{a9b}.\u{5d68}", "xn--6dc.xn--tot"),
-    ("xn--t6f5138v", "xn--t6f5138v"),
-    ("\u{2603e}\u{1ce0}", "xn--t6f5138v"),
-    ("xn--p8e.xn--1ch3a7084l", "xn--p8e.xn--1ch3a7084l"),
+    (
+        "\u{fe0d}\u{a9b}\u{3002}\u{5d68}",
+        "xn--6dc.xn--tot",
+    ),
+    (
+        "xn--6dc.xn--tot",
+        "xn--6dc.xn--tot",
+    ),
+    (
+        "\u{a9b}.\u{5d68}",
+        "xn--6dc.xn--tot",
+    ),
+    (
+        "xn--t6f5138v",
+        "xn--t6f5138v",
+    ),
+    (
+        "\u{2603e}\u{1ce0}",
+        "xn--t6f5138v",
+    ),
+    (
+        "xn--p8e.xn--1ch3a7084l",
+        "xn--p8e.xn--1ch3a7084l",
+    ),
     (
         "\u{1859}.\u{226f}\u{102f2}\u{2260}",
         "xn--p8e.xn--1ch3a7084l",
@@ -833,16 +1509,46 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{1859}.>\u{338}\u{102f2}=\u{338}",
         "xn--p8e.xn--1ch3a7084l",
     ),
-    ("xn--u4e969b.xn--1ch", "xn--u4e969b.xn--1ch"),
-    ("\u{214e}\u{17d2}.\u{2260}", "xn--u4e969b.xn--1ch"),
-    ("\u{214e}\u{17d2}.=\u{338}", "xn--u4e969b.xn--1ch"),
-    ("\u{2132}\u{17d2}.=\u{338}", "xn--u4e969b.xn--1ch"),
-    ("\u{2132}\u{17d2}.\u{2260}", "xn--u4e969b.xn--1ch"),
-    ("xn--9-mfs8024b.", "xn--9-mfs8024b."),
-    ("9\u{9681}\u{2bee}.", "xn--9-mfs8024b."),
-    ("xn--2ib43l.xn--te6h", "xn--2ib43l.xn--te6h"),
-    ("\u{67d}\u{943}.\u{1e935}", "xn--2ib43l.xn--te6h"),
-    ("\u{67d}\u{943}.\u{1e913}", "xn--2ib43l.xn--te6h"),
+    (
+        "xn--u4e969b.xn--1ch",
+        "xn--u4e969b.xn--1ch",
+    ),
+    (
+        "\u{214e}\u{17d2}.\u{2260}",
+        "xn--u4e969b.xn--1ch",
+    ),
+    (
+        "\u{214e}\u{17d2}.=\u{338}",
+        "xn--u4e969b.xn--1ch",
+    ),
+    (
+        "\u{2132}\u{17d2}.=\u{338}",
+        "xn--u4e969b.xn--1ch",
+    ),
+    (
+        "\u{2132}\u{17d2}.\u{2260}",
+        "xn--u4e969b.xn--1ch",
+    ),
+    (
+        "xn--9-mfs8024b.",
+        "xn--9-mfs8024b.",
+    ),
+    (
+        "9\u{9681}\u{2bee}.",
+        "xn--9-mfs8024b.",
+    ),
+    (
+        "xn--2ib43l.xn--te6h",
+        "xn--2ib43l.xn--te6h",
+    ),
+    (
+        "\u{67d}\u{943}.\u{1e935}",
+        "xn--2ib43l.xn--te6h",
+    ),
+    (
+        "\u{67d}\u{943}.\u{1e913}",
+        "xn--2ib43l.xn--te6h",
+    ),
     (
         "\u{a9d0}\u{4c0}\u{1baa}\u{8f6}\u{ff0e}\u{b235}",
         "xn--s5a04sn4u297k.xn--2e1b",
@@ -867,7 +1573,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{a9d0}\u{4cf}\u{1baa}\u{8f6}.\u{b235}",
         "xn--s5a04sn4u297k.xn--2e1b",
     ),
-    ("xn--s5a04sn4u297k.xn--2e1b", "xn--s5a04sn4u297k.xn--2e1b"),
+    (
+        "xn--s5a04sn4u297k.xn--2e1b",
+        "xn--s5a04sn4u297k.xn--2e1b",
+    ),
     (
         "\u{a9d0}\u{4cf}\u{1baa}\u{8f6}\u{ff0e}\u{1102}\u{116f}\u{11bc}",
         "xn--s5a04sn4u297k.xn--2e1b",
@@ -876,17 +1585,50 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{a9d0}\u{4cf}\u{1baa}\u{8f6}\u{ff0e}\u{b235}",
         "xn--s5a04sn4u297k.xn--2e1b",
     ),
-    ("xn--9hb7344k.", "xn--9hb7344k."),
-    ("\u{10ac7}\u{661}.", "xn--9hb7344k."),
-    ("\u{7e5}.\u{6b5}", "xn--dtb.xn--okb"),
-    ("xn--dtb.xn--okb", "xn--dtb.xn--okb"),
-    ("xn--3e6h", "xn--3e6h"),
-    ("\u{1e93f}", "xn--3e6h"),
-    ("\u{1e91d}", "xn--3e6h"),
-    ("\u{6b9}\u{ff0e}\u{1873}\u{115f}", "xn--skb.xn--g9e"),
-    ("\u{6b9}.\u{1873}\u{115f}", "xn--skb.xn--g9e"),
-    ("xn--skb.xn--g9e", "xn--skb.xn--g9e"),
-    ("\u{6b9}.\u{1873}", "xn--skb.xn--g9e"),
+    (
+        "xn--9hb7344k.",
+        "xn--9hb7344k.",
+    ),
+    (
+        "\u{10ac7}\u{661}.",
+        "xn--9hb7344k.",
+    ),
+    (
+        "\u{7e5}.\u{6b5}",
+        "xn--dtb.xn--okb",
+    ),
+    (
+        "xn--dtb.xn--okb",
+        "xn--dtb.xn--okb",
+    ),
+    (
+        "xn--3e6h",
+        "xn--3e6h",
+    ),
+    (
+        "\u{1e93f}",
+        "xn--3e6h",
+    ),
+    (
+        "\u{1e91d}",
+        "xn--3e6h",
+    ),
+    (
+        "\u{6b9}\u{ff0e}\u{1873}\u{115f}",
+        "xn--skb.xn--g9e",
+    ),
+    (
+        "\u{6b9}.\u{1873}\u{115f}",
+        "xn--skb.xn--g9e",
+    ),
+    (
+        "xn--skb.xn--g9e",
+        "xn--skb.xn--g9e",
+    ),
+    (
+        "\u{6b9}.\u{1873}",
+        "xn--skb.xn--g9e",
+    ),
     (
         "xn--ss-4epx629f.xn--ifh802b6a",
         "xn--ss-4epx629f.xn--ifh802b6a",
@@ -903,19 +1645,58 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "Ss\u{aaf6}\u{18a5}.\u{22b6}\u{10c1}\u{2d16}",
         "xn--ss-4epx629f.xn--ifh802b6a",
     ),
-    ("\u{2260}\u{3002}\u{1f7b3}\u{1d7f2}", "xn--1ch.xn--6-dl4s"),
-    ("=\u{338}\u{3002}\u{1f7b3}\u{1d7f2}", "xn--1ch.xn--6-dl4s"),
-    ("\u{2260}\u{3002}\u{1f7b3}6", "xn--1ch.xn--6-dl4s"),
-    ("=\u{338}\u{3002}\u{1f7b3}6", "xn--1ch.xn--6-dl4s"),
-    ("xn--1ch.xn--6-dl4s", "xn--1ch.xn--6-dl4s"),
-    ("\u{2260}.\u{1f7b3}6", "xn--1ch.xn--6-dl4s"),
-    ("=\u{338}.\u{1f7b3}6", "xn--1ch.xn--6-dl4s"),
-    ("j", "j"),
-    ("xn--rt6a.", "xn--rt6a."),
-    ("\u{9c4a}.", "xn--rt6a."),
-    ("xn--4-0bd15808a.", "xn--4-0bd15808a."),
-    ("\u{1e93a}\u{7cc}4.", "xn--4-0bd15808a."),
-    ("\u{1e918}\u{7cc}4.", "xn--4-0bd15808a."),
+    (
+        "\u{2260}\u{3002}\u{1f7b3}\u{1d7f2}",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "=\u{338}\u{3002}\u{1f7b3}\u{1d7f2}",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "\u{2260}\u{3002}\u{1f7b3}6",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "=\u{338}\u{3002}\u{1f7b3}6",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "xn--1ch.xn--6-dl4s",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "\u{2260}.\u{1f7b3}6",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "=\u{338}.\u{1f7b3}6",
+        "xn--1ch.xn--6-dl4s",
+    ),
+    (
+        "j",
+        "j",
+    ),
+    (
+        "xn--rt6a.",
+        "xn--rt6a.",
+    ),
+    (
+        "\u{9c4a}.",
+        "xn--rt6a.",
+    ),
+    (
+        "xn--4-0bd15808a.",
+        "xn--4-0bd15808a.",
+    ),
+    (
+        "\u{1e93a}\u{7cc}4.",
+        "xn--4-0bd15808a.",
+    ),
+    (
+        "\u{1e918}\u{7cc}4.",
+        "xn--4-0bd15808a.",
+    ),
     (
         "\u{2f86}\u{ff0e}\u{a848}\u{ff15}\u{226f}\u{df}",
         "xn--tc1a.xn--5-qfa988w745i",
@@ -932,14 +1713,38 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{820c}.\u{a848}5>\u{338}\u{df}",
         "xn--tc1a.xn--5-qfa988w745i",
     ),
-    ("\u{820c}.\u{a848}5>\u{338}SS", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("\u{820c}.\u{a848}5\u{226f}SS", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("\u{820c}.\u{a848}5\u{226f}ss", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("\u{820c}.\u{a848}5>\u{338}ss", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("\u{820c}.\u{a848}5>\u{338}Ss", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("\u{820c}.\u{a848}5\u{226f}Ss", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("xn--tc1a.xn--5ss-3m2a5009e", "xn--tc1a.xn--5ss-3m2a5009e"),
-    ("xn--tc1a.xn--5-qfa988w745i", "xn--tc1a.xn--5-qfa988w745i"),
+    (
+        "\u{820c}.\u{a848}5>\u{338}SS",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "\u{820c}.\u{a848}5\u{226f}SS",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "\u{820c}.\u{a848}5\u{226f}ss",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "\u{820c}.\u{a848}5>\u{338}ss",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "\u{820c}.\u{a848}5>\u{338}Ss",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "\u{820c}.\u{a848}5\u{226f}Ss",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "xn--tc1a.xn--5ss-3m2a5009e",
+        "xn--tc1a.xn--5ss-3m2a5009e",
+    ),
+    (
+        "xn--tc1a.xn--5-qfa988w745i",
+        "xn--tc1a.xn--5-qfa988w745i",
+    ),
     (
         "\u{2f86}\u{ff0e}\u{a848}\u{ff15}>\u{338}SS",
         "xn--tc1a.xn--5ss-3m2a5009e",
@@ -964,57 +1769,210 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{2f86}\u{ff0e}\u{a848}\u{ff15}\u{226f}Ss",
         "xn--tc1a.xn--5ss-3m2a5009e",
     ),
-    ("\u{1e92a}.\u{3c2}", "xn--ie6h.xn--3xa"),
-    ("\u{1e908}.\u{3a3}", "xn--ie6h.xn--4xa"),
-    ("\u{1e92a}.\u{3c3}", "xn--ie6h.xn--4xa"),
-    ("\u{1e908}.\u{3c3}", "xn--ie6h.xn--4xa"),
-    ("xn--ie6h.xn--4xa", "xn--ie6h.xn--4xa"),
-    ("\u{1e908}.\u{3c2}", "xn--ie6h.xn--3xa"),
-    ("xn--ie6h.xn--3xa", "xn--ie6h.xn--3xa"),
-    ("\u{1e92a}.\u{3a3}", "xn--ie6h.xn--4xa"),
-    ("xn--ilj.xn--4xa", "xn--ilj.xn--4xa"),
-    ("\u{2d1a}.\u{3c3}", "xn--ilj.xn--4xa"),
-    ("\u{10ba}.\u{3a3}", "xn--ilj.xn--4xa"),
-    ("\u{2d1a}.\u{3c2}", "xn--ilj.xn--3xa"),
-    ("\u{10ba}.\u{3c2}", "xn--ilj.xn--3xa"),
-    ("xn--ilj.xn--3xa", "xn--ilj.xn--3xa"),
-    ("\u{10ba}.\u{3c3}", "xn--ilj.xn--4xa"),
-    ("\u{6dfd}\u{3002}\u{183e}", "xn--34w.xn--x7e"),
-    ("xn--34w.xn--x7e", "xn--34w.xn--x7e"),
-    ("\u{6dfd}.\u{183e}", "xn--34w.xn--x7e"),
-    ("\u{a860}\u{ff0e}\u{6f2}", "xn--5c9a.xn--fmb"),
-    ("\u{a860}.\u{6f2}", "xn--5c9a.xn--fmb"),
-    ("xn--5c9a.xn--fmb", "xn--5c9a.xn--fmb"),
-    ("1.2h", "1.2h"),
-    ("xn--skjy82u.xn--gdh", "xn--skjy82u.xn--gdh"),
-    ("\u{2d01}\u{755d}.\u{226e}", "xn--skjy82u.xn--gdh"),
-    ("\u{2d01}\u{755d}.<\u{338}", "xn--skjy82u.xn--gdh"),
-    ("\u{10a1}\u{755d}.<\u{338}", "xn--skjy82u.xn--gdh"),
-    ("\u{10a1}\u{755d}.\u{226e}", "xn--skjy82u.xn--gdh"),
-    ("\u{1f57c}\u{ff0e}\u{ffa0}", "xn--my8h."),
-    ("\u{1f57c}.\u{1160}", "xn--my8h."),
-    ("xn--my8h.", "xn--my8h."),
-    ("\u{1f57c}.", "xn--my8h."),
-    ("\u{3c2}\u{10c5}\u{3002}\u{75a}", "xn--3xa403s.xn--epb"),
-    ("\u{3c2}\u{2d25}\u{3002}\u{75a}", "xn--3xa403s.xn--epb"),
-    ("\u{3a3}\u{10c5}\u{3002}\u{75a}", "xn--4xa203s.xn--epb"),
-    ("\u{3c3}\u{2d25}\u{3002}\u{75a}", "xn--4xa203s.xn--epb"),
-    ("\u{3a3}\u{2d25}\u{3002}\u{75a}", "xn--4xa203s.xn--epb"),
-    ("xn--4xa203s.xn--epb", "xn--4xa203s.xn--epb"),
-    ("\u{3c3}\u{2d25}.\u{75a}", "xn--4xa203s.xn--epb"),
-    ("\u{3a3}\u{10c5}.\u{75a}", "xn--4xa203s.xn--epb"),
-    ("\u{3a3}\u{2d25}.\u{75a}", "xn--4xa203s.xn--epb"),
-    ("xn--3xa403s.xn--epb", "xn--3xa403s.xn--epb"),
-    ("\u{3c2}\u{2d25}.\u{75a}", "xn--3xa403s.xn--epb"),
-    ("xn--vkb.xn--08e172a", "xn--vkb.xn--08e172a"),
-    ("\u{6bc}.\u{1e8f}\u{1864}", "xn--vkb.xn--08e172a"),
-    ("\u{6bc}.y\u{307}\u{1864}", "xn--vkb.xn--08e172a"),
-    ("\u{6bc}.Y\u{307}\u{1864}", "xn--vkb.xn--08e172a"),
-    ("\u{6bc}.\u{1e8e}\u{1864}", "xn--vkb.xn--08e172a"),
-    ("xn--pt9c.xn--0kjya", "xn--pt9c.xn--0kjya"),
-    ("\u{10a57}.\u{2d09}\u{2d15}", "xn--pt9c.xn--0kjya"),
-    ("\u{10a57}.\u{10a9}\u{10b5}", "xn--pt9c.xn--0kjya"),
-    ("\u{10a57}.\u{10a9}\u{2d15}", "xn--pt9c.xn--0kjya"),
+    (
+        "\u{1e92a}.\u{3c2}",
+        "xn--ie6h.xn--3xa",
+    ),
+    (
+        "\u{1e908}.\u{3a3}",
+        "xn--ie6h.xn--4xa",
+    ),
+    (
+        "\u{1e92a}.\u{3c3}",
+        "xn--ie6h.xn--4xa",
+    ),
+    (
+        "\u{1e908}.\u{3c3}",
+        "xn--ie6h.xn--4xa",
+    ),
+    (
+        "xn--ie6h.xn--4xa",
+        "xn--ie6h.xn--4xa",
+    ),
+    (
+        "\u{1e908}.\u{3c2}",
+        "xn--ie6h.xn--3xa",
+    ),
+    (
+        "xn--ie6h.xn--3xa",
+        "xn--ie6h.xn--3xa",
+    ),
+    (
+        "\u{1e92a}.\u{3a3}",
+        "xn--ie6h.xn--4xa",
+    ),
+    (
+        "xn--ilj.xn--4xa",
+        "xn--ilj.xn--4xa",
+    ),
+    (
+        "\u{2d1a}.\u{3c3}",
+        "xn--ilj.xn--4xa",
+    ),
+    (
+        "\u{10ba}.\u{3a3}",
+        "xn--ilj.xn--4xa",
+    ),
+    (
+        "\u{2d1a}.\u{3c2}",
+        "xn--ilj.xn--3xa",
+    ),
+    (
+        "\u{10ba}.\u{3c2}",
+        "xn--ilj.xn--3xa",
+    ),
+    (
+        "xn--ilj.xn--3xa",
+        "xn--ilj.xn--3xa",
+    ),
+    (
+        "\u{10ba}.\u{3c3}",
+        "xn--ilj.xn--4xa",
+    ),
+    (
+        "\u{6dfd}\u{3002}\u{183e}",
+        "xn--34w.xn--x7e",
+    ),
+    (
+        "xn--34w.xn--x7e",
+        "xn--34w.xn--x7e",
+    ),
+    (
+        "\u{6dfd}.\u{183e}",
+        "xn--34w.xn--x7e",
+    ),
+    (
+        "\u{a860}\u{ff0e}\u{6f2}",
+        "xn--5c9a.xn--fmb",
+    ),
+    (
+        "\u{a860}.\u{6f2}",
+        "xn--5c9a.xn--fmb",
+    ),
+    (
+        "xn--5c9a.xn--fmb",
+        "xn--5c9a.xn--fmb",
+    ),
+    (
+        "1.2h",
+        "1.2h",
+    ),
+    (
+        "xn--skjy82u.xn--gdh",
+        "xn--skjy82u.xn--gdh",
+    ),
+    (
+        "\u{2d01}\u{755d}.\u{226e}",
+        "xn--skjy82u.xn--gdh",
+    ),
+    (
+        "\u{2d01}\u{755d}.<\u{338}",
+        "xn--skjy82u.xn--gdh",
+    ),
+    (
+        "\u{10a1}\u{755d}.<\u{338}",
+        "xn--skjy82u.xn--gdh",
+    ),
+    (
+        "\u{10a1}\u{755d}.\u{226e}",
+        "xn--skjy82u.xn--gdh",
+    ),
+    (
+        "\u{1f57c}\u{ff0e}\u{ffa0}",
+        "xn--my8h.",
+    ),
+    (
+        "\u{1f57c}.\u{1160}",
+        "xn--my8h.",
+    ),
+    (
+        "xn--my8h.",
+        "xn--my8h.",
+    ),
+    (
+        "\u{1f57c}.",
+        "xn--my8h.",
+    ),
+    (
+        "\u{3c2}\u{10c5}\u{3002}\u{75a}",
+        "xn--3xa403s.xn--epb",
+    ),
+    (
+        "\u{3c2}\u{2d25}\u{3002}\u{75a}",
+        "xn--3xa403s.xn--epb",
+    ),
+    (
+        "\u{3a3}\u{10c5}\u{3002}\u{75a}",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "\u{3c3}\u{2d25}\u{3002}\u{75a}",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "\u{3a3}\u{2d25}\u{3002}\u{75a}",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "xn--4xa203s.xn--epb",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "\u{3c3}\u{2d25}.\u{75a}",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "\u{3a3}\u{10c5}.\u{75a}",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "\u{3a3}\u{2d25}.\u{75a}",
+        "xn--4xa203s.xn--epb",
+    ),
+    (
+        "xn--3xa403s.xn--epb",
+        "xn--3xa403s.xn--epb",
+    ),
+    (
+        "\u{3c2}\u{2d25}.\u{75a}",
+        "xn--3xa403s.xn--epb",
+    ),
+    (
+        "xn--vkb.xn--08e172a",
+        "xn--vkb.xn--08e172a",
+    ),
+    (
+        "\u{6bc}.\u{1e8f}\u{1864}",
+        "xn--vkb.xn--08e172a",
+    ),
+    (
+        "\u{6bc}.y\u{307}\u{1864}",
+        "xn--vkb.xn--08e172a",
+    ),
+    (
+        "\u{6bc}.Y\u{307}\u{1864}",
+        "xn--vkb.xn--08e172a",
+    ),
+    (
+        "\u{6bc}.\u{1e8e}\u{1864}",
+        "xn--vkb.xn--08e172a",
+    ),
+    (
+        "xn--pt9c.xn--0kjya",
+        "xn--pt9c.xn--0kjya",
+    ),
+    (
+        "\u{10a57}.\u{2d09}\u{2d15}",
+        "xn--pt9c.xn--0kjya",
+    ),
+    (
+        "\u{10a57}.\u{10a9}\u{10b5}",
+        "xn--pt9c.xn--0kjya",
+    ),
+    (
+        "\u{10a57}.\u{10a9}\u{2d15}",
+        "xn--pt9c.xn--0kjya",
+    ),
     (
         "\u{32931}20.\u{97f3}.\u{a866}1.",
         "xn--20-9802c.xn--0w5a.xn--1-eg4e.",
@@ -1063,7 +2021,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{10b5}\u{3002}\u{6f0}<\u{338}Ss\u{745}",
         "xn--dlj.xn--ss-jbe65aw27i",
     ),
-    ("xn--dlj.xn--ss-jbe65aw27i", "xn--dlj.xn--ss-jbe65aw27i"),
+    (
+        "xn--dlj.xn--ss-jbe65aw27i",
+        "xn--dlj.xn--ss-jbe65aw27i",
+    ),
     (
         "\u{2d15}.\u{6f0}\u{226e}ss\u{745}",
         "xn--dlj.xn--ss-jbe65aw27i",
@@ -1088,7 +2049,10 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{10b5}.\u{6f0}<\u{338}Ss\u{745}",
         "xn--dlj.xn--ss-jbe65aw27i",
     ),
-    ("xn--dlj.xn--zca912alh227g", "xn--dlj.xn--zca912alh227g"),
+    (
+        "xn--dlj.xn--zca912alh227g",
+        "xn--dlj.xn--zca912alh227g",
+    ),
     (
         "\u{2d15}.\u{6f0}\u{226e}\u{df}\u{745}",
         "xn--dlj.xn--zca912alh227g",
@@ -1097,27 +2061,78 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{2d15}.\u{6f0}<\u{338}\u{df}\u{745}",
         "xn--dlj.xn--zca912alh227g",
     ),
-    ("xn--ge6h.xn--oc9a", "xn--ge6h.xn--oc9a"),
-    ("\u{1e928}.\u{a84f}", "xn--ge6h.xn--oc9a"),
-    ("\u{1e906}.\u{a84f}", "xn--ge6h.xn--oc9a"),
-    ("\u{9f59}--\u{1d7f0}.\u{df}", "xn----4-p16k.xn--zca"),
-    ("\u{9f59}--4.\u{df}", "xn----4-p16k.xn--zca"),
-    ("\u{9f59}--4.SS", "xn----4-p16k.ss"),
-    ("\u{9f59}--4.ss", "xn----4-p16k.ss"),
-    ("\u{9f59}--4.Ss", "xn----4-p16k.ss"),
-    ("xn----4-p16k.ss", "xn----4-p16k.ss"),
-    ("xn----4-p16k.xn--zca", "xn----4-p16k.xn--zca"),
-    ("\u{9f59}--\u{1d7f0}.SS", "xn----4-p16k.ss"),
-    ("\u{9f59}--\u{1d7f0}.ss", "xn----4-p16k.ss"),
-    ("\u{9f59}--\u{1d7f0}.Ss", "xn----4-p16k.ss"),
-    ("xn--9-i0j5967eg3qz.ss", "xn--9-i0j5967eg3qz.ss"),
-    ("\u{32b9a}9\u{a369}\u{17d3}.ss", "xn--9-i0j5967eg3qz.ss"),
-    ("\u{32b9a}9\u{a369}\u{17d3}.SS", "xn--9-i0j5967eg3qz.ss"),
+    (
+        "xn--ge6h.xn--oc9a",
+        "xn--ge6h.xn--oc9a",
+    ),
+    (
+        "\u{1e928}.\u{a84f}",
+        "xn--ge6h.xn--oc9a",
+    ),
+    (
+        "\u{1e906}.\u{a84f}",
+        "xn--ge6h.xn--oc9a",
+    ),
+    (
+        "\u{9f59}--\u{1d7f0}.\u{df}",
+        "xn----4-p16k.xn--zca",
+    ),
+    (
+        "\u{9f59}--4.\u{df}",
+        "xn----4-p16k.xn--zca",
+    ),
+    (
+        "\u{9f59}--4.SS",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "\u{9f59}--4.ss",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "\u{9f59}--4.Ss",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "xn----4-p16k.ss",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "xn----4-p16k.xn--zca",
+        "xn----4-p16k.xn--zca",
+    ),
+    (
+        "\u{9f59}--\u{1d7f0}.SS",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "\u{9f59}--\u{1d7f0}.ss",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "\u{9f59}--\u{1d7f0}.Ss",
+        "xn----4-p16k.ss",
+    ),
+    (
+        "xn--9-i0j5967eg3qz.ss",
+        "xn--9-i0j5967eg3qz.ss",
+    ),
+    (
+        "\u{32b9a}9\u{a369}\u{17d3}.ss",
+        "xn--9-i0j5967eg3qz.ss",
+    ),
+    (
+        "\u{32b9a}9\u{a369}\u{17d3}.SS",
+        "xn--9-i0j5967eg3qz.ss",
+    ),
     (
         "\u{a5f7}\u{11180}.\u{75d}\u{10a52}",
         "xn--ju8a625r.xn--hpb0073k",
     ),
-    ("xn--ju8a625r.xn--hpb0073k", "xn--ju8a625r.xn--hpb0073k"),
+    (
+        "xn--ju8a625r.xn--hpb0073k",
+        "xn--ju8a625r.xn--hpb0073k",
+    ),
     (
         "\u{3c2}.\u{641}\u{645}\u{64a}\u{1f79b}1.",
         "xn--3xa.xn--1-gocmu97674d.",
@@ -1130,15 +2145,42 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{3c3}.\u{641}\u{645}\u{64a}\u{1f79b}1.",
         "xn--4xa.xn--1-gocmu97674d.",
     ),
-    ("xn--4xa.xn--1-gocmu97674d.", "xn--4xa.xn--1-gocmu97674d."),
-    ("xn--3xa.xn--1-gocmu97674d.", "xn--3xa.xn--1-gocmu97674d."),
-    ("xn--hva754s.", "xn--hva754s."),
-    ("\u{2d16}\u{366}.", "xn--hva754s."),
-    ("\u{10b6}\u{366}.", "xn--hva754s."),
-    ("xn--hzb.xn--ukj4430l", "xn--hzb.xn--ukj4430l"),
-    ("\u{8bb}.\u{2d03}\u{1e012}", "xn--hzb.xn--ukj4430l"),
-    ("\u{8bb}.\u{10a3}\u{1e012}", "xn--hzb.xn--ukj4430l"),
-    ("xn--p9ut19m.xn----mck373i", "xn--p9ut19m.xn----mck373i"),
+    (
+        "xn--4xa.xn--1-gocmu97674d.",
+        "xn--4xa.xn--1-gocmu97674d.",
+    ),
+    (
+        "xn--3xa.xn--1-gocmu97674d.",
+        "xn--3xa.xn--1-gocmu97674d.",
+    ),
+    (
+        "xn--hva754s.",
+        "xn--hva754s.",
+    ),
+    (
+        "\u{2d16}\u{366}.",
+        "xn--hva754s.",
+    ),
+    (
+        "\u{10b6}\u{366}.",
+        "xn--hva754s.",
+    ),
+    (
+        "xn--hzb.xn--ukj4430l",
+        "xn--hzb.xn--ukj4430l",
+    ),
+    (
+        "\u{8bb}.\u{2d03}\u{1e012}",
+        "xn--hzb.xn--ukj4430l",
+    ),
+    (
+        "\u{8bb}.\u{10a3}\u{1e012}",
+        "xn--hzb.xn--ukj4430l",
+    ),
+    (
+        "xn--p9ut19m.xn----mck373i",
+        "xn--p9ut19m.xn----mck373i",
+    ),
     (
         "\u{650c}\u{abed}.\u{1896}-\u{2d18}",
         "xn--p9ut19m.xn----mck373i",
@@ -1147,19 +2189,46 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{650c}\u{abed}.\u{1896}-\u{10b8}",
         "xn--p9ut19m.xn----mck373i",
     ),
-    ("xn--9r8a.16.xn--3-nyc0117m", "xn--9r8a.16.xn--3-nyc0117m"),
-    ("\u{a5a8}.16.3\u{d212}\u{6f3}", "xn--9r8a.16.xn--3-nyc0117m"),
+    (
+        "xn--9r8a.16.xn--3-nyc0117m",
+        "xn--9r8a.16.xn--3-nyc0117m",
+    ),
+    (
+        "\u{a5a8}.16.3\u{d212}\u{6f3}",
+        "xn--9r8a.16.xn--3-nyc0117m",
+    ),
     (
         "\u{a5a8}.16.3\u{1110}\u{116d}\u{11a9}\u{6f3}",
         "xn--9r8a.16.xn--3-nyc0117m",
     ),
-    ("xn--1-5bt6845n.", "xn--1-5bt6845n."),
-    ("1\u{1da19}\u{2e16}.", "xn--1-5bt6845n."),
-    ("xn--ss-f4j.b.", "xn--ss-f4j.b."),
-    ("ss\u{103a}.b.", "xn--ss-f4j.b."),
-    ("SS\u{103a}.B.", "xn--ss-f4j.b."),
-    ("Ss\u{103a}.b.", "xn--ss-f4j.b."),
-    ("SS\u{103a}.b.", "xn--ss-f4j.b."),
+    (
+        "xn--1-5bt6845n.",
+        "xn--1-5bt6845n.",
+    ),
+    (
+        "1\u{1da19}\u{2e16}.",
+        "xn--1-5bt6845n.",
+    ),
+    (
+        "xn--ss-f4j.b.",
+        "xn--ss-f4j.b.",
+    ),
+    (
+        "ss\u{103a}.b.",
+        "xn--ss-f4j.b.",
+    ),
+    (
+        "SS\u{103a}.B.",
+        "xn--ss-f4j.b.",
+    ),
+    (
+        "Ss\u{103a}.b.",
+        "xn--ss-f4j.b.",
+    ),
+    (
+        "SS\u{103a}.b.",
+        "xn--ss-f4j.b.",
+    ),
     (
         "\u{6cc}\u{10a3f}\u{ff0e}\u{df}\u{f84}\u{1136c}",
         "xn--clb2593k.xn--zca216edt0r",
@@ -1200,47 +2269,170 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{6cc}\u{10a3f}\u{ff0e}Ss\u{f84}\u{1136c}",
         "xn--clb2593k.xn--ss-toj6092t",
     ),
-    ("xn--8-ngo.", "xn--8-ngo."),
-    ("8\u{226e}.", "xn--8-ngo."),
-    ("8<\u{338}.", "xn--8-ngo."),
-    ("\u{7f9a}\u{ff61}\u{226f}", "xn--xt0a.xn--hdh"),
-    ("\u{7f9a}\u{ff61}>\u{338}", "xn--xt0a.xn--hdh"),
-    ("\u{7f9a}\u{3002}\u{226f}", "xn--xt0a.xn--hdh"),
-    ("\u{7f9a}\u{3002}>\u{338}", "xn--xt0a.xn--hdh"),
-    ("xn--xt0a.xn--hdh", "xn--xt0a.xn--hdh"),
-    ("\u{7f9a}.\u{226f}", "xn--xt0a.xn--hdh"),
-    ("\u{7f9a}.>\u{338}", "xn--xt0a.xn--hdh"),
-    ("xn--ye6h", "xn--ye6h"),
-    ("\u{1e93a}", "xn--ye6h"),
-    ("\u{1e918}", "xn--ye6h"),
-    ("\u{1d7db}\u{ff0e}\u{f9f8}", "3.xn--6vz"),
-    ("\u{1d7db}\u{ff0e}\u{7b20}", "3.xn--6vz"),
-    ("3.\u{7b20}", "3.xn--6vz"),
-    ("3.xn--6vz", "3.xn--6vz"),
-    ("xn--1ch.", "xn--1ch."),
-    ("\u{2260}.", "xn--1ch."),
-    ("=\u{338}.", "xn--1ch."),
-    ("f", "f"),
-    ("xn--9bm.ss", "xn--9bm.ss"),
-    ("\u{3a32}.ss", "xn--9bm.ss"),
-    ("\u{3a32}.SS", "xn--9bm.ss"),
-    ("\u{3a32}.Ss", "xn--9bm.ss"),
-    ("\u{1d7ce}\u{3002}\u{752f}", "0.xn--qny"),
-    ("0\u{3002}\u{752f}", "0.xn--qny"),
-    ("0.xn--qny", "0.xn--qny"),
-    ("0.\u{752f}", "0.xn--qny"),
-    ("\u{1f0b4}\u{10ab}.\u{226e}", "xn--2kj7565l.xn--gdh"),
-    ("\u{1f0b4}\u{10ab}.<\u{338}", "xn--2kj7565l.xn--gdh"),
-    ("\u{1f0b4}\u{2d0b}.<\u{338}", "xn--2kj7565l.xn--gdh"),
-    ("\u{1f0b4}\u{2d0b}.\u{226e}", "xn--2kj7565l.xn--gdh"),
-    ("xn--2kj7565l.xn--gdh", "xn--2kj7565l.xn--gdh"),
-    ("xn--gky8837e.", "xn--gky8837e."),
-    ("\u{74bc}\u{1da2d}.", "xn--gky8837e."),
-    ("xn--157b.xn--gnb", "xn--157b.xn--gnb"),
-    ("\u{d29b}.\u{716}", "xn--157b.xn--gnb"),
-    ("\u{1110}\u{1171}\u{11c2}.\u{716}", "xn--157b.xn--gnb"),
-    ("xn--84-s850a.xn--59h6326e", "xn--84-s850a.xn--59h6326e"),
-    ("84\u{1d23b}.\u{102f5}\u{26e7}", "xn--84-s850a.xn--59h6326e"),
+    (
+        "xn--8-ngo.",
+        "xn--8-ngo.",
+    ),
+    (
+        "8\u{226e}.",
+        "xn--8-ngo.",
+    ),
+    (
+        "8<\u{338}.",
+        "xn--8-ngo.",
+    ),
+    (
+        "\u{7f9a}\u{ff61}\u{226f}",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "\u{7f9a}\u{ff61}>\u{338}",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "\u{7f9a}\u{3002}\u{226f}",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "\u{7f9a}\u{3002}>\u{338}",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "xn--xt0a.xn--hdh",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "\u{7f9a}.\u{226f}",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "\u{7f9a}.>\u{338}",
+        "xn--xt0a.xn--hdh",
+    ),
+    (
+        "xn--ye6h",
+        "xn--ye6h",
+    ),
+    (
+        "\u{1e93a}",
+        "xn--ye6h",
+    ),
+    (
+        "\u{1e918}",
+        "xn--ye6h",
+    ),
+    (
+        "\u{1d7db}\u{ff0e}\u{f9f8}",
+        "3.xn--6vz",
+    ),
+    (
+        "\u{1d7db}\u{ff0e}\u{7b20}",
+        "3.xn--6vz",
+    ),
+    (
+        "3.\u{7b20}",
+        "3.xn--6vz",
+    ),
+    (
+        "3.xn--6vz",
+        "3.xn--6vz",
+    ),
+    (
+        "xn--1ch.",
+        "xn--1ch.",
+    ),
+    (
+        "\u{2260}.",
+        "xn--1ch.",
+    ),
+    (
+        "=\u{338}.",
+        "xn--1ch.",
+    ),
+    (
+        "f",
+        "f",
+    ),
+    (
+        "xn--9bm.ss",
+        "xn--9bm.ss",
+    ),
+    (
+        "\u{3a32}.ss",
+        "xn--9bm.ss",
+    ),
+    (
+        "\u{3a32}.SS",
+        "xn--9bm.ss",
+    ),
+    (
+        "\u{3a32}.Ss",
+        "xn--9bm.ss",
+    ),
+    (
+        "\u{1d7ce}\u{3002}\u{752f}",
+        "0.xn--qny",
+    ),
+    (
+        "0\u{3002}\u{752f}",
+        "0.xn--qny",
+    ),
+    (
+        "0.xn--qny",
+        "0.xn--qny",
+    ),
+    (
+        "0.\u{752f}",
+        "0.xn--qny",
+    ),
+    (
+        "\u{1f0b4}\u{10ab}.\u{226e}",
+        "xn--2kj7565l.xn--gdh",
+    ),
+    (
+        "\u{1f0b4}\u{10ab}.<\u{338}",
+        "xn--2kj7565l.xn--gdh",
+    ),
+    (
+        "\u{1f0b4}\u{2d0b}.<\u{338}",
+        "xn--2kj7565l.xn--gdh",
+    ),
+    (
+        "\u{1f0b4}\u{2d0b}.\u{226e}",
+        "xn--2kj7565l.xn--gdh",
+    ),
+    (
+        "xn--2kj7565l.xn--gdh",
+        "xn--2kj7565l.xn--gdh",
+    ),
+    (
+        "xn--gky8837e.",
+        "xn--gky8837e.",
+    ),
+    (
+        "\u{74bc}\u{1da2d}.",
+        "xn--gky8837e.",
+    ),
+    (
+        "xn--157b.xn--gnb",
+        "xn--157b.xn--gnb",
+    ),
+    (
+        "\u{d29b}.\u{716}",
+        "xn--157b.xn--gnb",
+    ),
+    (
+        "\u{1110}\u{1171}\u{11c2}.\u{716}",
+        "xn--157b.xn--gnb",
+    ),
+    (
+        "xn--84-s850a.xn--59h6326e",
+        "xn--84-s850a.xn--59h6326e",
+    ),
+    (
+        "84\u{1d23b}.\u{102f5}\u{26e7}",
+        "xn--84-s850a.xn--59h6326e",
+    ),
     (
         "\u{226e}\u{1d7d5}\u{ff0e}\u{8b16}\u{df}\u{226f}",
         "xn--7-mgo.xn--zca892oly5e",
@@ -1257,14 +2449,38 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "<\u{338}7.\u{8b16}\u{df}>\u{338}",
         "xn--7-mgo.xn--zca892oly5e",
     ),
-    ("<\u{338}7.\u{8b16}SS>\u{338}", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("\u{226e}7.\u{8b16}SS\u{226f}", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("\u{226e}7.\u{8b16}ss\u{226f}", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("<\u{338}7.\u{8b16}ss>\u{338}", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("<\u{338}7.\u{8b16}Ss>\u{338}", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("\u{226e}7.\u{8b16}Ss\u{226f}", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("xn--7-mgo.xn--ss-xjvv174c", "xn--7-mgo.xn--ss-xjvv174c"),
-    ("xn--7-mgo.xn--zca892oly5e", "xn--7-mgo.xn--zca892oly5e"),
+    (
+        "<\u{338}7.\u{8b16}SS>\u{338}",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "\u{226e}7.\u{8b16}SS\u{226f}",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "\u{226e}7.\u{8b16}ss\u{226f}",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "<\u{338}7.\u{8b16}ss>\u{338}",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "<\u{338}7.\u{8b16}Ss>\u{338}",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "\u{226e}7.\u{8b16}Ss\u{226f}",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "xn--7-mgo.xn--ss-xjvv174c",
+        "xn--7-mgo.xn--ss-xjvv174c",
+    ),
+    (
+        "xn--7-mgo.xn--zca892oly5e",
+        "xn--7-mgo.xn--zca892oly5e",
+    ),
     (
         "<\u{338}\u{1d7d5}\u{ff0e}\u{8b16}SS>\u{338}",
         "xn--7-mgo.xn--ss-xjvv174c",
@@ -1289,13 +2505,34 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{226e}\u{1d7d5}\u{ff0e}\u{8b16}Ss\u{226f}",
         "xn--7-mgo.xn--ss-xjvv174c",
     ),
-    ("xn--ss-bh7o", "xn--ss-bh7o"),
-    ("ss\u{114c3}", "xn--ss-bh7o"),
-    ("SS\u{114c3}", "xn--ss-bh7o"),
-    ("Ss\u{114c3}", "xn--ss-bh7o"),
-    ("xn--qekw60d.xn--gd9a", "xn--qekw60d.xn--gd9a"),
-    ("\u{30f6}\u{44a9}.\u{a86a}", "xn--qekw60d.xn--gd9a"),
-    ("xn--8c1a.xn--2ib8jn539l", "xn--8c1a.xn--2ib8jn539l"),
+    (
+        "xn--ss-bh7o",
+        "xn--ss-bh7o",
+    ),
+    (
+        "ss\u{114c3}",
+        "xn--ss-bh7o",
+    ),
+    (
+        "SS\u{114c3}",
+        "xn--ss-bh7o",
+    ),
+    (
+        "Ss\u{114c3}",
+        "xn--ss-bh7o",
+    ),
+    (
+        "xn--qekw60d.xn--gd9a",
+        "xn--qekw60d.xn--gd9a",
+    ),
+    (
+        "\u{30f6}\u{44a9}.\u{a86a}",
+        "xn--qekw60d.xn--gd9a",
+    ),
+    (
+        "xn--8c1a.xn--2ib8jn539l",
+        "xn--8c1a.xn--2ib8jn539l",
+    ),
     (
         "\u{821b}.\u{67d}\u{1e934}\u{6bb}",
         "xn--8c1a.xn--2ib8jn539l",
@@ -1304,9 +2541,18 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{821b}.\u{67d}\u{1e912}\u{6bb}",
         "xn--8c1a.xn--2ib8jn539l",
     ),
-    ("xn--hcb32bni", "xn--hcb32bni"),
-    ("\u{6bd}\u{663}\u{596}", "xn--hcb32bni"),
-    ("xn--8gb2338k.xn--lhb0154f", "xn--8gb2338k.xn--lhb0154f"),
+    (
+        "xn--hcb32bni",
+        "xn--hcb32bni",
+    ),
+    (
+        "\u{6bd}\u{663}\u{596}",
+        "xn--hcb32bni",
+    ),
+    (
+        "xn--8gb2338k.xn--lhb0154f",
+        "xn--8gb2338k.xn--lhb0154f",
+    ),
     (
         "\u{63d}\u{1123e}.\u{649}\u{a92b}",
         "xn--8gb2338k.xn--lhb0154f",
@@ -1355,20 +2601,57 @@ pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[
         "\u{2d21}\u{2d11}6\u{318}.\u{df}\u{1b03}",
         "xn--6-8cb7433a2ba.xn--zca894k",
     ),
-    ("xn--7zv.", "xn--7zv."),
-    ("\u{6889}.", "xn--7zv."),
-    ("xn--iwb.ss", "xn--iwb.ss"),
-    ("\u{853}.ss", "xn--iwb.ss"),
-    ("\u{853}.SS", "xn--iwb.ss"),
-    ("xn--ix9c26l.xn--q0s", "xn--ix9c26l.xn--q0s"),
-    ("\u{10adc}\u{1133c}.\u{5a40}", "xn--ix9c26l.xn--q0s"),
-    ("\u{10ac0}\u{ff0e}\u{689}\u{11300}", "xn--pw9c.xn--fjb8658k"),
-    ("\u{10ac0}.\u{689}\u{11300}", "xn--pw9c.xn--fjb8658k"),
-    ("xn--pw9c.xn--fjb8658k", "xn--pw9c.xn--fjb8658k"),
-    ("xn--r97c.", "xn--r97c."),
-    ("\u{102f7}.", "xn--r97c."),
+    (
+        "xn--7zv.",
+        "xn--7zv.",
+    ),
+    (
+        "\u{6889}.",
+        "xn--7zv.",
+    ),
+    (
+        "xn--iwb.ss",
+        "xn--iwb.ss",
+    ),
+    (
+        "\u{853}.ss",
+        "xn--iwb.ss",
+    ),
+    (
+        "\u{853}.SS",
+        "xn--iwb.ss",
+    ),
+    (
+        "xn--ix9c26l.xn--q0s",
+        "xn--ix9c26l.xn--q0s",
+    ),
+    (
+        "\u{10adc}\u{1133c}.\u{5a40}",
+        "xn--ix9c26l.xn--q0s",
+    ),
+    (
+        "\u{10ac0}\u{ff0e}\u{689}\u{11300}",
+        "xn--pw9c.xn--fjb8658k",
+    ),
+    (
+        "\u{10ac0}.\u{689}\u{11300}",
+        "xn--pw9c.xn--fjb8658k",
+    ),
+    (
+        "xn--pw9c.xn--fjb8658k",
+        "xn--pw9c.xn--fjb8658k",
+    ),
+    (
+        "xn--r97c.",
+        "xn--r97c.",
+    ),
+    (
+        "\u{102f7}.",
+        "xn--r97c.",
+    ),
 ];
 
+#[rustfmt::skip]
 pub(super) static UTS46_ERROR_CASES: &[&str] = &[
     "1.a\u{df}\u{200c}\u{200d}b\u{200c}\u{200d}c\u{df}\u{df}\u{df}\u{df}d\u{3c2}\u{3c3}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}e\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}x\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}y\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{df}\u{302}\u{df}z",
     "1.ASS\u{200c}\u{200d}B\u{200c}\u{200d}CSSSSSSSSD\u{3a3}\u{3a3}SSSSSSSSSSSSSSSSESSSSSSSSSSSSSSSSSSSSXSSSSSSSSSSSSSSSSSSSSYSSSSSSSSSSSSSSSS\u{302}SSZ",

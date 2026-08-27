@@ -92,10 +92,12 @@ def render() -> str:
         f"pub(super) const UTS46_ERROR_CASE_COUNT: usize = {len(error_cases)};",
         f"pub(super) const UTS46_ILL_FORMED_SKIPPED_COUNT: usize = {skipped};",
         f"pub(super) const UTS46_TO_UNICODE_ONLY_COUNT: usize = {to_unicode_only};",
+        "#[rustfmt::skip]",
         "pub(super) static UTS46_SUCCESS_CASES: &[(&str, &str)] = &[",
     ]
-    lines.extend(f"    ({rust(source)}, {rust(expected)})," for source, expected in cases)
-    lines.extend(["];", "", "pub(super) static UTS46_ERROR_CASES: &[&str] = &["])
+    for source, expected in cases:
+        lines.extend(["    (", f"        {rust(source)},", f"        {rust(expected)},", "    ),"])
+    lines.extend(["];", "", "#[rustfmt::skip]", "pub(super) static UTS46_ERROR_CASES: &[&str] = &["])
     lines.extend(f"    {rust(source)}," for source in error_cases)
     lines.extend(["];", ""])
     return "\n".join(lines)
