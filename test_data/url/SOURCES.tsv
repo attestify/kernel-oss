@@ -2,7 +2,7 @@ id	url	pin	path	role	sha256
 WPT-URLTESTDATA	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f6312766ddd8a8d502	wpt/urltestdata.json	WHATWG parsing/resolution fixture	355c9f1e5f34aae66ba8adfabf3c853f5cd30ea22964ef7a53eb292e7975d81e
 WPT-PERCENT	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f6312766ddd8a8d502	wpt/percent-encoding.json	percent fixture	ac3d9ec89f51e3855f9967ef8414eb470653a25d385cb88cbc3dc1c4d878d71c
 WPT-TOASCII	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f6312766ddd8a8d502	wpt/toascii.json	IDNA fixture	644eba9d5b593df8095cfa307222f3014542ff9cc02d555f8e5660059d80470f
-WPT-SETTERS	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f6312766ddd8a8d502	wpt/setters_tests.json	future mutator fixture	62e4b14bdaddd66b0f7d99bf066aed1c4a588667f4aa97bf26da212134fc24bf
+WPT-SETTERS	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f6312766ddd8a8d502	wpt/setters_tests.json	current P6 URLMutator qualification fixture	62e4b14bdaddd66b0f7d99bf066aed1c4a588667f4aa97bf26da212134fc24bf
 WPT-IDNA	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f6312766ddd8a8d502	wpt/IdnaTestV2.json	IDNA fixture	338192b9815dbdace6c035cb1acd50cd737070cd67d6e3f620d2543f63eb0cbb
 UNICODE-IDNA-MAP	https://www.unicode.org/Public/17.0.0/idna/IdnaMappingTable.txt	17.0.0	unicode/IdnaMappingTable.txt	IDNA input	87f05505dc026fdb2bff16132bdc68a8014675836882a9a2b1844540ad3be382
 UNICODE-IDNA-TEST	https://www.unicode.org/Public/17.0.0/idna/IdnaTestV2.txt	17.0.0	unicode/IdnaTestV2.txt	IDNA fixture	beb5d0be20e896189b03209a82fdc34f06351502bbd4b8e2523583fc2954d9cf

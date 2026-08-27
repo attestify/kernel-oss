@@ -80,12 +80,89 @@ def inventory_rows() -> dict[str, dict[str, str]]:
         return {row["id"]: row for row in csv.DictReader(source, delimiter="\t")}
 
 
-def setter_classification(attribute: str, href: str, expected_href: str) -> str:
-    """Classify browser-only href replacement separately from mutator mappings."""
+def setter_classification(attribute: str, href: str, new_value: str) -> str:
+    """Classify each WPT setter row from fixture input and immutable-ABI rules.
+
+    Host mutation deliberately accepts a host component only.  Browser setters
+    also accept an authority-like string and preprocess delimiter/control input;
+    those rows are permanent, explicit divergences rather than synthesized
+    operations built from the expected browser href.
+    """
     if attribute == "href":
         return "BrowserOnlyHref"
     if attribute == "pathname" and "://" not in href:
         return "BrowserOnlyOpaquePath"
+    if href.split(":", 1)[0].lower() == "file" and attribute in {"username", "password"}:
+        return "FixedFileCredentials"
+    if href.split(":", 1)[0].lower() == "file" and attribute == "port" and new_value:
+        return "FixedFilePort"
+    if attribute == "port" and not href.split(":", 1)[1].startswith("//"):
+        return "FixedNoAuthorityPort"
+    if attribute == "port" and href.split(":", 1)[1].startswith("///"):
+        return "FixedEmptyHostPort"
+    if attribute in {"username", "password"} and not href.split(":", 1)[1].startswith("//"):
+        return "FixedNoAuthorityCredentials"
+    if attribute in {"username", "password"} and href.split(":", 1)[1].startswith("///"):
+        return "FixedEmptyHostCredentials"
+    if attribute == "protocol":
+        candidate = "".join(character for character in new_value if character not in "\t\n\r").split(":", 1)[0]
+        if not candidate or not candidate[0].isalpha() or not all(
+            character.isascii() and (character.isalnum() or character in "+-.")
+            for character in candidate
+        ):
+            return "FixedSchemeInvalid"
+        existing = href.split(":", 1)[0].lower()
+        special = {"ftp", "file", "http", "https", "ws", "wss"}
+        if candidate.lower() == "file" or existing == "file" or (candidate.lower() in special) != (existing in special):
+            return "FixedSchemeStructural"
+    if attribute == "port" and new_value:
+        digits = "".join(character for character in new_value if character not in "\t\n\r")
+        digits = digits[: next((index for index, character in enumerate(digits) if not character.isascii() or not character.isdecimal()), len(digits))]
+        if not digits or int(digits) > 65_535:
+            return "FixedPortInvalid"
+    if attribute in {"host", "hostname"}:
+        scheme_remainder = href.split(":", 1)[1] if ":" in href else ""
+        authority_text = scheme_remainder[2:].split("/", 1)[0] if scheme_remainder.startswith("//") else ""
+        if not scheme_remainder.startswith("/"):
+            return "FixedHostNoAuthority"
+        if not new_value and "@" in authority_text:
+            return "FixedHostEmptyWithCredentials"
+        if not new_value and ":" in authority_text.rsplit("@", 1)[-1]:
+            return "FixedHostEmptyWithPort"
+        if any(character in new_value for character in "\t\n\r"):
+            return "FixedHostPreprocessing"
+        if any(character in new_value for character in "@/?#\\"):
+            return "FixedHostDelimiter"
+        if any(ord(character) < 0x20 or character in " <>" for character in new_value):
+            return "FixedHostBrowserNoOp"
+        if new_value in {"\u00ad", "%C2%AD"}:
+            return "FixedHostMappedEmpty"
+        if new_value.startswith("["):
+            payload = new_value.removeprefix("[").removesuffix("]")
+            ipv4_tail = payload.rsplit(":", 1)[-1]
+            invalid_ipv4_tail = "." in ipv4_tail and (
+                len(ipv4_tail.split(".")) != 4
+                or any(
+                    not piece.isascii()
+                    or not piece.isdecimal()
+                    or (len(piece) > 1 and piece.startswith("0"))
+                    or int(piece) > 255
+                    for piece in ipv4_tail.split(".")
+                )
+            )
+            if (
+                "]" not in new_value
+                or not new_value.endswith("]")
+                or not payload
+                or ":" not in payload
+                or any(character not in "0123456789abcdefABCDEF:." for character in payload)
+                or invalid_ipv4_tail
+            ):
+                return "FixedHostCombinedPortOrInvalid"
+        elif ":" in new_value:
+            return "FixedHostCombinedPortOrInvalid"
+        if not new_value and href.split(":", 1)[0] in {"http", "https", "ftp"}:
+            return "FixedHostEmptySpecial"
     return "Mapped"
 
 
@@ -117,6 +194,17 @@ def render_oracle() -> list[str]:
         "    pub(super) repository_expected_success: Option<bool>,",
         "    pub(super) repository_expected_kind: Option<&'static str>,",
         "    pub(super) repository_expected_audience: Option<&'static str>,",
+        "    pub(super) repository_default_scheme_applied: Option<bool>,",
+        "    pub(super) repository_url_value: Option<&'static str>,",
+        "    pub(super) repository_url_scheme: Option<&'static str>,",
+        "    pub(super) repository_url_username: Option<&'static str>,",
+        "    pub(super) repository_url_password_present: Option<bool>,",
+        "    pub(super) repository_url_host: Option<&'static str>,",
+        "    pub(super) repository_url_port: Option<u16>,",
+        "    pub(super) repository_url_path: Option<&'static str>,",
+        "    pub(super) repository_url_query: Option<&'static str>,",
+        "    pub(super) repository_url_query_pairs: &'static [(&'static str, &'static str)],",
+        "    pub(super) repository_url_fragment: Option<&'static str>,",
         "    pub(super) comparison_class: Option<&'static str>,",
         "}",
         "",
@@ -127,12 +215,21 @@ def render_oracle() -> list[str]:
     for record in records:
         expected = record["url257"]
         repository = record.get("repository_link")
+        repository_projection = (
+            repository.get("url_projection")
+            if isinstance(repository, dict) and repository.get("success")
+            else None
+        )
         row = inventory[str(record["id"])]
         schemes = [item for item in row["allowed_schemes"].split(",") if item]
         scheme_literals = ", ".join(rust(item) for item in schemes)
         pair_literals = ", ".join(
             f"({rust(str(pair[0]))}, {rust(str(pair[1]))})"
             for pair in expected.get("query_pairs", [])
+        )
+        repository_pair_literals = ", ".join(
+            f"({rust(str(pair[0]))}, {rust(str(pair[1]))})"
+            for pair in (repository_projection or {}).get("query_pairs", [])
         )
         success = bool(expected["success"])
         lines.extend(
@@ -161,6 +258,17 @@ def render_oracle() -> list[str]:
                 f"        repository_expected_success: {optional_bool(repository.get('success') if repository else None)},",
                 f"        repository_expected_kind: {optional(repository.get('error_kind') if repository and not repository.get('success') else None)},",
                 f"        repository_expected_audience: {optional(repository.get('error_audience') if repository and not repository.get('success') else None)},",
+                f"        repository_default_scheme_applied: {optional_bool(repository.get('default_scheme_applied') if repository_projection else None)},",
+                f"        repository_url_value: {optional((repository_projection or {}).get('value'))},",
+                f"        repository_url_scheme: {optional((repository_projection or {}).get('scheme_accessor'))},",
+                f"        repository_url_username: {optional('') if repository_projection else 'None'},",
+                f"        repository_url_password_present: {optional_bool(False) if repository_projection else 'None'},",
+                f"        repository_url_host: {optional((repository_projection or {}).get('host_accessor'))},",
+                f"        repository_url_port: {optional_u16(None if (repository_projection or {}).get('port_accessor', 0) == 0 else (repository_projection or {}).get('port_accessor'))},",
+                f"        repository_url_path: {optional((repository_projection or {}).get('path_accessor'))},",
+                f"        repository_url_query: {optional(None if not (repository_projection or {}).get('query_string_accessor') else (repository_projection or {}).get('query_string_accessor'))},",
+                f"        repository_url_query_pairs: &[{repository_pair_literals}],",
+                f"        repository_url_fragment: {optional(None if not (repository_projection or {}).get('fragment_accessor') else (repository_projection or {}).get('fragment_accessor'))},",
                 f"        comparison_class: {optional(row['comparison_class_id'] or None)},",
                 "    },",
             ]
@@ -195,6 +303,24 @@ def render_setters() -> list[str]:
         "    Mapped,",
         "    BrowserOnlyHref,",
         "    BrowserOnlyOpaquePath,",
+        "    FixedHostNoAuthority,",
+        "    FixedHostPreprocessing,",
+        "    FixedHostDelimiter,",
+        "    FixedHostCombinedPortOrInvalid,",
+        "    FixedHostEmptySpecial,",
+        "    FixedHostEmptyWithCredentials,",
+        "    FixedHostEmptyWithPort,",
+        "    FixedHostBrowserNoOp,",
+        "    FixedHostMappedEmpty,",
+        "    FixedSchemeInvalid,",
+        "    FixedSchemeStructural,",
+        "    FixedFileCredentials,",
+        "    FixedFilePort,",
+        "    FixedNoAuthorityPort,",
+        "    FixedEmptyHostPort,",
+        "    FixedNoAuthorityCredentials,",
+        "    FixedEmptyHostCredentials,",
+        "    FixedPortInvalid,",
         "}",
         "",
         "pub(super) struct SetterVector {",
@@ -206,7 +332,9 @@ def render_setters() -> list[str]:
         "}",
         "",
         f"pub(super) const SETTER_SOURCE_CASE_COUNT: usize = {len(cases)};",
-        f"pub(super) const SETTER_BROWSER_ONLY_CASE_COUNT: usize = {sum(1 for attribute, case in cases if setter_classification(attribute, str(case['href']), str(case['expected']['href'])) != 'Mapped')};",
+        f"pub(super) const SETTER_MAPPED_CASE_COUNT: usize = {sum(1 for attribute, case in cases if setter_classification(attribute, str(case['href']), str(case['new_value'])) == 'Mapped')};",
+        f"pub(super) const SETTER_FIXED_DIVERGENCE_CASE_COUNT: usize = {sum(1 for attribute, case in cases if setter_classification(attribute, str(case['href']), str(case['new_value'])) not in {'Mapped', 'BrowserOnlyHref', 'BrowserOnlyOpaquePath'})};",
+        f"pub(super) const SETTER_BROWSER_ONLY_CASE_COUNT: usize = {sum(1 for attribute, case in cases if setter_classification(attribute, str(case['href']), str(case['new_value'])) in {'BrowserOnlyHref', 'BrowserOnlyOpaquePath'})};",
         "#[rustfmt::skip]",
         "pub(super) static SETTER_VECTORS: &[SetterVector] = &[",
     ]
@@ -225,7 +353,7 @@ def render_setters() -> list[str]:
     for attribute, case in cases:
         href = str(case["href"])
         expected_href = str(case["expected"]["href"])
-        classification = setter_classification(attribute, href, expected_href)
+        classification = setter_classification(attribute, href, str(case["new_value"]))
         lines.extend(
             [
                 "    SetterVector {",

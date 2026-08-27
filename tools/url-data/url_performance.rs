@@ -1,6 +1,6 @@
 //! Dependency-free P6 release-mode URL workload.
 //!
-//! Run with `cargo run --release --locked --offline --bin kernel_oss_url_performance`.
+//! Run with `cargo bench --bench kernel_oss_url_performance --locked --offline`.
 //! The generated corpus is compiled in; fixture construction is outside every
 //! measured closure.
 
@@ -14,7 +14,8 @@ const SAMPLES: usize = 30;
 struct Measurement {
     name: &'static str,
     input_bytes: usize,
-    operations: usize,
+    iterations: usize,
+    unit: &'static str,
     samples: Vec<f64>,
 }
 
@@ -69,7 +70,29 @@ impl Measurement {
     }
 
     fn throughput_per_second(&self) -> f64 {
-        self.operations as f64 / (self.median_ns() / 1_000_000_000.0)
+        // Samples already hold nanoseconds per measured work unit.  A URL
+        // operation and one complete WPT corpus pass are intentionally
+        // different units and are labeled separately in the report.
+        1_000_000_000.0 / self.median_ns()
+    }
+
+    fn status(&self) -> &'static str {
+        if self.cv_percent() > 20.0 {
+            "INCONCLUSIVE"
+        } else if (matches!(
+            self.name,
+            "short-ascii-parse"
+                | "relative-resolution"
+                | "invalid-rejection"
+                | "immutable-mutation"
+        ) && self.median_ns() >= 1_000_000.0)
+            || (self.name == "long-parse" && self.median_ns() >= 250_000_000.0)
+            || (self.name == "wpt-urltestdata-corpus" && self.median_ns() >= 1_000_000_000.0)
+        {
+            "FAIL"
+        } else {
+            "PASS"
+        }
     }
 }
 
@@ -84,59 +107,121 @@ fn main() {
     let base = required_url("https://example.test/a/b?x=1#f");
     let query = required_url("https://example.test/?a=1&a=2&=empty");
 
-    warm_up(short, &base);
     let mut measurements = vec![
-        measure("short-ascii-parse", short.len(), 1_000, || {
-            URL::try_new(black_box(short)).is_ok()
-        }),
+        measure(
+            "short-ascii-parse",
+            short.len(),
+            1_000,
+            1_000,
+            "URL operations",
+            || URL::try_new(black_box(short)).is_ok(),
+        ),
         measure(
             "credentials-query-fragment-parse",
             credential.len(),
             1_000,
+            1_000,
+            "URL operations",
             || URL::try_new(black_box(credential)).is_ok(),
         ),
-        measure("percent-heavy-parse", percent.len(), 1_000, || {
-            URL::try_new(black_box(percent)).is_ok()
-        }),
-        measure("ipv4-parse", ipv4.len(), 1_000, || {
-            URL::try_new(black_box(ipv4)).is_ok()
-        }),
-        measure("ipv6-parse", ipv6.len(), 1_000, || {
-            URL::try_new(black_box(ipv6)).is_ok()
-        }),
-        measure("unicode-idna-parse", idna.len(), 1_000, || {
-            URL::try_new(black_box(idna)).is_ok()
-        }),
-        measure("invalid-rejection", invalid.len(), 1_000, || {
-            URL::try_new(black_box(invalid)).is_err()
-        }),
-        measure("relative-resolution", 8, 1_000, || {
-            base.try_resolve(black_box("../next")).is_ok()
-        }),
-        measure("borrowed-query-pairs", 0, 100_000, || {
-            let url = black_box(&query);
-            black_box(url.query_pairs().first()).is_some()
-        }),
-        measure("immutable-mutation", 0, 1_000, || {
-            base.mutator()
-                .host(Some("example.org"))
-                .port(Some(8443))
-                .try_mutate()
-                .is_ok()
-        }),
+        measure(
+            "percent-heavy-parse",
+            percent.len(),
+            1_000,
+            1_000,
+            "URL operations",
+            || URL::try_new(black_box(percent)).is_ok(),
+        ),
+        measure(
+            "ipv4-parse",
+            ipv4.len(),
+            1_000,
+            1_000,
+            "URL operations",
+            || URL::try_new(black_box(ipv4)).is_ok(),
+        ),
+        measure(
+            "ipv6-parse",
+            ipv6.len(),
+            1_000,
+            1_000,
+            "URL operations",
+            || URL::try_new(black_box(ipv6)).is_ok(),
+        ),
+        measure(
+            "unicode-idna-parse",
+            idna.len(),
+            1_000,
+            1_000,
+            "URL operations",
+            || URL::try_new(black_box(idna)).is_ok(),
+        ),
+        measure(
+            "invalid-rejection",
+            invalid.len(),
+            1_000,
+            1_000,
+            "URL operations",
+            || URL::try_new(black_box(invalid)).is_err(),
+        ),
+        measure(
+            "relative-resolution",
+            8,
+            1_000,
+            1_000,
+            "URL operations",
+            || base.try_resolve(black_box("../next")).is_ok(),
+        ),
+        measure(
+            "borrowed-query-pairs",
+            0,
+            100_000,
+            100_000,
+            "URL operations",
+            || {
+                let url = black_box(&query);
+                black_box(url.query_pairs().first()).is_some()
+            },
+        ),
+        measure(
+            "immutable-mutation",
+            0,
+            1_000,
+            1_000,
+            "URL operations",
+            || {
+                base.mutator()
+                    .host(Some("example.org"))
+                    .port(Some(8443))
+                    .try_mutate()
+                    .is_ok()
+            },
+        ),
     ];
 
     for (size, input) in long_inputs() {
-        measurements.push(measure("long-parse", size, 50, || {
-            URL::try_new(black_box(input.as_str())).is_ok()
-        }));
+        measurements.push(measure(
+            "long-parse",
+            size,
+            50,
+            50,
+            "URL operations",
+            || URL::try_new(black_box(input.as_str())).is_ok(),
+        ));
     }
-    measurements.push(measure("wpt-urltestdata-corpus", 0, 1, || {
-        WPT_URLTESTDATA_INPUTS.iter().all(|input| {
-            let _ = black_box(URL::try_new(black_box(*input)));
-            true
-        })
-    }));
+    measurements.push(measure(
+        "wpt-urltestdata-corpus",
+        0,
+        3,
+        1,
+        "complete corpus iterations",
+        || {
+            WPT_URLTESTDATA_INPUTS.iter().all(|input| {
+                let _ = black_box(URL::try_new(black_box(*input)));
+                true
+            })
+        },
+    ));
 
     print_report(&measurements);
     enforce_bounds(&measurements);
@@ -149,19 +234,19 @@ fn required_url(value: &str) -> URL {
     }
 }
 
-fn warm_up(short: &str, base: &URL) {
-    for _ in 0..1_000 {
-        let _ = black_box(URL::try_new(black_box(short)));
-        let _ = black_box(base.try_resolve(black_box("next")));
-    }
-}
-
 fn measure(
     name: &'static str,
     input_bytes: usize,
+    warmup: usize,
     inner: usize,
+    unit: &'static str,
     mut operation: impl FnMut() -> bool,
 ) -> Measurement {
+    for _ in 0..warmup {
+        if !black_box(operation()) {
+            std::process::exit(3);
+        }
+    }
     let mut samples = Vec::with_capacity(SAMPLES);
     for _ in 0..SAMPLES {
         let started = Instant::now();
@@ -175,7 +260,8 @@ fn measure(
     Measurement {
         name,
         input_bytes,
-        operations: inner,
+        iterations: inner,
+        unit,
         samples,
     }
 }
@@ -199,14 +285,15 @@ fn print_report(measurements: &[Measurement]) {
     println!("# Kernel OSS URL P6 performance workload");
     println!("samples={SAMPLES}; corpus_cases={WPT_URLTESTDATA_CASE_COUNT}");
     println!(
-        "| workload | bytes | median ns | mean ns | stddev ns | cv % | min ns | max ns | ops/s |"
+        "| workload | size | iterations | median ns | mean ns | stddev ns | cv % | min ns | max ns | useful throughput | status |"
     );
-    println!("|---|---:|---:|---:|---:|---:|---:|---:|---:|");
+    println!("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|");
     for measurement in measurements {
         println!(
-            "| {} | {} | {:.0} | {:.0} | {:.0} | {:.2} | {:.0} | {:.0} | {:.0} |",
+            "| {} | {} | {} | {:.0} | {:.0} | {:.0} | {:.2} | {:.0} | {:.0} | {:.0} {} / s | {} |",
             measurement.name,
             measurement.input_bytes,
+            measurement.iterations,
             measurement.median_ns(),
             measurement.mean_ns(),
             measurement.stddev_ns(),
@@ -214,6 +301,8 @@ fn print_report(measurements: &[Measurement]) {
             measurement.min_ns(),
             measurement.max_ns(),
             measurement.throughput_per_second(),
+            measurement.unit,
+            measurement.status(),
         );
     }
 }

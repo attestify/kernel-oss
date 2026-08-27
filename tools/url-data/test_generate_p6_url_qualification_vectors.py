@@ -32,6 +32,20 @@ class GenerateP6UrlQualificationVectorsTests(unittest.TestCase):
         self.assertEqual(count, 278)
         self.assertIn("SETTER_SOURCE_CASE_COUNT: usize = 278", MODULE.render())
 
+    def test_host_setters_use_fixture_new_value_success(self) -> None:
+        """Classifies host operations from fixture input, never expected output."""
+        self.assertEqual(
+            MODULE.setter_classification("host", "https://example.test/path", "example.org"),
+            "Mapped",
+        )
+        self.assertEqual(
+            MODULE.setter_classification("host", "https://example.test/path", "example.org:4444"),
+            "FixedHostCombinedPortOrInvalid",
+        )
+        rendered = MODULE.render()
+        self.assertIn('new_value: "example.com:8080"', rendered)
+        self.assertIn("classification: SetterClassification::FixedHostCombinedPortOrInvalid", rendered)
+
     def test_committed_output_is_reproducible_success(self) -> None:
         """Requires the committed generated Rust source to match the renderer."""
         self.assertEqual(MODULE.OUTPUT.read_text(encoding="utf-8"), MODULE.render())

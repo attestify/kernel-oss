@@ -558,6 +558,92 @@ fn frozen_oracle_projection_success() {
             );
             match result {
                 Ok(link) => {
+                    let Some(expected_value) = vector.repository_url_value else {
+                        panic!("{} lacks successful repository URL value", vector.id);
+                    };
+                    let Some(expected_scheme) = vector.repository_url_scheme else {
+                        panic!("{} lacks successful repository URL scheme", vector.id);
+                    };
+                    assert_eq!(
+                        link.url().value(),
+                        expected_value,
+                        "{} repository URL value",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().scheme(),
+                        expected_scheme,
+                        "{} repository URL scheme",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().username(),
+                        vector.repository_url_username.unwrap_or(""),
+                        "{} repository URL username",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().password().is_some(),
+                        vector.repository_url_password_present.unwrap_or(false),
+                        "{} repository URL password",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().host(),
+                        vector.repository_url_host,
+                        "{} repository URL host",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().port(),
+                        vector.repository_url_port,
+                        "{} repository URL port",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().path(),
+                        vector.repository_url_path.unwrap_or(""),
+                        "{} repository URL path",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().query(),
+                        vector.repository_url_query,
+                        "{} repository URL query",
+                        vector.id
+                    );
+                    let expected_pairs: Vec<(String, String)> = vector
+                        .repository_url_query_pairs
+                        .iter()
+                        .map(|(name, value)| ((*name).to_owned(), (*value).to_owned()))
+                        .collect();
+                    assert_eq!(
+                        link.url().query_pairs(),
+                        expected_pairs.as_slice(),
+                        "{} repository URL query pairs",
+                        vector.id
+                    );
+                    assert_eq!(
+                        link.url().fragment(),
+                        vector.repository_url_fragment,
+                        "{} repository URL fragment",
+                        vector.id
+                    );
+                    let default_scheme_applied = !vector.input.contains("://");
+                    assert_eq!(
+                        Some(default_scheme_applied),
+                        vector.repository_default_scheme_applied,
+                        "{} repository default-scheme classification",
+                        vector.id
+                    );
+                    if default_scheme_applied {
+                        assert_eq!(
+                            Some(link.url().scheme()),
+                            vector.default_scheme,
+                            "{} repository default scheme",
+                            vector.id
+                        );
+                    }
                     assert_eq!(format!("{link}"), "RepositoryLink([REDACTED])");
                     assert_eq!(format!("{link:?}"), "RepositoryLink([REDACTED])");
                 }
@@ -603,7 +689,7 @@ fn pinned_wpt_setter_vectors_success() {
 
     assert_eq!(SETTER_VECTORS.len(), p6_vectors::SETTER_SOURCE_CASE_COUNT);
     let mut mapped = 0usize;
-    let mut no_op_or_rejected = 0usize;
+    let mut fixed_divergence = 0usize;
     let mut browser_only = 0usize;
 
     for vector in SETTER_VECTORS {
@@ -641,12 +727,7 @@ fn pinned_wpt_setter_vectors_success() {
                 base.mutator().password(Some(vector.new_value)).try_mutate()
             }
             SetterAttribute::Host | SetterAttribute::Hostname => {
-                let expected = match URL::try_new(vector.expected_href) {
-                    Ok(url) => url,
-                    Err(error) => panic!("setter expected URL failed: {error}"),
-                };
-                let host = expected.host();
-                base.mutator().host(host).port(expected.port()).try_mutate()
+                base.mutator().host(Some(vector.new_value)).try_mutate()
             }
             SetterAttribute::Port => {
                 let digits: String = vector
@@ -686,41 +767,117 @@ fn pinned_wpt_setter_vectors_success() {
             SetterAttribute::BrowserOnlyHref => panic!("browser-only href reached mapping"),
         };
         match vector.classification {
-            SetterClassification::Mapped => match result {
-                Ok(url) => {
-                    mapped += 1;
-                    assert_eq!(
-                        url.value(),
-                        vector.expected_href,
-                        "mapped setter output for {} -> {}",
-                        vector.href,
-                        vector.new_value
-                    );
-                }
-                Err(error) => {
-                    no_op_or_rejected += 1;
-                    assert_eq!(
-                        base.value(),
-                        vector.expected_href,
-                        "rejected setter must map browser no-op for {} -> {}",
-                        vector.href,
-                        vector.new_value
-                    );
-                    assert_eq!(error.kind(), Kind::InvalidInput);
-                    assert_eq!(error.audience(), Audience::User);
-                    assert_eq!(error.message(), "URL mutation failed.");
-                }
-            },
+            SetterClassification::Mapped => {
+                let url = match result {
+                    Ok(url) => url,
+                    Err(error) => panic!(
+                        "mapped setter unexpectedly failed for {} -> {}: {error}",
+                        vector.href, vector.new_value
+                    ),
+                };
+                mapped += 1;
+                assert_eq!(
+                    url.value(),
+                    vector.expected_href,
+                    "mapped setter output for {} -> {}",
+                    vector.href,
+                    vector.new_value
+                );
+            }
             SetterClassification::BrowserOnlyHref | SetterClassification::BrowserOnlyOpaquePath => {
                 panic!("browser-only classification reached mapping")
             }
+            SetterClassification::FixedHostNoAuthority => {
+                fixed_divergence += 1;
+                // Browser setters leave opaque bases unchanged.  This frozen
+                // immutable API permits an explicit host replacement to select
+                // an authority-bearing record; that semantic difference is
+                // classified from fixture input rather than expected output.
+                if let Ok(url) = result {
+                    assert_eq!(url.port(), base.port(), "fixed no-authority host port");
+                    assert_eq!(url.query(), base.query(), "fixed no-authority host query");
+                    assert_eq!(
+                        url.fragment(),
+                        base.fragment(),
+                        "fixed no-authority host fragment"
+                    );
+                }
+            }
+            SetterClassification::FixedHostBrowserNoOp => {
+                fixed_divergence += 1;
+                // Browser setters silently ignore these inputs.  The immutable
+                // component API instead either rejects them or applies its
+                // host-component canonicalization; it never manufactures an
+                // authority, port, path, query, or fragment from the input.
+                if let Ok(url) = result {
+                    assert_eq!(url.port(), base.port(), "fixed host divergence port");
+                    assert_eq!(url.path(), base.path(), "fixed host divergence path");
+                    assert_eq!(url.query(), base.query(), "fixed host divergence query");
+                    assert_eq!(
+                        url.fragment(),
+                        base.fragment(),
+                        "fixed host divergence fragment"
+                    );
+                }
+            }
+            SetterClassification::FixedHostPreprocessing
+            | SetterClassification::FixedHostDelimiter
+            | SetterClassification::FixedHostCombinedPortOrInvalid
+            | SetterClassification::FixedHostEmptySpecial
+            | SetterClassification::FixedHostEmptyWithCredentials
+            | SetterClassification::FixedHostEmptyWithPort
+            | SetterClassification::FixedHostMappedEmpty => {
+                fixed_divergence += 1;
+                let error = match result {
+                    Ok(_) => panic!(
+                        "security-boundary host divergence unexpectedly succeeded for {} -> {}",
+                        vector.href, vector.new_value
+                    ),
+                    Err(error) => error,
+                };
+                assert_eq!(error.kind(), Kind::InvalidInput);
+                assert_eq!(error.audience(), Audience::User);
+                assert_eq!(error.message(), "URL mutation failed.");
+            }
+            SetterClassification::FixedSchemeInvalid => {
+                fixed_divergence += 1;
+                let error = match result {
+                    Ok(_) => panic!("invalid browser scheme setter unexpectedly succeeded"),
+                    Err(error) => error,
+                };
+                assert_eq!(error.kind(), Kind::InvalidInput);
+                assert_eq!(error.audience(), Audience::User);
+                assert_eq!(error.message(), "URL mutation failed.");
+            }
+            SetterClassification::FixedSchemeStructural
+            | SetterClassification::FixedFileCredentials
+            | SetterClassification::FixedFilePort
+            | SetterClassification::FixedNoAuthorityPort
+            | SetterClassification::FixedEmptyHostPort
+            | SetterClassification::FixedNoAuthorityCredentials
+            | SetterClassification::FixedEmptyHostCredentials
+            | SetterClassification::FixedPortInvalid => {
+                fixed_divergence += 1;
+                let error = match result {
+                    Ok(_) => panic!("fixed structural setter unexpectedly succeeded"),
+                    Err(error) => error,
+                };
+                assert_eq!(error.kind(), Kind::InvalidInput);
+                assert_eq!(error.audience(), Audience::User);
+                assert_eq!(error.message(), "URL mutation failed.");
+            }
         }
     }
+    assert_eq!(mapped, p6_vectors::SETTER_MAPPED_CASE_COUNT);
     assert_eq!(
-        mapped + no_op_or_rejected + browser_only,
-        SETTER_VECTORS.len()
+        fixed_divergence,
+        p6_vectors::SETTER_FIXED_DIVERGENCE_CASE_COUNT
     );
     assert_eq!(browser_only, p6_vectors::SETTER_BROWSER_ONLY_CASE_COUNT);
+    assert_eq!(
+        mapped + fixed_divergence + browser_only,
+        SETTER_VECTORS.len()
+    );
 }
 
 #[test]
