@@ -7,3 +7,5 @@ WPT-IDNA	https://github.com/web-platform-tests/wpt	f365a86bb959d5049d4a70f631276
 UNICODE-IDNA-MAP	https://www.unicode.org/Public/17.0.0/idna/IdnaMappingTable.txt	17.0.0	unicode/IdnaMappingTable.txt	IDNA input	87f05505dc026fdb2bff16132bdc68a8014675836882a9a2b1844540ad3be382
 UNICODE-IDNA-TEST	https://www.unicode.org/Public/17.0.0/idna/IdnaTestV2.txt	17.0.0	unicode/IdnaTestV2.txt	IDNA fixture	beb5d0be20e896189b03209a82fdc34f06351502bbd4b8e2523583fc2954d9cf
 UNICODE-JOINING	https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedJoiningType.txt	17.0.0	unicode/DerivedJoiningType.txt	ContextJ input	f39ebe974825d6736aee15582250307aa532b2cfab3caf3f86bd23fddc9c5c4d
+UNICODE-BIDI	https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedBidiClass.txt	17.0.0	unicode/DerivedBidiClass.txt	bidi input	4867b4b7f0731ed1bfcd34cc6251211ff1542541fce0734b6fbda139ee80b3a4
+UNICODE-GENERAL-CATEGORY	https://www.unicode.org/Public/17.0.0/ucd/extracted/DerivedGeneralCategory.txt	17.0.0	unicode/DerivedGeneralCategory.txt	leading-mark input	d62e5bab70ca74f099343f71224fa051cb1fdd61a1ab45c0488c44cfc0b6102e

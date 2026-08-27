@@ -13,6 +13,9 @@ The data supports the private normalization engine behind
 `kernel_oss::values::text::NfcText`. It does not expose a public Unicode or
 normalization API.
 
+Unicode 17.0 URL/IDNA inputs under `test_data/url/unicode/` are also retained
+under this same License v3 custody for private future URL-domain processing.
+
 ## unicode-normalization 0.1.25
 
 The private NFC normalizer contains narrowly recorded algorithmic influence
