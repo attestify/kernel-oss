@@ -105,7 +105,7 @@ impl Record {
                 authority.port = None;
             }
         }
-        if !is_canonical_path(&path)
+        if !is_canonical_path(&path, &scheme, authority.is_none())
             || !is_canonical_opaque_path(&path)
             || !is_canonical_query(query.as_deref(), is_special_scheme(&scheme))
             || !is_canonical_fragment(fragment.as_deref())
@@ -243,13 +243,43 @@ fn is_canonical_authority(scheme: &str, authority: &Authority) -> bool {
         && (scheme != "file" || authority.username.is_empty() && authority.password.is_none())
 }
 
-fn is_canonical_path(path: &Path) -> bool {
+fn is_canonical_path(path: &Path, scheme: &str, no_authority: bool) -> bool {
     match path {
-        Path::Segments(segments) => segments.iter().all(|segment| {
-            !segment.contains('/') && percent_encoding::encode(segment, EncodeSet::Path) == *segment
-        }),
+        Path::Segments(segments) => {
+            let ambiguity_guard = !is_special_scheme(scheme)
+                && no_authority
+                && matches!(segments.as_slice(), [first, dot, empty, ..]
+                    if first.is_empty() && dot == "." && empty.is_empty());
+            let segments_are_canonical = segments.iter().enumerate().all(|(index, segment)| {
+                !segment.contains('/')
+                    && percent_encoding::encode(segment, EncodeSet::Path) == *segment
+                    && (!is_dot_segment(segment) || ambiguity_guard && index == 1)
+            });
+            let authority_ambiguous = !is_special_scheme(scheme)
+                && no_authority
+                && segments.len() > 2
+                && segments.get(1).is_some_and(String::is_empty)
+                && !ambiguity_guard;
+            let noncanonical_file_drive = scheme == "file"
+                && segments
+                    .get(1)
+                    .is_some_and(|segment| is_pipe_windows_drive(segment));
+            segments_are_canonical && !authority_ambiguous && !noncanonical_file_drive
+        }
         Path::Opaque(_) => true,
     }
+}
+
+fn is_dot_segment(segment: &str) -> bool {
+    segment.eq_ignore_ascii_case(".")
+        || segment.eq_ignore_ascii_case("%2e")
+        || ["..", ".%2e", "%2e.", "%2e%2e"]
+            .iter()
+            .any(|value| segment.eq_ignore_ascii_case(value))
+}
+
+fn is_pipe_windows_drive(segment: &str) -> bool {
+    matches!(segment.as_bytes(), [letter, b'|'] if letter.is_ascii_alphabetic())
 }
 
 fn is_canonical_opaque_path(path: &Path) -> bool {

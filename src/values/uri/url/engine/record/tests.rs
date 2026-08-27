@@ -306,6 +306,74 @@ fn noncanonical_record_components_error() {
 }
 
 #[test]
+/// Verifies paths that would change during private serialization and parsing are rejected.
+fn unstable_record_paths_error() {
+    let special_authority = || {
+        Some(Authority::new(
+            String::new(),
+            None,
+            Host::Domain("example.test".to_owned()),
+            None,
+        ))
+    };
+    assert!(
+        Record::new(
+            "http".to_owned(),
+            special_authority(),
+            Path::Segments(vec![String::new(), ".".to_owned(), "b".to_owned()]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Segments(vec![
+                String::new(),
+                "a".to_owned(),
+                "..".to_owned(),
+                "b".to_owned(),
+            ]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Segments(vec![String::new(), "%2e".to_owned(), "b".to_owned()]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Segments(vec![String::new(), String::new(), "x".to_owned()]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+    assert!(
+        Record::new(
+            "file".to_owned(),
+            Some(Authority::new(String::new(), None, Host::Empty, None)),
+            Path::Segments(vec![String::new(), "C|".to_owned(), "x".to_owned()]),
+            None,
+            None,
+        )
+        .is_err()
+    );
+}
+
+#[test]
 /// Verifies accepted constructor examples are stable after private serialization and parsing.
 fn canonical_record_component_examples_round_trip_success() {
     let records = [
@@ -399,6 +467,30 @@ fn canonical_record_component_examples_round_trip_success() {
             "custom".to_owned(),
             None,
             Path::Segments(vec![String::new(), "rooted".to_owned()]),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            None,
+            Path::Segments(vec![
+                String::new(),
+                ".".to_owned(),
+                String::new(),
+                "x".to_owned(),
+            ]),
+            None,
+            None,
+        ),
+        Record::new(
+            "custom".to_owned(),
+            Some(Authority::new(
+                String::new(),
+                None,
+                Host::Opaque("bad%zz".to_owned()),
+                None,
+            )),
+            Path::Segments(Vec::new()),
             None,
             None,
         ),
