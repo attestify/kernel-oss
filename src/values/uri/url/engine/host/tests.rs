@@ -126,11 +126,16 @@ fn opaque_host_nonfatal_validation_success() {
         parse_opaque("%ZZ").map(|outcome| (serialize(&outcome.value), outcome.validations)),
         Ok(("%ZZ".to_owned(), vec![Validation::InvalidUrlUnit]))
     );
+    assert_eq!(
+        parse_opaque("é").map(|outcome| (serialize(&outcome.value), outcome.validations)),
+        Ok(("%C3%A9".to_owned(), Vec::new()))
+    );
 }
 #[test]
 /// Verifies forbidden opaque host characters fail.
 fn opaque_host_forbidden_error() {
     assert!(parse_opaque("a/b").is_err());
+    assert!(parse_opaque("a\0b").is_err());
 }
 #[test]
 /// Verifies IPv6 serialization chooses the first longest zero run.

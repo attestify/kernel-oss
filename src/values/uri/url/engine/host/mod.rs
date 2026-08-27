@@ -224,12 +224,49 @@ fn parse_ipv4(input: &str) -> Result<(u32, Vec<Validation>), Error> {
 fn forbidden_opaque(character: char) -> bool {
     matches!(
         character,
-        ' ' | '#' | '/' | ':' | '<' | '>' | '?' | '@' | '[' | '\\' | ']' | '^' | '|'
+        '\0' | '\t'
+            | '\n'
+            | '\r'
+            | ' '
+            | '#'
+            | '/'
+            | ':'
+            | '<'
+            | '>'
+            | '?'
+            | '@'
+            | '['
+            | '\\'
+            | ']'
+            | '^'
+            | '|'
     )
 }
 
 fn non_url_code_point(character: char) -> bool {
-    character.is_ascii_control() || !character.is_ascii()
+    !(character.is_ascii_alphanumeric()
+        || matches!(
+            character,
+            '!' | '$'
+                | '&'
+                | '\''
+                | '('
+                | ')'
+                | '*'
+                | '+'
+                | ','
+                | '-'
+                | '.'
+                | '/'
+                | ':'
+                | ';'
+                | '='
+                | '?'
+                | '@'
+                | '_'
+                | '~'
+        )
+        || u32::from(character) >= 0x00a0)
 }
 
 fn has_valid_percent_triplet(input: &str) -> bool {
