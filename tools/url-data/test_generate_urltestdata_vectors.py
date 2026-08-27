@@ -25,6 +25,9 @@ class GeneratorTests(unittest.TestCase):
     def test_render_is_deterministic_success(self) -> None:
         self.assertEqual(MODULE.render(), MODULE.render())
 
+    def test_render_protects_generated_vectors_from_rustfmt_success(self) -> None:
+        self.assertIn("#[rustfmt::skip]\npub(super) static VECTORS", MODULE.render())
+
 
 if __name__ == "__main__":
     unittest.main()

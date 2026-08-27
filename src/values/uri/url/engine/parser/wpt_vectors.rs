@@ -17,6 +17,7 @@ pub(super) struct Vector {
     pub(super) hash: Option<&'static str>,
 }
 
+#[rustfmt::skip]
 pub(super) static VECTORS: &[Vector] = &[
     Vector {
         input: "http://example\u{9}.\u{a}org",
@@ -7387,18 +7388,12 @@ pub(super) static VECTORS: &[Vector] = &[
         input: "sc://\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{b}\u{c}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f}\u{7f}!\"$%&'()*+,-.;=_`{}~/",
         base: None,
         failure: false,
-        href: Some(
-            "sc://%01%02%03%04%05%06%07%08%0B%0C%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%7F!\"$%&'()*+,-.;=_`{}~/",
-        ),
+        href: Some("sc://%01%02%03%04%05%06%07%08%0B%0C%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%7F!\"$%&'()*+,-.;=_`{}~/"),
         protocol: Some("sc:"),
         username: Some(""),
         password: Some(""),
-        host: Some(
-            "%01%02%03%04%05%06%07%08%0B%0C%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%7F!\"$%&'()*+,-.;=_`{}~",
-        ),
-        hostname: Some(
-            "%01%02%03%04%05%06%07%08%0B%0C%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%7F!\"$%&'()*+,-.;=_`{}~",
-        ),
+        host: Some("%01%02%03%04%05%06%07%08%0B%0C%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%7F!\"$%&'()*+,-.;=_`{}~"),
+        hostname: Some("%01%02%03%04%05%06%07%08%0B%0C%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%7F!\"$%&'()*+,-.;=_`{}~"),
         port: Some(""),
         pathname: Some("/"),
         search: Some(""),
@@ -8231,22 +8226,16 @@ pub(super) static VECTORS: &[Vector] = &[
     },
     Vector {
         input: "pix/submit.gif",
-        base: Some(
-            "file:///C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/anchor.html",
-        ),
+        base: Some("file:///C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/anchor.html"),
         failure: false,
-        href: Some(
-            "file:///C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/pix/submit.gif",
-        ),
+        href: Some("file:///C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/pix/submit.gif"),
         protocol: Some("file:"),
         username: Some(""),
         password: Some(""),
         host: Some(""),
         hostname: Some(""),
         port: Some(""),
-        pathname: Some(
-            "/C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/pix/submit.gif",
-        ),
+        pathname: Some("/C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/pix/submit.gif"),
         search: Some(""),
         hash: Some(""),
     },
@@ -11089,9 +11078,7 @@ pub(super) static VECTORS: &[Vector] = &[
         input: "https://www.example.com/path{\u{7f}path.html?query'\u{7f}=query#fragment<\u{7f}fragment",
         base: None,
         failure: false,
-        href: Some(
-            "https://www.example.com/path%7B%7Fpath.html?query%27%7F=query#fragment%3C%7Ffragment",
-        ),
+        href: Some("https://www.example.com/path%7B%7Fpath.html?query%27%7F=query#fragment%3C%7Ffragment"),
         protocol: Some("https:"),
         username: Some(""),
         password: Some(""),
@@ -11151,9 +11138,7 @@ pub(super) static VECTORS: &[Vector] = &[
         input: "foo://joe: !\"$%&'()*+,-.:;<=>@[\\]^_`{|}~@host/",
         base: None,
         failure: false,
-        href: Some(
-            "foo://joe:%20!%22$%&'()*+,-.%3A%3B%3C%3D%3E%40%5B%5C%5D%5E_%60%7B%7C%7D~@host/",
-        ),
+        href: Some("foo://joe:%20!%22$%&'()*+,-.%3A%3B%3C%3D%3E%40%5B%5C%5D%5E_%60%7B%7C%7D~@host/"),
         protocol: Some("foo:"),
         username: Some("joe"),
         password: Some("%20!%22$%&'()*+,-.%3A%3B%3C%3D%3E%40%5B%5C%5D%5E_%60%7B%7C%7D~"),
@@ -13373,9 +13358,7 @@ pub(super) static VECTORS: &[Vector] = &[
         input: "data:text/plain,test#\u{0}\u{1}\u{9}\u{a}\u{d}\u{1f} !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~\u{7f}\u{80}\u{81}\u{c9}\u{e9}",
         base: None,
         failure: false,
-        href: Some(
-            "data:text/plain,test#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9",
-        ),
+        href: Some("data:text/plain,test#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9"),
         protocol: Some("data:"),
         username: Some(""),
         password: Some(""),
@@ -13384,17 +13367,13 @@ pub(super) static VECTORS: &[Vector] = &[
         port: Some(""),
         pathname: Some("text/plain,test"),
         search: Some(""),
-        hash: Some(
-            "#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9",
-        ),
+        hash: Some("#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9"),
     },
     Vector {
         input: "about:blank#\u{0}\u{1}\u{9}\u{a}\u{d}\u{1f} !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~\u{7f}\u{80}\u{81}\u{c9}\u{e9}",
         base: None,
         failure: false,
-        href: Some(
-            "about:blank#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9",
-        ),
+        href: Some("about:blank#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9"),
         protocol: Some("about:"),
         username: Some(""),
         password: Some(""),
@@ -13403,8 +13382,6 @@ pub(super) static VECTORS: &[Vector] = &[
         port: Some(""),
         pathname: Some("blank"),
         search: Some(""),
-        hash: Some(
-            "#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9",
-        ),
+        hash: Some("#%00%01%1F%20!%22#$%&'()*+,-./09:;%3C=%3E?@AZ[\\]^_%60az{|}~%7F%C2%80%C2%81%C3%89%C3%A9"),
     },
 ];

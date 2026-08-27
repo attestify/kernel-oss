@@ -71,6 +71,7 @@ def render() -> str:
         "    pub(super) hash: Option<&'static str>,",
         "}",
         "",
+        "#[rustfmt::skip]",
         "pub(super) static VECTORS: &[Vector] = &[",
     ]
     for row in objects:
@@ -97,7 +98,7 @@ def render() -> str:
         ):
             lines.append(f"        {field}: {optional(row.get(field))},")
         lines.append("    },")
-    lines.extend(["] ;", ""])
+    lines.append("] ;")
     return "\n".join(lines).replace("] ;", "];" ) + "\n"
 
 
