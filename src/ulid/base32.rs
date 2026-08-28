@@ -1,3 +1,8 @@
+// Portions adapted from dylanhart/ulid-rs,
+// commit 482338a638335ee8632cde85a79fc722fda5113e.
+// Copyright (c) 2017 Dylan Hart.
+// Licensed under MIT; see third-party/licenses/ulid-rs-MIT.txt.
+
 //! Crockford Base32 encoding and decoding support for ULIDs.
 
 use core::fmt;

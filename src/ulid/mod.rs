@@ -1,24 +1,16 @@
-// ulid/mod.rs
+// Portions adapted from dylanhart/ulid-rs,
+// commit 482338a638335ee8632cde85a79fc722fda5113e.
+// Copyright (c) 2017 Dylan Hart.
+// Licensed under MIT; see third-party/licenses/ulid-rs-MIT.txt.
 
-//! This module contains the mechanism to a ULID (Universally Unique Lexicographically Sortable Identifier) as the basis for all entity identities.
+//! A ULID (Universally Unique Lexicographically Sortable Identifier) value used
+//! as a foundational Kernel identity.
 //!
-//! A ULID is a 128-bit lexicographical identifier that allows for them to be sortable by nature, and highly random such that there are no identity collisions.
+//! A ULID is a 128-bit identifier whose canonical representation sorts by its
+//! timestamp portion. This module owns value parsing, encoding, and conversion;
+//! identity generation is supplied through the Kernel gateway boundary.
 //!
 //! View the [ULID Specification](https://github.com/ulid/spec).
-//!
-//! # Important Information
-//!
-//!  - Much of this module is copied from [ulid-rs](https://github.com/dylanhart/ulid-rs) source code, and modified to fit our needs
-//! -  This source code was copied on Feb. 13, 2025, and takein from [commit 482338a](https://github.com/dylanhart/ulid-rs/tree/482338a638335ee8632cde85a79fc722fda5113e)
-//!  - The licesnse this point in time was an [MIT License](https://github.com/dylanhart/ulid-rs/blob/482338a638335ee8632cde85a79fc722fda5113e/LICENSE)
-//!
-//! # Design Decision (Feb. 13, 2025)
-//!
-//! - The ULID has been chosen as the standard data format for all persistable identities because time order and time-sortability is key to answer the fundamental questions of, "What was my state or behavior on/between [some dates]."
-//!  - An abstraction for `IdentitySource` has been provided.
-//!     - This replaces the [rand](https://github.com/rust-random/rand) crate to ensure there is direct dependency coupling within the kernel.
-
-// TODO - LEFT OFF - Get all the code ported and the test working...look at their wasm test as well.
 
 pub mod base32;
 
