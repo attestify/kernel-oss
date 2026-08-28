@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate deterministic private Rust vectors from the pinned URL WPT fixture."""
+"""Generate deterministic integration-test vectors from the pinned URL WPT fixture."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "test_data/url/wpt/urltestdata.json"
-TARGET = ROOT / "src/values/uri/url/engine/parser/wpt_vectors.rs"
+SOURCE = ROOT / "tests/data/url/wpt/urltestdata.json"
+TARGET = ROOT / "tests/generated/urltestdata_vectors.rs"
 
 
 def usv(value: str) -> str:

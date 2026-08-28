@@ -15,7 +15,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_INPUT_DIRECTORY = ROOT / "test_data/nfc/unicode"
+DEFAULT_INPUT_DIRECTORY = ROOT / "tools/unicode-nfc/data"
+DEFAULT_NORMALIZATION_TEST = (
+    ROOT / "tests/data/nfc/unicode/NormalizationTest-17.0.0.txt"
+)
 DEFAULT_LICENSE = ROOT / "third-party/licenses/Unicode-3.0.txt"
 DEFAULT_CHECKSUMS = Path(__file__).with_name("checksums.sha256")
 DEFAULT_OUTPUT = ROOT / "src/values/text/nfc_text/normalization/tables.rs"
@@ -40,14 +43,20 @@ def read_checksums(path: Path) -> dict[str, str]:
     return expected
 
 
-def verify_inputs(input_directory: Path, license_path: Path, checksum_path: Path) -> dict[str, str]:
+def verify_inputs(
+    input_directory: Path,
+    license_path: Path,
+    checksum_path: Path,
+    normalization_test_path: Path | None = None,
+) -> dict[str, str]:
     """Verify and return checksums for all required offline source files."""
     expected = read_checksums(checksum_path)
     paths = {
         "UnicodeData-17.0.0.txt": input_directory / "UnicodeData-17.0.0.txt",
         "DerivedNormalizationProps-17.0.0.txt": input_directory
         / "DerivedNormalizationProps-17.0.0.txt",
-        "NormalizationTest-17.0.0.txt": input_directory / "NormalizationTest-17.0.0.txt",
+        "NormalizationTest-17.0.0.txt": normalization_test_path
+        or input_directory / "NormalizationTest-17.0.0.txt",
         "Unicode-3.0.txt": license_path,
     }
     if set(expected) != set(paths):
@@ -180,9 +189,19 @@ def render_tables(
     return "\n".join(lines)
 
 
-def generate(input_directory: Path, license_path: Path, checksum_path: Path) -> str:
+def generate(
+    input_directory: Path,
+    license_path: Path,
+    checksum_path: Path,
+    normalization_test_path: Path | None = None,
+) -> str:
     """Verify inputs and produce the deterministic NFC table text."""
-    checksums = verify_inputs(input_directory, license_path, checksum_path)
+    checksums = verify_inputs(
+        input_directory,
+        license_path,
+        checksum_path,
+        normalization_test_path,
+    )
     combining_classes, decompositions = parse_unicode_data(input_directory / "UnicodeData-17.0.0.txt")
     exclusions = parse_full_composition_exclusions(
         input_directory / "DerivedNormalizationProps-17.0.0.txt"
@@ -196,12 +215,20 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="fail if output differs")
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIRECTORY)
+    parser.add_argument(
+        "--normalization-test", type=Path, default=DEFAULT_NORMALIZATION_TEST
+    )
     parser.add_argument("--license", type=Path, default=DEFAULT_LICENSE)
     parser.add_argument("--checksums", type=Path, default=DEFAULT_CHECKSUMS)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args(argv)
 
-    tables = generate(args.input_dir, args.license, args.checksums)
+    tables = generate(
+        args.input_dir,
+        args.license,
+        args.checksums,
+        args.normalization_test,
+    )
     if args.check:
         if not args.output.is_file() or args.output.read_text(encoding="utf-8") != tables:
             print("generated NFC tables differ; run tools/unicode-nfc/generate_tables.py", file=sys.stderr)

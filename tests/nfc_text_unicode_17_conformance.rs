@@ -16,8 +16,7 @@ use std::sync::OnceLock;
 use kernel_oss::values::Value;
 use kernel_oss::values::text::NfcText;
 
-const NORMALIZATION_TEST: &str =
-    include_str!("../test_data/nfc/unicode/NormalizationTest-17.0.0.txt");
+const NORMALIZATION_TEST: &str = include_str!("data/nfc/unicode/NormalizationTest-17.0.0.txt");
 const EXPECTED_PART_COUNTS: [usize; 6] = [45, 17_086, 1_936, 194, 735, 38];
 const EXPECTED_RECORDS: usize = 20_034;
 const EXPECTED_VALID_SCALARS: usize = 1_112_064;

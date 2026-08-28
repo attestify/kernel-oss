@@ -1,8 +1,5 @@
 //! Tests for the private dependency-free IDNA boundary.
-use super::{
-    domain_to_ascii, fixture_vectors, punycode, raw_to_unicode, to_ascii, to_unicode,
-    wpt_idna_v2_vectors, wpt_vectors,
-};
+use super::{domain_to_ascii, punycode, to_ascii, to_unicode};
 
 #[test]
 /// Verifies Unicode labels encode to canonical A-labels.
@@ -143,105 +140,6 @@ fn to_ascii_idempotence_success() {
     } else {
         panic!("private test setup must produce a valid IDNA value");
     }
-}
-
-#[test]
-/// Verifies all applicable no-error Unicode 17 UTS #46 vectors.
-fn unicode_17_uts46_success_vectors_success() {
-    for (input, expected) in fixture_vectors::UTS46_SUCCESS_CASES {
-        assert_eq!(
-            to_ascii(input, false),
-            Ok((*expected).to_owned()),
-            "{input:?}"
-        );
-    }
-    assert_eq!(
-        fixture_vectors::UTS46_SUCCESS_CASE_COUNT,
-        fixture_vectors::UTS46_SUCCESS_CASES.len()
-    );
-}
-
-#[test]
-/// Records that only ill-formed UTF-16 source vectors are inapplicable to Rust strings.
-fn unicode_17_ill_formed_utf16_vectors_are_recorded_success() {
-    assert_eq!(fixture_vectors::UTS46_ILL_FORMED_SKIPPED_COUNT, 2);
-    assert_eq!(
-        fixture_vectors::UTS46_SUCCESS_CASE_COUNT
-            + fixture_vectors::UTS46_ERROR_CASE_COUNT
-            + fixture_vectors::UTS46_TO_UNICODE_ONLY_COUNT
-            + fixture_vectors::UTS46_ILL_FORMED_SKIPPED_COUNT,
-        6_391
-    );
-}
-
-#[test]
-/// Verifies every Unicode 17 vector that requests a non-optional failure fails.
-fn unicode_17_uts46_error_vectors_error() {
-    for input in fixture_vectors::UTS46_ERROR_CASES {
-        assert!(to_ascii(input, false).is_err(), "{input:?}");
-    }
-    assert_eq!(
-        fixture_vectors::UTS46_ERROR_CASE_COUNT,
-        fixture_vectors::UTS46_ERROR_CASES.len()
-    );
-}
-
-#[test]
-/// Verifies status-bearing UTS #46 ToUnicode vectors retain conversion and error state.
-fn unicode_17_uts46_to_unicode_vectors_success() {
-    for (input, expected, has_error) in fixture_vectors::UTS46_TO_UNICODE_CASES {
-        let outcome = raw_to_unicode(input);
-        assert_eq!(outcome.value, *expected, "{input:?}");
-        assert_eq!(outcome.error.is_some(), *has_error, "{input:?}");
-    }
-    assert_eq!(
-        fixture_vectors::UTS46_TO_UNICODE_ONLY_COUNT,
-        fixture_vectors::UTS46_TO_UNICODE_CASES.len()
-    );
-}
-
-#[test]
-/// Verifies all Rust-representable WPT WHATWG ToASCII vectors.
-fn wpt_toascii_vectors_success() {
-    for (input, expected, url_standard_only) in wpt_vectors::WPT_TOASCII_CASES {
-        let actual = if *url_standard_only || input.is_ascii() {
-            domain_to_ascii(input, false)
-        } else {
-            to_ascii(input, false)
-        };
-        match expected {
-            Some(expected) => assert_eq!(actual, Ok((*expected).to_owned()), "{input:?}"),
-            None => assert!(actual.is_err(), "{input:?}"),
-        }
-    }
-    assert_eq!(
-        wpt_vectors::WPT_TOASCII_CASE_COUNT,
-        wpt_vectors::WPT_TOASCII_CASES.len()
-    );
-    assert_eq!(wpt_vectors::WPT_TOASCII_ILL_FORMED_SKIPPED_COUNT, 0);
-}
-
-#[test]
-/// Verifies every Rust-representable WPT IdnaTestV2 domain-to-ASCII case.
-fn wpt_idna_v2_vectors_success() {
-    for (input, expected) in wpt_idna_v2_vectors::WPT_IDNA_V2_CASES {
-        match expected {
-            Some(expected) if input.is_empty() && expected.is_empty() => {
-                assert_eq!(to_ascii(input, false), Ok(String::new()));
-            }
-            Some(expected) => assert_eq!(
-                domain_to_ascii(input, false),
-                Ok((*expected).to_owned()),
-                "{input:?}"
-            ),
-            None => assert!(domain_to_ascii(input, false).is_err(), "{input:?}"),
-        }
-    }
-    assert_eq!(
-        wpt_idna_v2_vectors::WPT_IDNA_V2_CASE_COUNT,
-        wpt_idna_v2_vectors::WPT_IDNA_V2_CASES.len()
-    );
-    assert_eq!(wpt_idna_v2_vectors::WPT_IDNA_V2_ILL_FORMED_SKIPPED_COUNT, 2);
 }
 
 #[test]

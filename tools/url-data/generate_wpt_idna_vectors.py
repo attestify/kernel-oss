@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-INPUT = ROOT / "test_data/url/wpt/toascii.json"
+INPUT = ROOT / "tests/data/url/wpt/toascii.json"
 OUTPUT = ROOT / "src/values/uri/url/engine/idna/wpt_vectors.rs"
 
 

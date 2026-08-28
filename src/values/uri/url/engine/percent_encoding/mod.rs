@@ -5,6 +5,9 @@
 )]
 
 #[cfg(test)]
+mod conformance_tests;
+
+#[cfg(test)]
 mod tests;
 
 #[derive(Clone, Copy)]

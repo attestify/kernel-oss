@@ -8,10 +8,10 @@ import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-INPUT = ROOT / "test_data/url/unicode/IdnaMappingTable.txt"
-JOINING = ROOT / "test_data/url/unicode/DerivedJoiningType.txt"
-BIDI = ROOT / "test_data/url/unicode/DerivedBidiClass.txt"
-CATEGORY = ROOT / "test_data/url/unicode/DerivedGeneralCategory.txt"
+INPUT = ROOT / "tools/url-data/data/unicode/IdnaMappingTable.txt"
+JOINING = ROOT / "tools/url-data/data/unicode/DerivedJoiningType.txt"
+BIDI = ROOT / "tools/url-data/data/unicode/DerivedBidiClass.txt"
+CATEGORY = ROOT / "tools/url-data/data/unicode/DerivedGeneralCategory.txt"
 OUTPUT = ROOT / "src/values/uri/url/engine/idna/tables.rs"
 EXPECTED = "87f05505dc026fdb2bff16132bdc68a8014675836882a9a2b1844540ad3be382"
 STATUS = {

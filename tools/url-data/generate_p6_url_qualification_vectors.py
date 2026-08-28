@@ -10,12 +10,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-ORACLE = ROOT / "test_data/url/oracle/locked-url-2.5.7.json"
-INVENTORY = ROOT / "test_data/url/oracle/case-inventory.tsv"
-SETTERS = ROOT / "test_data/url/wpt/setters_tests.json"
-OUTPUT = ROOT / "src/values/uri/url/p6_vectors.rs"
+ORACLE = ROOT / "tests/data/url/oracle/locked-url-2.5.7.json"
+INVENTORY = ROOT / "tests/data/url/oracle/case-inventory.tsv"
+SETTERS = ROOT / "tests/data/url/wpt/setters_tests.json"
+OUTPUT = ROOT / "tests/generated/p6_vectors.rs"
 BENCHMARK_OUTPUT = ROOT / "tools/url-data/url_benchmark_corpus.rs"
-URLTESTDATA = ROOT / "test_data/url/wpt/urltestdata.json"
+URLTESTDATA = ROOT / "tests/data/url/wpt/urltestdata.json"
 
 
 def rust(value: str) -> str:

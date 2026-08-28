@@ -4,6 +4,9 @@
 //! caller. It deliberately shares Kernel OSS's crate-private NFC operation.
 
 #[cfg(test)]
+mod conformance_tests;
+
+#[cfg(test)]
 mod tests;
 
 #[cfg(test)]

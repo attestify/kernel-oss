@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-INPUT = ROOT / "test_data/url/unicode/IdnaTestV2.txt"
+INPUT = ROOT / "tests/data/url/unicode/IdnaTestV2.txt"
 OUTPUT = ROOT / "src/values/uri/url/engine/idna/fixture_vectors.rs"
 ESCAPE = re.compile(r"\\(?:u([0-9A-Fa-f]{4})|x\{([0-9A-Fa-f]+)\})")
 

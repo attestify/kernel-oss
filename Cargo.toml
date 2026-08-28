@@ -14,18 +14,15 @@ include = [
     "/LICENSE",
     "/README.md",
     "/docs/*.md",
-    "/docs/implementation-handoffs/*.json",
-    "/docs/implementation-handoffs/*.md",
-    "/docs/implementation-handoffs/*.puml",
+    "/docs/*.puml",
     "/src/**",
     "/examples/**",
     "/THIRD_PARTY_NOTICES.md",
     "/third-party/**",
     "/tools/unicode-nfc/**",
+    "/tools/test-layout/**",
     "/tools/url-data/**",
-    "/test_data/nfc/**",
-    "/test_data/url/**",
-    "/tests/nfc_text_unicode_17_conformance.rs",
+    "/tests/**",
 ]
 
 [[bench]]

@@ -10,9 +10,6 @@
 #[cfg(test)]
 mod tests;
 
-#[cfg(test)]
-mod wpt_vectors;
-
 use super::{
     host::{self, Host},
     percent_encoding::{self, EncodeSet},
