@@ -52,7 +52,7 @@ request objects before callers cross use case or gateway seams.
 | `Line` | `kernel_oss::values::text::line::Line` | `str` | `try_from` | Use for bounded single-line text. |
 | `Block` | `kernel_oss::values::text::block::Block` | `str` | `try_from` | Use for bounded multi-line text blocks. |
 | `NfcText` | `kernel_oss::values::text::NfcText` | Unicode 17.0 NFC `str` | `new` | Use when a complete string must be held as canonical NFC text; the shared normalization engine remains private. |
-| `URL` | `kernel_oss::values::uri::url::URL` | parsed URL parts plus original line | `new` | Use when a URL must be parsed into scheme, host, path, query, and fragment. |
+| `URL` | `kernel_oss::values::uri::url::URL` | canonical WHATWG URL | `try_new` | Use for dependency-free parsing, resolution, borrowed component access, and immutable mutation. See [URL Value and Architecture](url.md). |
 
 ### File And Directory Values
 
@@ -203,23 +203,3 @@ the replacement APIs in new code.
 | `examples/gateway_usecase_composition.rs` | Sync request-bearing use case plus no-input gateway composition. |
 | `examples/async_gateway_usecase_composition.rs` | Async `ResponseFuture` composition without public async trait methods. |
 | `examples/unit_success_payload.rs` | `Response = ()` with explicit `Result<(), Error>` behavior. |
-
-## Proprietary Catalog Wrapping
-
-`kernel-proprietary` can document its wrapped/re-exported surface the same way
-it wraps code:
-
-- Re-exported OSS items should keep their canonical docs in `kernel-oss`.
-- The proprietary catalog should link to or compose this catalog.
-- Proprietary-only additions should be listed in the proprietary catalog.
-- Overrides or stronger internal guidance should be documented as proprietary
-  additions, not by duplicating the OSS descriptions.
-
-Recommended shape:
-
-```text
-kernel-proprietary catalog =
-  kernel-oss catalog
-  + proprietary-only value objects, entities, requests, responses, and seams
-  + proprietary re-export notes
-```

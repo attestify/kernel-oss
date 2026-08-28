@@ -1,17 +1,69 @@
 # Attestify Kernel OSS
 
-Shared Rust kernel types and seam traits for Attestify.
+`kernel_oss` is the open-source Rust foundation shared by Attestify libraries
+and applications. It provides deterministic value objects, bounded errors,
+entity roles, and synchronous and asynchronous use-case and gateway seams.
 
-This crate provides:
+The crate owns foundational behavior only. It performs no product workflow,
+network, database, filesystem, or runtime orchestration.
 
-- bounded error and value object support
-- shared entity, response future, use case, and gateway traits
-- sync and async execution seams
-- compatibility modules for older gateway APIs while consumers migrate
-- `NfcText`, an immutable Unicode 17.0 NFC value with a private shared
-  normalization engine
+## Add the crate
 
-## Shared Seams
+Kernel OSS releases are immutable signed Git tags:
+
+```toml
+[dependencies]
+kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.3.0" }
+```
+
+## Main capabilities
+
+- `error::Error` with bounded audience and kind classifications
+- reusable value objects and the `values::Value` role
+- `entity::Entity` and `response::ResponseFuture`
+- synchronous and asynchronous use-case roles
+- synchronous and asynchronous gateway roles and kernel gateway markers
+- `values::text::NfcText`, backed by the shared private Unicode 17 NFC engine
+- `values::uri::url::URL`, a dependency-free immutable WHATWG URL value
+- specification values including redacted `RepositoryLink`
+
+Use the [Kernel catalog](docs/kernel-catalog.md) before creating a new shared
+type or seam.
+
+## Quick start
+
+Parse, inspect, resolve, and immutably update a URL:
+
+```rust
+use kernel_oss::values::uri::url::URL;
+
+let base = URL::try_new("https://example.test/a/?one=1")
+    .expect("the example URL is valid");
+let resolved = base
+    .try_resolve("../b")
+    .expect("the relative reference resolves");
+let updated = resolved
+    .mutator()
+    .query(Some("two=2"))
+    .try_mutate()
+    .expect("the component replacement is valid");
+
+assert_eq!(updated.scheme(), "https");
+assert_eq!(updated.host(), Some("example.test"));
+assert_eq!(updated.query_pairs(), &[("two".to_owned(), "2".to_owned())]);
+```
+
+Hold text in canonical NFC form:
+
+```rust
+use kernel_oss::values::Value;
+use kernel_oss::values::text::NfcText;
+
+let text = NfcText::new("e\u{301}");
+assert_eq!(text.value(), "é");
+```
+
+## Shared seams
 
 Use cases:
 
@@ -27,60 +79,39 @@ Gateways:
 - `gateway::AsyncVoidGateway`
 - `gateway::AsyncGateway`
 
-Supporting roles:
+Standards-aligned gateway markers include new identity, current UTC timestamp,
+directory-path retrieval, file-data retrieval, and log-entry writing. Legacy
+gateway compatibility modules remain available for existing consumers; prefer
+the replacements listed in the [Kernel catalog](docs/kernel-catalog.md).
 
-- `entity::Entity`
-- `response::ResponseFuture`
-- `values::Value`
+## Security and data handling
 
-## NFC text
+`URL::value()` returns the complete canonical URL and can contain credentials,
+query data, and a fragment. Treat it as sensitive. `URL` has redacted `Debug`
+and intentionally has no `Display`. `RepositoryLink` also redacts `Display` and
+`Debug`.
 
-`kernel_oss::values::text::NfcText` owns one immutable Unicode 17.0 NFC value.
-Construction and `is_nfc` use the same private shared engine; normalization
-tables and engine APIs are not public. The capability was relocated into Kernel
-OSS with recorded MIT-derived influence and Unicode License v3 custody. The
-private URL/IDNA engine consumes this one crate-private NFC seam; it does not
-add a second normalizer, NFC table set, or public normalization surface.
+`NfcText` and the URL engine expose no public normalizer, parser engine, IDNA
+engine, generated table, or mutable internal state. Public Rust APIs are source
+contracts; the crate makes no stable memory-layout, FFI, or binary-ABI promise.
 
-## URL values
+## Architecture and reference documentation
 
-`kernel_oss::values::uri::url::URL` is a dependency-free, immutable WHATWG URL
-value. Construct it with `URL::try_new`, resolve references with
-`try_resolve`, and use `mutator()` for one final validated immutable component
-replacement. Component accessors are borrowed and distinguish absence from an
-empty value. `query_pairs()` returns borrowed decoded pairs in source order.
-
-`URL::value()` intentionally returns the complete canonical serialization and
-can contain credentials, query data, and a fragment; treat it as sensitive.
-Automatic URL formatting is redacted (`URL([REDACTED])`) and `URL` deliberately
-does not implement `Display`. RepositoryLink formatting is likewise redacted.
-
-## Gateway Migrations
-
-The standards-aligned gateway seams live beside legacy compatibility APIs.
-
-- Use `gateway::new_identity::NewIdentityGW` instead of `gateway::identity::IdentityGateway`.
-- Use `gateway::current_utc_timestamp::CurrentUTCTimestampGW` instead of `gateway::utc_timestamp::UTCTimestampGateway`.
-- Use `gateway::retrieve_directory_path::RetrieveDirectoryPathGW` instead of `gateway::directory_list::RetrieveDirectoryPath`.
-- Use `gateway::file_data::FileDataGW` instead of `gateway::file_data_gateway::FileDataGateway`.
-- Use `gateway::write_log_entry::WriteLogEntryGW` instead of `gateway::logger::Logger`.
-
-Async marker seams are available for the same foundational capabilities when async callers need them.
-
-### Log Entry Design
-
-Logging is represented as one gateway capability: write a log entry. The request carries:
-
-- `LogLevel`: error, warning, info, or debug
-- `message`: the primary event or operation being logged
-- `error`: optional structured failure context
-- `context`: optional additional diagnostic detail
-
-`message` is required even when `error` is present. The message describes the log event, while the optional `Error` carries bounded failure context for that event. This keeps info/debug logs from needing fake errors and keeps error logs from overloading `Error::message` as the entire log line.
+- [Kernel catalog](docs/kernel-catalog.md): reusable types, seams, and
+  compatibility paths
+- [URL value and architecture](docs/url.md): public contract, resolution,
+  mutation, security, and private engine composition
+- [NFC text](docs/nfc-text.md): canonical text behavior, shared normalization,
+  and Unicode custody
+- [Test architecture](docs/testing.md): unit, private-conformance, integration,
+  fixture, and generator boundaries
+- [README standard](docs/readme-standard.md): required structure and content
+  rules for this README
+- Rustdoc: generated API reference from the public source documentation
 
 ## Examples
 
-Run the checked examples from the repository root:
+Run checked examples from the repository root:
 
 ```text
 cargo run --example value_object_and_entity
@@ -89,30 +120,27 @@ cargo run --example async_gateway_usecase_composition
 cargo run --example unit_success_payload
 ```
 
-## Catalog
-
-Use [`docs/kernel-catalog.md`](docs/kernel-catalog.md) before creating new
-domain or application types. The catalog indexes reusable kernel value objects,
-entity/use-case/gateway role traits, request and response types, gateway seams,
-compatibility migrations, and planned moves so consumers can avoid duplicating
-kernel behavior.
-
-Use [`docs/documentation-audit.md`](docs/documentation-audit.md) to track the
-remaining rustdoc cleanup needed before strict documentation enforcement.
-
-Use [`docs/test-audit.md`](docs/test-audit.md) to track the current test
-surface, the logical-path audit, and documentation gaps for each object.
-
-Use [`docs/module-audit.md`](docs/module-audit.md) to track module-organization
-deviations against the Rust module standard.
-
-Use [`docs/clippy-audit.md`](docs/clippy-audit.md) to review the current
-clippy backlog, grouped by category and file.
-
 ## Verification
 
 ```text
 cargo fmt --all --check
-cargo test
-cargo check --examples
+cargo clippy --all-targets --locked --offline -- -D warnings
+cargo test --all-targets --locked --offline
+cargo test --doc --locked --offline
+cargo check --examples --locked --offline
+cargo build --release --locked --offline
 ```
+
+The repository also contains deterministic offline generators and conformance
+fixtures for NFC, URL, and IDNA. Their source and license custody is documented
+in `tests/data/`, the owning `tools/**/data/` directories, and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Versioning and license
+
+Pre-1.0 minor releases may contain breaking public Rust API changes. Pin an
+immutable signed release tag and rebuild consumers when upgrading.
+
+Kernel OSS is distributed under the repository [license](LICENSE). Retained
+third-party notices and license texts are listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

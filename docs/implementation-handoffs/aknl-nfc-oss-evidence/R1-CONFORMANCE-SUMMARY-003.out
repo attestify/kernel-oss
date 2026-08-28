@@ -1,4 +1,0 @@
-awk: syntax error at source line 1
- context is
-	NR > 1 { >>>  duration[NR-1]=\ <<< ; if (\ == "PASS") pass++; else fail++ } END { for (i=1; i<=NR-1; i++) for (j=i+1; j<=NR-1; j++) if (duration[i] > duration[j]) { t=duration[i]; duration[i]=duration[j]; duration[j]=t } printf "pass_count=%d\nfailed_count=%d\nmedian_seconds=%.2f\nmaximum_seconds=%.2f\n", pass, fail, duration[(NR)/2], duration[NR-1] }
-awk: illegal statement at source line 1

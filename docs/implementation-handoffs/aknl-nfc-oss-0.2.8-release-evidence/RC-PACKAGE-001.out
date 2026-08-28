@@ -1,5 +1,0 @@
-   Packaging kernel_oss v0.2.8 (/private/tmp/aknl-nfc-oss-r1.Q6Vqbe/kernel-oss)
-    Packaged 309 files, 8.0MiB (1.1MiB compressed)
-   Verifying kernel_oss v0.2.8 (/private/tmp/aknl-nfc-oss-r1.Q6Vqbe/kernel-oss)
-   Compiling kernel_oss v0.2.8 (/private/tmp/aknl-nfc-oss-r1.Q6Vqbe/kernel-oss/target/package/kernel_oss-0.2.8)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.10s

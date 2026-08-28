@@ -1,8 +1,0 @@
-   Packaging kernel_oss v0.2.7 (/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss)
-    Packaged 358 files, 8.0MiB (1.1MiB compressed)
-   Verifying kernel_oss v0.2.7 (/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss)
-   Compiling kernel_oss v0.2.7 (/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/package/kernel_oss-0.2.7)
-warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `/Volumes/Bills T7/1-source-code/attestify/1-attestify-product-workspace/kernel/kernel-oss/target/debug/incremental/kernel_oss-2agm6xdxz3stu/s-hlpp3cbgx1-0bdge04-working`
-
-warning: `kernel_oss` (lib) generated 1 warning
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.95s

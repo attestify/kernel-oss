@@ -1,4 +1,0 @@
-MISMATCH	docs/implementation-handoffs/aknl-nfc-oss-0.2.8-release-evidence/command-results.tsv	expected=ae3c0315208a7eaf3fe9441bd8ff2bb878a13cf3810c8bdad071347f7aff9e00	actual=85ecdd945643b10baaba2d31b84a3bc4df589f0f4f1fe55e8159cbef796685d5
-active_records_checked=33
-pass=32
-fail=1
