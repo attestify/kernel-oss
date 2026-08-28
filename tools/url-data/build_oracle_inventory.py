@@ -1,4 +1,4 @@
-"""Build the explicit-output-path AKNL-URL-P1A-R1E oracle inventory."""
+"""Build the explicit-output-path Kernel OSS URL compatibility inventory."""
 import hashlib
 import sys
 from pathlib import Path

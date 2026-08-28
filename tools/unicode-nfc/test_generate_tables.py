@@ -1,7 +1,7 @@
-"""Offline NFC generator coverage for retained P1 and Q2 requirements.
+"""Offline NFC generator coverage for the permanent custody contract.
 
-Requirement validation: AKNL-NFC-P1-AC-031 through AC-033 and
-AKNL-NFC-Q2-REQ-014 through AKNL-NFC-Q2-REQ-016.
+The controlling generation and coverage requirements are documented in
+``docs/nfc-text.md`` and ``docs/testing.md``.
 """
 
 from __future__ import annotations
@@ -27,11 +27,7 @@ def unicode_record(scalar: str, combining_class: str, decomposition: str) -> str
 
 
 class GeneratorTests(unittest.TestCase):
-    """Retained P1 generator and Q2 committed-source qualification coverage.
-
-    Requirement validation: AKNL-NFC-P1-AC-031 through AC-033 and
-    AKNL-NFC-Q2-REQ-014 through AKNL-NFC-Q2-REQ-016.
-    """
+    """Committed-source, checksum, census, and reproduction qualification."""
 
     def write_fixture(self, directory: Path) -> tuple[Path, Path, Path]:
         """Create exact temporary source data and its checksum manifest."""
@@ -69,7 +65,7 @@ class GeneratorTests(unittest.TestCase):
         return input_directory, license_path, checksum_path
 
     def test_checksum_mismatch_error(self) -> None:
-        """Requirement validation: AKNL-NFC-P1-AC-031."""
+        """Rejects a Unicode source whose committed checksum does not match."""
         with tempfile.TemporaryDirectory() as temporary_directory:
             input_directory, license_path, checksum_path = self.write_fixture(Path(temporary_directory))
             (input_directory / "UnicodeData-17.0.0.txt").write_text("changed\n", encoding="utf-8")
@@ -77,7 +73,7 @@ class GeneratorTests(unittest.TestCase):
                 GENERATOR.generate(input_directory, license_path, checksum_path)
 
     def test_malformed_unicode_data_error(self) -> None:
-        """Requirement validation: AKNL-NFC-P1-AC-032."""
+        """Rejects malformed Unicode data instead of generating partial tables."""
         with tempfile.TemporaryDirectory() as temporary_directory:
             input_directory, license_path, checksum_path = self.write_fixture(Path(temporary_directory))
             unicode_data = input_directory / "UnicodeData-17.0.0.txt"
@@ -99,7 +95,7 @@ class GeneratorTests(unittest.TestCase):
                 GENERATOR.generate(input_directory, license_path, checksum_path)
 
     def test_all_verified_input_checksums_are_rendered_success(self) -> None:
-        """Requirement validation: AKNL-NFC-P1-AC-031."""
+        """Renders every verified source checksum into the generated header."""
         with tempfile.TemporaryDirectory() as temporary_directory:
             input_directory, license_path, checksum_path = self.write_fixture(Path(temporary_directory))
             rendered = GENERATOR.generate(input_directory, license_path, checksum_path)
@@ -107,7 +103,7 @@ class GeneratorTests(unittest.TestCase):
                 self.assertIn(f"// {name} SHA-256: {digest}", rendered)
 
     def test_canonical_only_exclusion_and_repeat_generation_success(self) -> None:
-        """Requirement validation: AKNL-NFC-P1-AC-032 and AKNL-NFC-P1-AC-033."""
+        """Proves canonical-only exclusions and byte-identical regeneration."""
         with tempfile.TemporaryDirectory() as temporary_directory:
             input_directory, license_path, checksum_path = self.write_fixture(Path(temporary_directory))
             first = GENERATOR.generate(input_directory, license_path, checksum_path)
@@ -118,9 +114,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertNotIn("(0x0041, 0x030A, 0x00C5)", first)
 
     def test_committed_unicode_sources_have_expected_nfc_census_success(self) -> None:
-        """Requirement validation: AKNL-NFC-Q2-REQ-014 through AKNL-NFC-Q2-REQ-016.
-
-        Verifies the real committed Unicode 17.0 inputs and generated NFC-table
+        """Verifies the real committed Unicode 17.0 inputs and generated NFC-table
         census without altering generator behavior or fetching source data.
         """
         input_directory = GENERATOR.DEFAULT_INPUT_DIRECTORY

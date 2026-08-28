@@ -46,8 +46,6 @@ fn parse_record(line: &str) -> Result<[String; 5], String> {
     Ok(columns)
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-020` and `AKNL-NFC-P1-AC-040`.
-///
 /// Verifies every official Unicode 17.0 five-column NFC invariant.
 #[test]
 fn unicode_17_nfc_conformance_fixture_success() {
@@ -84,8 +82,6 @@ fn unicode_17_nfc_conformance_fixture_success() {
     assert_eq!(records, 20_034);
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-020`.
-///
 /// Verifies malformed five-column fixture records are rejected rather than skipped.
 #[test]
 fn malformed_conformance_record_is_rejected_error() {

@@ -7,9 +7,8 @@
 //! trait exclusions. Drive path, metadata, authorization, persistence,
 //! transport, and RegularFile-content behavior are intentionally out of scope.
 //!
-//! Supplied requirement validation: `AKNL-NFC-P1-REQ-001` through
-//! `AKNL-NFC-P1-REQ-014`, `AKNL-NFC-P1-REQ-022`, `AKNL-NFC-P1-REQ-026`, and
-//! `AKNL-NFC-P1-REQ-027`.
+//! The permanent behavior contract and coverage floor are defined in
+//! `docs/nfc-text.md` and `docs/testing.md`.
 
 use super::NfcText;
 use crate::values::Value;
@@ -23,9 +22,6 @@ fn hash_of(text: &NfcText) -> u64 {
     hasher.finish()
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-003`, `AKNL-NFC-P1-AC-004`, and
-/// `AKNL-NFC-P1-AC-009`.
-///
 /// Verifies canonical equivalents construct the same borrowed NFC value.
 #[test]
 fn canonical_equivalents_construct_one_value_success() {
@@ -36,8 +32,6 @@ fn canonical_equivalents_construct_one_value_success() {
     assert_eq!(composed, decomposed);
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-005`.
-///
 /// Verifies complete-string construction is idempotent after a boundary join.
 #[test]
 fn complete_string_normalization_is_idempotent_success() {
@@ -48,8 +42,6 @@ fn complete_string_normalization_is_idempotent_success() {
     assert_eq!(second.value(), "prefix Å suffix");
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-008`.
-///
 /// Verifies separately NFC values can require normalization after concatenation.
 #[test]
 fn construction_normalizes_a_joined_nfc_boundary_success() {
@@ -61,8 +53,6 @@ fn construction_normalizes_a_joined_nfc_boundary_success() {
     assert_eq!(NfcText::new(&joined).value(), "Å");
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-006` and `AKNL-NFC-P1-AC-007`.
-///
 /// Verifies NFC preserves compatibility characters and consumer-owned text.
 #[test]
 fn canonical_only_normalization_preserves_compatibility_and_controls_success() {
@@ -72,8 +62,6 @@ fn canonical_only_normalization_preserves_compatibility_and_controls_success() {
     assert_eq!(text.value(), input);
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-007` and `AKNL-NFC-P1-AC-039`.
-///
 /// Verifies valid maximum scalar text is retained without an invented error.
 #[test]
 fn maximum_scalar_and_empty_input_are_retained_success() {
@@ -81,8 +69,6 @@ fn maximum_scalar_and_empty_input_are_retained_success() {
     assert_eq!(NfcText::new("\u{10FFFF}").value(), "\u{10FFFF}");
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-011`.
-///
 /// Verifies equal normalized values have equal hash output.
 #[test]
 fn normalized_equality_and_hash_are_aligned_success() {
@@ -93,8 +79,6 @@ fn normalized_equality_and_hash_are_aligned_success() {
     assert_eq!(hash_of(&composed), hash_of(&decomposed));
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-011`.
-///
 /// Verifies canonically equivalent values deduplicate in a hash collection.
 #[test]
 fn canonically_equivalent_values_deduplicate_in_a_hash_set_success() {
@@ -106,8 +90,6 @@ fn canonically_equivalent_values_deduplicate_in_a_hash_set_success() {
     assert!(values.contains(&NfcText::new("Å")));
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-013` and `AKNL-NFC-P1-AC-039`.
-///
 /// Verifies diagnostics use the exact redacted contract and disclose no input.
 #[test]
 fn debug_output_is_exactly_redacted_success() {
@@ -120,8 +102,6 @@ fn debug_output_is_exactly_redacted_success() {
     assert!(!diagnostic.contains(text.value()));
 }
 
-/// Requirement validation: `AKNL-NFC-P1-AC-014` and `AKNL-NFC-P1-AC-038`.
-///
 /// Verifies the public query distinguishes already-normalized and decomposed text.
 #[test]
 fn is_nfc_uses_the_same_normalization_result_success() {

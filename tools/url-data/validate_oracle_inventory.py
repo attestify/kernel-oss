@@ -14,7 +14,7 @@ def decode(s):
         else: out.append(c)
     return ''.join(out)
 inv=list(csv.DictReader(open(sys.argv[1]),delimiter='\t'))
-document=json.load(open(sys.argv[2])); assert document['schema']=='AKNL-URL-P1A-R1E'; out=document['records']
+document=json.load(open(sys.argv[2])); assert document['schema']=='kernel-oss-url-compatibility-oracle-v1'; out=document['records']
 expected={'KURL-001':5,'KURL-002':12,'KURL-003':8,'KURL-004':6,'KURL-005':12,'URL257-001':6,'RLINK-001':10,'SEC-001':6,'KURL-006':8,'KURL-007':6,'KURL-008':6,'KURL-009':8,'KURL-010':12,'KURL-011':10,'KURL-012':8,'KURL-013':10,'KURL-014':6,'KURL-015':10,'KURL-016':6,'KURL-017':12,'URL257-002':12,'RLINK-002':11}
 assert len(inv)==len(out)==190 and Counter(x['group'] for x in inv)==Counter(x['group'] for x in out)==expected
 for i,(x,y) in enumerate(zip(inv,out)):

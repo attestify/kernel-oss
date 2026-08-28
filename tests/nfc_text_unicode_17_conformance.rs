@@ -6,9 +6,8 @@
 //! Part 1 single-scalar oracle construction, and every valid Rust Unicode
 //! scalar, including malformed-fixture rejection paths. Private normalization
 //! helpers, generated tables, production source, Drive behavior, persistence,
-//! transport, and product validation are out of scope. Supplied requirement
-//! validation: `AKNL-NFC-Q2-REQ-003` through `AKNL-NFC-Q2-REQ-013`,
-//! `AKNL-NFC-Q2-REQ-019` through `AKNL-NFC-Q2-REQ-022`.
+//! transport, and product validation are out of scope. The permanent public
+//! conformance contract and exact census are defined in `docs/testing.md`.
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -216,9 +215,6 @@ fn synthetic_part_one_row(line_number: usize, source: &str) -> FixtureRow {
     }
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-004`, `AKNL-NFC-Q2-REQ-008`,
-/// and `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies empty, non-hexadecimal, and non-scalar fixture columns report
 /// their exact source context rather than being accepted or normalized.
 #[test]
@@ -237,9 +233,6 @@ fn malformed_scalar_columns_return_contextual_errors_error() {
     );
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-004`, `AKNL-NFC-Q2-REQ-007`,
-/// and `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies structural fixture failures reject malformed rows, invalid or
 /// duplicate part markers, and rows before a known part marker.
 #[test]
@@ -266,9 +259,6 @@ fn malformed_fixture_structure_returns_contextual_errors_error() {
     );
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-007`, `AKNL-NFC-Q2-REQ-008`,
-/// and `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies the Part 1 scalar oracle rejects empty, multi-scalar, and
 /// duplicate sources while retaining its bounded synthetic fixture input.
 #[test]
@@ -290,9 +280,6 @@ fn invalid_part_one_oracle_sources_return_contextual_errors_error() {
     );
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-004`, `AKNL-NFC-Q2-REQ-007`,
-/// and `AKNL-NFC-Q2-REQ-008`.
-///
 /// Verifies the exact official fixture sections, total rows, and unique
 /// single-scalar Part 1 oracle inputs.
 #[test]
@@ -315,9 +302,6 @@ fn official_unicode_17_fixture_census_success() {
     );
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-003`, `AKNL-NFC-Q2-REQ-004`,
-/// `AKNL-NFC-Q2-REQ-005`, and `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies all five official NFC construction invariants through public APIs.
 #[test]
 fn official_unicode_17_rows_construct_expected_public_values_success() {
@@ -356,9 +340,6 @@ fn official_unicode_17_rows_construct_expected_public_values_success() {
     }
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-003`, `AKNL-NFC-Q2-REQ-004`,
-/// `AKNL-NFC-Q2-REQ-006`, and `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies public query results for every official fixture column.
 #[test]
 fn official_unicode_17_rows_report_expected_public_nfc_state_success() {
@@ -380,10 +361,6 @@ fn official_unicode_17_rows_report_expected_public_nfc_state_success() {
     }
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-003`, `AKNL-NFC-Q2-REQ-008`,
-/// `AKNL-NFC-Q2-REQ-009`, `AKNL-NFC-Q2-REQ-010`, `AKNL-NFC-Q2-REQ-011`, and
-/// `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies public construction for every valid Rust Unicode scalar while
 /// streaming inputs rather than retaining the scalar space.
 #[test]
@@ -427,10 +404,6 @@ fn every_valid_unicode_scalar_constructs_expected_public_value_success() {
     );
 }
 
-/// Requirement validation: `AKNL-NFC-Q2-REQ-003`, `AKNL-NFC-Q2-REQ-008`,
-/// `AKNL-NFC-Q2-REQ-009`, `AKNL-NFC-Q2-REQ-010`, `AKNL-NFC-Q2-REQ-012`, and
-/// `AKNL-NFC-Q2-REQ-013`.
-///
 /// Verifies public query results for every valid Rust Unicode scalar while
 /// streaming inputs rather than retaining the scalar space.
 #[test]
