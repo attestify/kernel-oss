@@ -212,6 +212,35 @@ fn provenance_namespace_disallowed_character_error() {
     );
 }
 
+/// Requirement validation: S1-T03.
+///
+/// Logical path: a valid-length namespace containing a non-ASCII segment is
+/// rejected before segment grammar evaluation.
+/// Observable result: exact system invalid-input namespace error.
+#[test]
+fn provenance_namespace_non_ascii_segment_error() {
+    assert_exact_error(
+        ErrorProvenanceNamespace::try_new("a.é"),
+        Kind::InvalidInput,
+        INVALID_NAMESPACE_MESSAGE,
+    );
+}
+
+/// Requirement validation: S1-T03.
+///
+/// Logical path: a two-segment namespace with one 33-byte segment is rejected.
+/// Observable result: exact system invalid-input namespace error.
+#[test]
+fn provenance_namespace_overlong_segment_error() {
+    let overlong_segment = format!("a{}", "b".repeat(32));
+    assert_eq!(overlong_segment.len(), 33);
+    assert_exact_error(
+        ErrorProvenanceNamespace::try_new(format!("a.{overlong_segment}")),
+        Kind::InvalidInput,
+        INVALID_NAMESPACE_MESSAGE,
+    );
+}
+
 /// Requirement validation: S1-T04.
 ///
 /// Logical path: lower and upper code bounds retain each permitted character
@@ -280,6 +309,20 @@ fn provenance_code_invalid_first_character_error() {
 fn provenance_code_disallowed_character_error() {
     assert_exact_error(
         ErrorProvenanceCode::try_new("code-value"),
+        Kind::InvalidInput,
+        INVALID_CODE_MESSAGE,
+    );
+}
+
+/// Requirement validation: S1-T05.
+///
+/// Logical path: a code containing non-ASCII text is rejected before character
+/// grammar evaluation.
+/// Observable result: exact system invalid-input code error.
+#[test]
+fn provenance_code_non_ascii_error() {
+    assert_exact_error(
+        ErrorProvenanceCode::try_new("café"),
         Kind::InvalidInput,
         INVALID_CODE_MESSAGE,
     );

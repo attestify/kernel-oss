@@ -205,7 +205,9 @@ impl Error {
     ///
     /// # Errors
     ///
-    /// Returns a system processing failure when provenance is already present.
+    /// Returns an error if:
+    ///
+    /// - this Error already has provenance.
     ///
     /// # Examples
     ///
@@ -247,8 +249,10 @@ impl Error {
     ///
     /// # Errors
     ///
-    /// Returns a system processing failure when provenance is absent or an
-    /// origin descriptor is already present.
+    /// Returns an error if:
+    ///
+    /// - this Error has no current provenance; or
+    /// - its current provenance already has an origin descriptor.
     ///
     /// # Examples
     ///

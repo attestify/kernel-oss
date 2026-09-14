@@ -15,8 +15,9 @@ const INVALID_SCHEMA_VERSION_MESSAGE: &str = "Error provenance schema version mu
 /// A bounded lowercase dot-separated namespace for one error semantic owner.
 ///
 /// A namespace contains two through eight ASCII segments and is three through
-/// 128 bytes long. Each segment starts with a lowercase ASCII letter and may
-/// then contain lowercase ASCII letters, digits, or hyphens.
+/// 128 bytes long. Each segment is one through 32 bytes, starts with a
+/// lowercase ASCII letter, and may then contain lowercase ASCII letters,
+/// digits, or hyphens.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ErrorProvenanceNamespace(String);
 
@@ -25,8 +26,13 @@ impl ErrorProvenanceNamespace {
     ///
     /// # Errors
     ///
-    /// Returns a system invalid-input error when the grammar or bounds are not
-    /// satisfied.
+    /// Returns an error if:
+    ///
+    /// - `value` is not three through 128 ASCII bytes;
+    /// - it does not contain two through eight dot-separated segments; or
+    /// - a segment is not one through 32 bytes, does not begin with a
+    ///   lowercase ASCII letter, or contains a character other than a lowercase
+    ///   ASCII letter, digit, or hyphen.
     ///
     /// # Examples
     ///
@@ -73,8 +79,11 @@ impl ErrorProvenanceCode {
     ///
     /// # Errors
     ///
-    /// Returns a system invalid-input error when the grammar or bounds are not
-    /// satisfied.
+    /// Returns an error if:
+    ///
+    /// - `value` is not one through 64 ASCII bytes; or
+    /// - it does not begin with a lowercase ASCII letter or contains a
+    ///   character other than a lowercase ASCII letter, digit, or underscore.
     ///
     /// # Examples
     ///
@@ -118,7 +127,9 @@ impl ErrorProvenanceSchemaVersion {
     ///
     /// # Errors
     ///
-    /// Returns a system invalid-input error when `value` is zero.
+    /// Returns an error if:
+    ///
+    /// - `value` is zero.
     ///
     /// # Examples
     ///

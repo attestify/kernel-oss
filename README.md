@@ -84,8 +84,18 @@ let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
 let attached = error
     .try_with_attached_provenance(descriptor.clone())
     .expect("provenance is absent");
-assert!(attached.has_current_provenance(&descriptor));
-assert!(attached.without_provenance().provenance().is_none());
+let derived_descriptor = ErrorProvenanceDescriptor::new(
+    ErrorProvenanceNamespace::try_new("attestify.application").expect("valid namespace"),
+    ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
+    ErrorProvenanceCode::try_new("request_failed").expect("valid code"),
+);
+let derived = attached
+    .try_with_derived_provenance(derived_descriptor.clone())
+    .expect("current-only provenance is derivable");
+let provenance = derived.provenance().expect("derived provenance is present");
+assert_eq!(provenance.current(), &derived_descriptor);
+assert_eq!(provenance.origin(), Some(&descriptor));
+assert!(derived.without_provenance().provenance().is_none());
 ```
 
 ## Shared seams
