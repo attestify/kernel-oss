@@ -22,10 +22,13 @@ const DERIVE_ORIGIN_MESSAGE: &str =
 
 /// A structured, bounded failure returned by public kernel APIs.
 ///
-/// The outer audience, kind, and message retain their existing behavior.
-/// Provenance is optional, immutable semantic classification with at most one
-/// origin descriptor. It is intentionally absent from newly constructed
-/// errors and can only be changed through reconstruction methods.
+/// The outer audience, kind, and message retain their existing behavior. Its
+/// three direct constructors are the deliberate exception for a small,
+/// infallible, fixed Kernel value; there is no `ErrorBuilder`, builder setter,
+/// generic field setter, or provenance initial-construction input. Provenance
+/// is optional, immutable semantic classification with at most one origin
+/// descriptor. It is intentionally absent from newly constructed errors and
+/// can only be changed through immutable reconstruction methods.
 ///
 /// `Error` implements complete equality over its outer fields and provenance,
 /// but intentionally does not implement `Hash`: provenance is semantic state
@@ -181,15 +184,25 @@ impl Error {
     ///     ErrorProvenanceSchemaVersion, Kind,
     /// };
     ///
-    /// let descriptor = ErrorProvenanceDescriptor::new(
-    ///     ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
-    ///     ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
-    ///     ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
-    /// );
+    /// # fn main() -> Result<(), Error> {
+    /// # struct LocalDefinitions { dependency_failure: ErrorProvenanceDescriptor }
+    /// # impl LocalDefinitions {
+    /// #     fn try_new() -> Result<Self, Error> {
+    /// #         Ok(Self { dependency_failure: ErrorProvenanceDescriptor::new(
+    /// #             ErrorProvenanceNamespace::try_new("example.owner")?,
+    /// #             ErrorProvenanceSchemaVersion::try_new(1)?,
+    /// #             ErrorProvenanceCode::try_new("dependency_failure")?,
+    /// #         ) })
+    /// #     }
+    /// #     fn dependency_failure(&self) -> &ErrorProvenanceDescriptor { &self.dependency_failure }
+    /// # }
+    /// let definitions = LocalDefinitions::try_new()?;
+    /// let descriptor = definitions.dependency_failure().clone();
     /// let error = Error::for_system(Kind::GatewayError, "Unavailable.")
-    ///     .try_with_attached_provenance(descriptor.clone())
-    ///     .expect("provenance is absent");
+    ///     .try_with_attached_provenance(descriptor.clone())?;
     /// assert!(error.has_current_provenance(&descriptor));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn has_current_provenance(&self, descriptor: &ErrorProvenanceDescriptor) -> bool {
         self.provenance
@@ -217,15 +230,29 @@ impl Error {
     ///     ErrorProvenanceSchemaVersion, Kind,
     /// };
     ///
-    /// let descriptor = ErrorProvenanceDescriptor::new(
-    ///     ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
-    ///     ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
-    ///     ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
-    /// );
+    /// # fn main() -> Result<(), Error> {
+    /// # struct LocalDefinitions { dependency_failure: ErrorProvenanceDescriptor }
+    /// # impl LocalDefinitions {
+    /// #     fn try_new() -> Result<Self, Error> {
+    /// #         Ok(Self { dependency_failure: ErrorProvenanceDescriptor::new(
+    /// #             ErrorProvenanceNamespace::try_new("example.owner")?,
+    /// #             ErrorProvenanceSchemaVersion::try_new(1)?,
+    /// #             ErrorProvenanceCode::try_new("dependency_failure")?,
+    /// #         ) })
+    /// #     }
+    /// #     fn dependency_failure(&self) -> &ErrorProvenanceDescriptor { &self.dependency_failure }
+    /// # }
+    /// let definitions = LocalDefinitions::try_new()?;
+    /// let descriptor = definitions.dependency_failure().clone();
     /// let attached = Error::for_system(Kind::GatewayError, "Unavailable.")
-    ///     .try_with_attached_provenance(descriptor.clone())
-    ///     .expect("provenance is absent");
-    /// assert_eq!(attached.provenance().expect("attached provenance").current(), &descriptor);
+    ///     .try_with_attached_provenance(descriptor.clone())?;
+    /// let provenance = match attached.provenance() {
+    ///     Some(value) => value,
+    ///     None => return Err(Error::for_system(Kind::ProcessingFailure, "Provenance is absent.")),
+    /// };
+    /// assert_eq!(provenance.current(), &descriptor);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_with_attached_provenance(
         &self,
@@ -262,23 +289,41 @@ impl Error {
     ///     ErrorProvenanceSchemaVersion, Kind,
     /// };
     ///
-    /// let namespace = ErrorProvenanceNamespace::try_new("attestify.kernel")
-    ///     .expect("valid namespace");
-    /// let version = ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version");
-    /// let current = ErrorProvenanceDescriptor::new(
-    ///     namespace.clone(), version, ErrorProvenanceCode::try_new("gateway_failed").expect("valid code"),
-    /// );
-    /// let derived = ErrorProvenanceDescriptor::new(
-    ///     namespace, version, ErrorProvenanceCode::try_new("application_failed").expect("valid code"),
-    /// );
+    /// # fn main() -> Result<(), Error> {
+    /// # struct LocalDefinitions {
+    /// #     gateway_failure: ErrorProvenanceDescriptor,
+    /// #     application_failure: ErrorProvenanceDescriptor,
+    /// # }
+    /// # impl LocalDefinitions {
+    /// #     fn try_new() -> Result<Self, Error> {
+    /// #         let namespace = ErrorProvenanceNamespace::try_new("example.owner")?;
+    /// #         let version = ErrorProvenanceSchemaVersion::try_new(1)?;
+    /// #         Ok(Self {
+    /// #             gateway_failure: ErrorProvenanceDescriptor::new(
+    /// #                 namespace.clone(), version, ErrorProvenanceCode::try_new("gateway_failure")?,
+    /// #             ),
+    /// #             application_failure: ErrorProvenanceDescriptor::new(
+    /// #                 namespace, version, ErrorProvenanceCode::try_new("application_failure")?,
+    /// #             ),
+    /// #         })
+    /// #     }
+    /// #     fn gateway_failure(&self) -> &ErrorProvenanceDescriptor { &self.gateway_failure }
+    /// #     fn application_failure(&self) -> &ErrorProvenanceDescriptor { &self.application_failure }
+    /// # }
+    /// let definitions = LocalDefinitions::try_new()?;
+    /// let current = definitions.gateway_failure().clone();
+    /// let derived = definitions.application_failure().clone();
     /// let error = Error::for_system(Kind::GatewayError, "Unavailable.")
-    ///     .try_with_attached_provenance(current.clone())
-    ///     .expect("provenance is absent")
-    ///     .try_with_derived_provenance(derived.clone())
-    ///     .expect("only current provenance is present");
-    /// let provenance = error.provenance().expect("derived provenance");
+    ///     .try_with_attached_provenance(current.clone())?
+    ///     .try_with_derived_provenance(derived.clone())?;
+    /// let provenance = match error.provenance() {
+    ///     Some(value) => value,
+    ///     None => return Err(Error::for_system(Kind::ProcessingFailure, "Provenance is absent.")),
+    /// };
     /// assert_eq!(provenance.current(), &derived);
     /// assert_eq!(provenance.origin(), Some(&current));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_with_derived_provenance(
         &self,

@@ -5,7 +5,10 @@
 `Error` gains private optional provenance state and therefore direct external
 struct-literal construction is source-incompatible. The supported constructors
 and existing audience, kind, message, display, and accessor behavior remain
-available.
+available. `Error::new`, `Error::for_user`, and `Error::for_system` remain the
+deliberate direct-construction exception for this small, infallible value; no
+`ErrorBuilder`, builder setter, generic field setter, or initial provenance
+input is introduced.
 
 The release adds five public bounded provenance types and the following Error
 methods:
@@ -15,6 +18,10 @@ methods:
 - `without_provenance`
 - `provenance`
 - `has_current_provenance`
+
+Every direct constructor starts with absent provenance. Attach, derive, and
+clear return reconstructed immutable Errors rather than mutating an existing
+Error or finalizing a builder.
 
 ## Intentional trait change
 

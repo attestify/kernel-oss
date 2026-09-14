@@ -44,7 +44,7 @@ request objects before callers cross use case or gateway seams.
 
 | Type | Module Path | Construction | Reuse Guidance |
 | --- | --- | --- | --- |
-| `Error` | `kernel_oss::error::Error` | `new`, `for_user`, `for_system` | Use as the normal `Result<Response, Error>` failure value. It has bounded audience/kind/message fields and optional immutable provenance. |
+| `Error` | `kernel_oss::error::Error` | `new`, `for_user`, `for_system` | Use as the normal `Result<Response, Error>` failure value. These three direct constructors are the deliberate small/infallible Kernel exception; there is no `ErrorBuilder`. Initial construction has no provenance input. |
 | `ErrorProvenanceNamespace` | `kernel_oss::error::ErrorProvenanceNamespace` | `try_new` | Use for a bounded lowercase semantic-owner namespace; do not use it for product data or diagnostics. |
 | `ErrorProvenanceCode` | `kernel_oss::error::ErrorProvenanceCode` | `try_new` | Use for a bounded lowercase semantic code owned by the descriptor's namespace. |
 | `ErrorProvenanceSchemaVersion` | `kernel_oss::error::ErrorProvenanceSchemaVersion` | `try_new` | Use for a nonzero descriptor schema version. |
@@ -55,7 +55,12 @@ Attach provenance only with `Error::try_with_attached_provenance` when it is
 absent. Derive once with `Error::try_with_derived_provenance` when only a
 current descriptor is present. Clear it with `Error::without_provenance` when a
 caller must return the same outer error without semantic provenance. This is not
-a general metadata, HTTP, vendor-diagnostic, callback, or source-chain API.
+a general metadata, transport-diagnostic, callback, or source-chain API.
+
+Those operations immutably reconstruct a new `Error`; they are not builder
+finalization, mutation, or generic field setters. A semantic owner creates its
+validated immutable definition set through `try_new()` and exposes named
+descriptor accessors. Kernel supplies no product descriptor meaning.
 
 ## Value Objects
 

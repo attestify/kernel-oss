@@ -66,8 +66,12 @@ let text = NfcText::new("e\u{301}");
 assert_eq!(text.value(), "é");
 ```
 
-Attach and later derive bounded semantic provenance while retaining the normal
-`Result<Response, Error>` failure channel:
+Construct an Error directly with its three small, infallible, fixed inputs;
+there is intentionally no `ErrorBuilder`. Initial construction accepts no
+provenance. A semantic owner first creates an immutable fallible definition set
+and can then attach, derive, inspect, and clear provenance through immutable
+Error reconstruction while retaining the normal `Result<Response, Error>`
+failure channel:
 
 ```rust
 use kernel_oss::error::{
@@ -75,27 +79,47 @@ use kernel_oss::error::{
     ErrorProvenanceSchemaVersion, Kind,
 };
 
-let descriptor = ErrorProvenanceDescriptor::new(
-    ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
-    ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
-    ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
-);
-let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
-let attached = error
-    .try_with_attached_provenance(descriptor.clone())
-    .expect("provenance is absent");
-let derived_descriptor = ErrorProvenanceDescriptor::new(
-    ErrorProvenanceNamespace::try_new("attestify.application").expect("valid namespace"),
-    ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
-    ErrorProvenanceCode::try_new("request_failed").expect("valid code"),
-);
-let derived = attached
-    .try_with_derived_provenance(derived_descriptor.clone())
-    .expect("current-only provenance is derivable");
-let provenance = derived.provenance().expect("derived provenance is present");
-assert_eq!(provenance.current(), &derived_descriptor);
-assert_eq!(provenance.origin(), Some(&descriptor));
-assert!(derived.without_provenance().provenance().is_none());
+struct LocalProvenanceDefinitions {
+    gateway_failure: ErrorProvenanceDescriptor,
+    application_failure: ErrorProvenanceDescriptor,
+}
+
+impl LocalProvenanceDefinitions {
+    fn try_new() -> Result<Self, Error> {
+        let namespace = ErrorProvenanceNamespace::try_new("example.owner")?;
+        let schema_version = ErrorProvenanceSchemaVersion::try_new(1)?;
+        Ok(Self {
+            gateway_failure: ErrorProvenanceDescriptor::new(
+                namespace.clone(), schema_version,
+                ErrorProvenanceCode::try_new("gateway_failure")?,
+            ),
+            application_failure: ErrorProvenanceDescriptor::new(
+                namespace, schema_version,
+                ErrorProvenanceCode::try_new("application_failure")?,
+            ),
+        })
+    }
+
+    fn gateway_failure(&self) -> &ErrorProvenanceDescriptor { &self.gateway_failure }
+    fn application_failure(&self) -> &ErrorProvenanceDescriptor { &self.application_failure }
+}
+
+fn main() -> Result<(), Error> {
+    let definitions = LocalProvenanceDefinitions::try_new()?;
+    let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
+    assert!(error.provenance().is_none());
+    let attached = error.try_with_attached_provenance(definitions.gateway_failure().clone())?;
+    let derived = attached
+        .try_with_derived_provenance(definitions.application_failure().clone())?;
+    let provenance = match derived.provenance() {
+        Some(value) => value,
+        None => return Err(Error::for_system(Kind::ProcessingFailure, "Provenance is absent.")),
+    };
+    assert_eq!(provenance.current(), definitions.application_failure());
+    assert_eq!(provenance.origin(), Some(definitions.gateway_failure()));
+    assert!(derived.without_provenance().provenance().is_none());
+    Ok(())
+}
 ```
 
 ## Shared seams
@@ -131,10 +155,16 @@ engine, generated table, or mutable internal state. Public Rust APIs are source
 contracts; the crate makes no stable memory-layout, FFI, or binary-ABI promise.
 
 Error provenance is bounded semantic classification, not a metadata channel.
-It contains at most one current and one origin descriptor; it cannot carry HTTP
-values, native diagnostics, source chains, arbitrary metadata, callbacks, or
-product-specific constants. `Error` retains complete equality but intentionally
-does not implement `Hash`.
+It contains at most one current and one origin descriptor; it cannot carry
+transport values, native diagnostics, source chains, arbitrary metadata,
+callbacks, or product-specific constants. `Error` retains complete equality but
+intentionally does not implement `Hash`.
+
+`Error::new`, `Error::for_user`, and `Error::for_system` are the deliberate
+direct-construction exception for this small, infallible Kernel value. There is
+no `ErrorBuilder`, builder setter, generic field setter, or initial-construction
+provenance input. Provenance starts absent and changes only through immutable
+attach, derive, and clear reconstruction transitions.
 
 ## Architecture and reference documentation
 

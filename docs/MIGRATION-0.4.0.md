@@ -10,12 +10,16 @@ normal failure shape remains `Result<Response, Error>`.
 Create errors with `Error::new`, `Error::for_user`, or `Error::for_system`.
 The provenance field is private so direct `Error { ... }` construction is not
 supported by the 0.4.0 API. Existing outer fields remain readable for source
-compatibility while consumers transition to the accessors.
+compatibility while consumers transition to the accessors. These three direct
+constructors are the deliberate small, infallible Error exception: there is no
+`ErrorBuilder`, builder setter, generic field setter, or provenance input at
+initial construction. Every new Error starts without provenance.
 
 ## Attach, derive, inspect, and clear
 
-Construct a descriptor only from bounded namespace, nonzero schema-version,
-and code values. Then attach it to an error with no provenance:
+An owner constructs its validated immutable definition set through a fallible
+`try_new()` path, then its named accessors provide descriptors for immutable
+Error transitions. Kernel does not define product descriptor meanings:
 
 ```rust
 use kernel_oss::error::{
@@ -23,23 +27,41 @@ use kernel_oss::error::{
     ErrorProvenanceSchemaVersion, Kind,
 };
 
-let descriptor = ErrorProvenanceDescriptor::new(
-    ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
-    ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
-    ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
-);
-let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
-let attached = error
-    .try_with_attached_provenance(descriptor)
-    .expect("provenance is absent");
-assert!(attached.provenance().is_some());
+struct LocalProvenanceDefinitions {
+    dependency_failure: ErrorProvenanceDescriptor,
+}
+
+impl LocalProvenanceDefinitions {
+    fn try_new() -> Result<Self, Error> {
+        Ok(Self {
+            dependency_failure: ErrorProvenanceDescriptor::new(
+                ErrorProvenanceNamespace::try_new("example.owner")?,
+                ErrorProvenanceSchemaVersion::try_new(1)?,
+                ErrorProvenanceCode::try_new("dependency_failure")?,
+            ),
+        })
+    }
+
+    fn dependency_failure(&self) -> &ErrorProvenanceDescriptor {
+        &self.dependency_failure
+    }
+}
+
+fn main() -> Result<(), Error> {
+    let definitions = LocalProvenanceDefinitions::try_new()?;
+    let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
+    let attached = error.try_with_attached_provenance(definitions.dependency_failure().clone())?;
+    assert!(attached.provenance().is_some());
+    Ok(())
+}
 ```
 
 `try_with_derived_provenance` is permitted only for a current-only descriptor;
 the previous current descriptor becomes the one origin. Both fallible
 transitions return exact bounded Kernel errors and leave the original borrowed
 `Error` unchanged. `without_provenance` reconstructs an Error with the same
-outer state and no provenance.
+outer state and no provenance. Attach, derive, and clear are immutable
+reconstruction transitions, not builder finalization or mutation.
 
 ## Equality and hashing
 
