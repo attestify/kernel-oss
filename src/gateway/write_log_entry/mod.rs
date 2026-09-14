@@ -36,7 +36,7 @@ pub enum LogLevel {
 /// `message` is the primary event text. `error` is optional structured failure
 /// context attached to the event. `context` is optional diagnostic detail such
 /// as identifiers, external resource names, or caller-specific state.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WriteLogEntryRequest {
     level: LogLevel,
     message: String,

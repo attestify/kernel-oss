@@ -1,37 +1,36 @@
-//! Bounded error type and classifications used by kernel seams and values.
+//! Bounded error classifications and immutable provenance for kernel seams.
 //!
-//! Use [`Error`] for public fallible APIs so callers can distinguish
-//! user-facing input errors from system or operational failures.
+//! [`Error`] remains the failure value in `Result<Response, Error>` APIs. Its
+//! optional provenance is a bounded semantic descriptor, not ambient metadata,
+//! a diagnostic payload, or a source-error chain.
+
+pub mod provenance;
+
+pub use provenance::{
+    ErrorProvenance, ErrorProvenanceCode, ErrorProvenanceDescriptor, ErrorProvenanceNamespace,
+    ErrorProvenanceSchemaVersion,
+};
 
 #[cfg(test)]
 mod tests;
 
-/// A structured error used across the kernel crates.
+const ATTACH_PRESENT_MESSAGE: &str =
+    "Error provenance cannot be attached because it is already present.";
+const DERIVE_ABSENT_MESSAGE: &str = "Error provenance cannot be derived because it is absent.";
+const DERIVE_ORIGIN_MESSAGE: &str =
+    "Error provenance cannot be derived because an origin is already present.";
+
+/// A structured, bounded failure returned by public kernel APIs.
 ///
-/// The `Error` type carries:
-/// - `audience`: who should handle the error (user vs system),
-/// - `kind`: a coarse category of error,
-/// - `message`: a human-readable description stored as an owned `String`.
+/// The outer audience, kind, and message retain their existing behavior.
+/// Provenance is optional, immutable semantic classification with at most one
+/// origin descriptor. It is intentionally absent from newly constructed
+/// errors and can only be changed through reconstruction methods.
 ///
-/// Purpose:
-/// - Provide a lightweight, copyable error payload that can be matched on by callers,
-/// - Be usable in collections (`Hash`, `Eq`) and for diagnostics (`Debug`, `Display`),
-/// - Keep error handling simple: no backtrace or source chaining here, only classification + message.
-///
-/// Guarantees and design notes:
-/// - `Error` derives `Clone`, `Debug`, `Eq`, `Hash`, and `PartialEq` so it can be cloned,
-///   compared for equality, hashed into sets/maps, and debug-printed.
-/// - Ordering (`Ord`/`PartialOrd`) is intentionally not relied on by callers; comparisons
-///   should match on `audience`/`kind`/`message` explicitly when needed.
-/// - `message` is an owned `String` so callers do not need to retain the originating input.
-///
-/// Public interfaces:
-/// - `Error::new(audience, kind, message)`: construct any `Error`.
-/// - `Error::for_user(kind, message)`: convenience constructor for user-facing errors.
-/// - `Error::for_system(kind, message)`: convenience constructor for system-facing errors.
-/// - `Error::is_user() -> bool` / `Error::is_system() -> bool`: quick audience checks.
-/// - `Display` is implemented to format the `message` only (suitable for end-user display).
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+/// `Error` implements complete equality over its outer fields and provenance,
+/// but intentionally does not implement `Hash`: provenance is semantic state
+/// and must never be silently omitted from a hash identity.
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Error {
     /// Audience classification for the error.
     pub audience: Audience,
@@ -39,88 +38,301 @@ pub struct Error {
     pub kind: Kind,
     /// Human-readable error message.
     pub message: String,
+    provenance: Option<Box<ErrorProvenance>>,
 }
 
 impl Error {
+    /// Creates a bounded error with no provenance.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Audience, Error, Kind};
+    ///
+    /// let error = Error::new(Audience::User, Kind::InvalidInput, "Field is required.");
+    /// assert_eq!(error.audience(), Audience::User);
+    /// assert!(error.provenance().is_none());
+    /// ```
+    pub fn new(audience: Audience, kind: Kind, message: impl Into<String>) -> Self {
+        Self {
+            audience,
+            kind,
+            message: message.into(),
+            provenance: None,
+        }
+    }
+
+    /// Creates a user-audience error with no provenance.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// let error = Error::for_user(Kind::InvalidInput, "Field is required.");
+    /// assert!(error.is_user());
+    /// assert!(error.provenance().is_none());
+    /// ```
+    pub fn for_user(kind: Kind, message: impl Into<String>) -> Self {
+        Self::new(Audience::User, kind, message)
+    }
+
+    /// Creates a system-audience error with no provenance.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
+    /// assert!(error.is_system());
+    /// assert!(error.provenance().is_none());
+    /// ```
+    pub fn for_system(kind: Kind, message: impl Into<String>) -> Self {
+        Self::new(Audience::System, kind, message)
+    }
+
     /// Returns the audience that should handle this error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Audience, Error, Kind};
+    ///
+    /// assert_eq!(Error::for_user(Kind::NotFound, "Missing.").audience(), Audience::User);
+    /// ```
     pub fn audience(&self) -> Audience {
         self.audience
     }
 
-    /// Returns the high-level category for this error.
+    /// Returns the coarse category for this error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// assert_eq!(Error::for_system(Kind::GatewayError, "Unavailable.").kind(), Kind::GatewayError);
+    /// ```
     pub fn kind(&self) -> Kind {
         self.kind
     }
 
-    /// Returns the human-readable error message.
+    /// Returns the stable human-readable message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// assert_eq!(Error::for_user(Kind::InvalidInput, "Invalid.").message(), "Invalid.");
+    /// ```
     pub fn message(&self) -> &str {
         &self.message
     }
 
-    /// Create a new `Error` with the given audience, kind and message.
+    /// Returns whether this error is intended for a user audience.
     ///
-    /// `message` accepts any type that implements `Into<String>` for ergonomic callers.
+    /// # Examples
     ///
-    /// Example:
-    /// ```rust
-    /// use kernel_oss::error::Kind;
-    /// use kernel_oss::error::Audience;
-    /// use kernel_oss::error::Error;
-    ///
-    /// let e = Error::new(Audience::User, Kind::InvalidInput, "missing field");
     /// ```
-    pub fn new(audience: Audience, kind: Kind, message: impl Into<String>) -> Error {
-        Error {
-            audience,
-            kind,
-            message: message.into(),
-        }
-    }
-
-    /// Convenience constructor for errors intended for end users.
+    /// use kernel_oss::error::{Error, Kind};
     ///
-    /// Sets `audience` to `Audience::User`.
-    pub fn for_user(kind: Kind, message: impl Into<String>) -> Error {
-        Error::new(Audience::User, kind, message)
-    }
-
-    /// Convenience constructor for errors intended for system/operational handling.
-    ///
-    /// Sets `audience` to `Audience::System`.
-    pub fn for_system(kind: Kind, message: impl Into<String>) -> Error {
-        Error::new(Audience::System, kind, message)
-    }
-
-    /// Returns `true` when the error is intended for a user-level audience.
+    /// assert!(Error::for_user(Kind::InvalidInput, "Invalid.").is_user());
+    /// ```
     pub fn is_user(&self) -> bool {
         self.audience == Audience::User
     }
 
-    /// Returns `true` when the error is intended for a system/operational audience.
+    /// Returns whether this error is intended for system or operational handling.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// assert!(Error::for_system(Kind::GatewayError, "Unavailable.").is_system());
+    /// ```
     pub fn is_system(&self) -> bool {
         self.audience == Audience::System
+    }
+
+    /// Returns the immutable provenance, if a semantic owner attached one.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// let error = Error::for_system(Kind::ProcessingFailure, "Failed.");
+    /// assert!(error.provenance().is_none());
+    /// ```
+    pub fn provenance(&self) -> Option<&ErrorProvenance> {
+        self.provenance.as_deref()
+    }
+
+    /// Returns whether the current provenance equals `descriptor`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{
+    ///     Error, ErrorProvenanceCode, ErrorProvenanceDescriptor, ErrorProvenanceNamespace,
+    ///     ErrorProvenanceSchemaVersion, Kind,
+    /// };
+    ///
+    /// let descriptor = ErrorProvenanceDescriptor::new(
+    ///     ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
+    ///     ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
+    ///     ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
+    /// );
+    /// let error = Error::for_system(Kind::GatewayError, "Unavailable.")
+    ///     .try_with_attached_provenance(descriptor.clone())
+    ///     .expect("provenance is absent");
+    /// assert!(error.has_current_provenance(&descriptor));
+    /// ```
+    pub fn has_current_provenance(&self, descriptor: &ErrorProvenanceDescriptor) -> bool {
+        self.provenance
+            .as_ref()
+            .is_some_and(|provenance| provenance.current() == descriptor)
+    }
+
+    /// Reconstructs this error with `descriptor` as its current provenance.
+    ///
+    /// Attachment is allowed only while provenance is absent. A failed
+    /// transition returns an exact bounded error and leaves this borrowed error
+    /// unchanged.
+    ///
+    /// # Errors
+    ///
+    /// Returns a system processing failure when provenance is already present.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{
+    ///     Error, ErrorProvenanceCode, ErrorProvenanceDescriptor, ErrorProvenanceNamespace,
+    ///     ErrorProvenanceSchemaVersion, Kind,
+    /// };
+    ///
+    /// let descriptor = ErrorProvenanceDescriptor::new(
+    ///     ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
+    ///     ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
+    ///     ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
+    /// );
+    /// let attached = Error::for_system(Kind::GatewayError, "Unavailable.")
+    ///     .try_with_attached_provenance(descriptor.clone())
+    ///     .expect("provenance is absent");
+    /// assert_eq!(attached.provenance().expect("attached provenance").current(), &descriptor);
+    /// ```
+    pub fn try_with_attached_provenance(
+        &self,
+        descriptor: ErrorProvenanceDescriptor,
+    ) -> Result<Self, Error> {
+        if self.provenance.is_some() {
+            return Err(Self::for_system(
+                Kind::ProcessingFailure,
+                ATTACH_PRESENT_MESSAGE,
+            ));
+        }
+        Ok(self.reconstruct(Some(ErrorProvenance::new(descriptor, None))))
+    }
+
+    /// Reconstructs this error by making `descriptor` current and preserving
+    /// the former current descriptor as its one origin.
+    ///
+    /// Derivation is allowed only when exactly one current descriptor exists.
+    /// A failed transition returns an exact bounded error and leaves this
+    /// borrowed error unchanged.
+    ///
+    /// # Errors
+    ///
+    /// Returns a system processing failure when provenance is absent or an
+    /// origin descriptor is already present.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{
+    ///     Error, ErrorProvenanceCode, ErrorProvenanceDescriptor, ErrorProvenanceNamespace,
+    ///     ErrorProvenanceSchemaVersion, Kind,
+    /// };
+    ///
+    /// let namespace = ErrorProvenanceNamespace::try_new("attestify.kernel")
+    ///     .expect("valid namespace");
+    /// let version = ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version");
+    /// let current = ErrorProvenanceDescriptor::new(
+    ///     namespace.clone(), version, ErrorProvenanceCode::try_new("gateway_failed").expect("valid code"),
+    /// );
+    /// let derived = ErrorProvenanceDescriptor::new(
+    ///     namespace, version, ErrorProvenanceCode::try_new("application_failed").expect("valid code"),
+    /// );
+    /// let error = Error::for_system(Kind::GatewayError, "Unavailable.")
+    ///     .try_with_attached_provenance(current.clone())
+    ///     .expect("provenance is absent")
+    ///     .try_with_derived_provenance(derived.clone())
+    ///     .expect("only current provenance is present");
+    /// let provenance = error.provenance().expect("derived provenance");
+    /// assert_eq!(provenance.current(), &derived);
+    /// assert_eq!(provenance.origin(), Some(&current));
+    /// ```
+    pub fn try_with_derived_provenance(
+        &self,
+        descriptor: ErrorProvenanceDescriptor,
+    ) -> Result<Self, Error> {
+        let provenance = match self.provenance.as_ref() {
+            None => {
+                return Err(Self::for_system(
+                    Kind::ProcessingFailure,
+                    DERIVE_ABSENT_MESSAGE,
+                ));
+            }
+            Some(provenance) if provenance.origin().is_some() => {
+                return Err(Self::for_system(
+                    Kind::ProcessingFailure,
+                    DERIVE_ORIGIN_MESSAGE,
+                ));
+            }
+            Some(provenance) => provenance,
+        };
+        Ok(self.reconstruct(Some(ErrorProvenance::new(
+            descriptor,
+            Some(provenance.current().clone()),
+        ))))
+    }
+
+    /// Reconstructs this error with all provenance removed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use kernel_oss::error::{Error, Kind};
+    ///
+    /// let cleared = Error::for_system(Kind::ProcessingFailure, "Failed.").without_provenance();
+    /// assert!(cleared.provenance().is_none());
+    /// ```
+    pub fn without_provenance(&self) -> Self {
+        self.reconstruct(None)
+    }
+
+    fn reconstruct(&self, provenance: Option<ErrorProvenance>) -> Self {
+        Self {
+            audience: self.audience,
+            kind: self.kind,
+            message: self.message.clone(),
+            provenance: provenance.map(Box::new),
+        }
     }
 }
 
 impl std::fmt::Display for Error {
-    /// Displays only the human readable `message` field.
-    ///
-    /// This is intentional: `Display` is for short, user-facing text; use `Debug` to
-    /// inspect struct fields during development.
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.message)
+    /// Displays only the human-readable message.
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(&self.message)
     }
 }
 
-/// Specifies who should handle an `Error`.
-///
-/// It is used with the [`Error`] type.
-///
-/// Handling guidance:
-/// - Match on `Audience` to route handling logic; there are only two variants.
-/// - `User` indicates the error is intended for end-user consumption (presentable text).
-/// - `System` indicates the error is for internal/operational handling (logs, metrics).
-/// - Do not rely on any ordering of variants; use equality or pattern matching as needed.
+/// Specifies who should handle an [`Error`].
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Audience {
     /// Intended for end users.
@@ -129,15 +341,7 @@ pub enum Audience {
     System,
 }
 
-/// High-level categories for `Error` instances.
-///
-/// It is used with the [`Error`] type.
-///
-/// Guidance for callers:
-/// - `Kind` is expected to grow; avoid exhaustive matches. Match the variants you care about
-///   and use `_` to handle other/unknown cases.
-/// - Treat `Kind` as a classification for routing or mapping to user messages/log levels.
-/// - Do not rely on ordering of variants; use explicit matches or equality checks when needed.
+/// High-level categories for [`Error`] instances.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Kind {
     /// A value exceeds the maximum allowed length.

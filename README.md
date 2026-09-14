@@ -16,9 +16,12 @@ Kernel OSS releases are immutable signed Git tags:
 kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.3.0" }
 ```
 
+The 0.4.0 API described in this source tree is not a published tag. Consumers
+should use an issued immutable tag until its separate distribution decision.
+
 ## Main capabilities
 
-- `error::Error` with bounded audience and kind classifications
+- `error::Error` with bounded audience, kind, and optional immutable provenance
 - reusable value objects and the `values::Value` role
 - `entity::Entity` and `response::ResponseFuture`
 - synchronous and asynchronous use-case roles
@@ -63,6 +66,28 @@ let text = NfcText::new("e\u{301}");
 assert_eq!(text.value(), "é");
 ```
 
+Attach and later derive bounded semantic provenance while retaining the normal
+`Result<Response, Error>` failure channel:
+
+```rust
+use kernel_oss::error::{
+    Error, ErrorProvenanceCode, ErrorProvenanceDescriptor, ErrorProvenanceNamespace,
+    ErrorProvenanceSchemaVersion, Kind,
+};
+
+let descriptor = ErrorProvenanceDescriptor::new(
+    ErrorProvenanceNamespace::try_new("attestify.kernel").expect("valid namespace"),
+    ErrorProvenanceSchemaVersion::try_new(1).expect("nonzero version"),
+    ErrorProvenanceCode::try_new("dependency_failed").expect("valid code"),
+);
+let error = Error::for_system(Kind::GatewayError, "Dependency is unavailable.");
+let attached = error
+    .try_with_attached_provenance(descriptor.clone())
+    .expect("provenance is absent");
+assert!(attached.has_current_provenance(&descriptor));
+assert!(attached.without_provenance().provenance().is_none());
+```
+
 ## Shared seams
 
 Use cases:
@@ -95,6 +120,12 @@ and intentionally has no `Display`. `RepositoryLink` also redacts `Display` and
 engine, generated table, or mutable internal state. Public Rust APIs are source
 contracts; the crate makes no stable memory-layout, FFI, or binary-ABI promise.
 
+Error provenance is bounded semantic classification, not a metadata channel.
+It contains at most one current and one origin descriptor; it cannot carry HTTP
+values, native diagnostics, source chains, arbitrary metadata, callbacks, or
+product-specific constants. `Error` retains complete equality but intentionally
+does not implement `Hash`.
+
 ## Architecture and reference documentation
 
 - [Kernel catalog](docs/kernel-catalog.md): reusable types, seams, and
@@ -107,6 +138,9 @@ contracts; the crate makes no stable memory-layout, FFI, or binary-ABI promise.
   fixture, and generator boundaries
 - [README standard](docs/readme-standard.md): required structure and content
   rules for this README
+- [0.4.0 migration guide](docs/MIGRATION-0.4.0.md): bounded Error provenance
+  source transition and consumer inventory guidance
+- [0.4.0 semver report](docs/SEMVER-0.4.0.md): public API evolution summary
 - Rustdoc: generated API reference from the public source documentation
 
 ## Examples
@@ -118,6 +152,7 @@ cargo run --example value_object_and_entity
 cargo run --example gateway_usecase_composition
 cargo run --example async_gateway_usecase_composition
 cargo run --example unit_success_payload
+cargo run --example error_provenance
 ```
 
 ## Verification
