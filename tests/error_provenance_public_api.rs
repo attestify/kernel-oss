@@ -58,7 +58,7 @@ impl GenericProvenanceDefinitions {
     }
 }
 
-/// Requirement validation: D2-ABI-01.
+/// Requirement validation: No requirement validation point is currently supplied.
 ///
 /// Public seam: `kernel_oss::error` re-exports and Error reconstruction
 /// methods only.
@@ -118,7 +118,7 @@ fn public_error_provenance_transitions_preserve_each_source_success() {
     assert_eq!(cleared.message(), "Dependency is unavailable.");
 }
 
-/// Requirement validation: D2-ABI-02.
+/// Requirement validation: No requirement validation point is currently supplied.
 ///
 /// Public seam: `Error::try_with_attached_provenance`.
 /// Logical path: an external caller attempts a second attachment.
@@ -149,7 +149,7 @@ fn public_error_attach_when_present_returns_exact_error_and_preserves_source_err
     assert_eq!(attached, source_before_rejection);
 }
 
-/// Requirement validation: D2-ABI-03.
+/// Requirement validation: No requirement validation point is currently supplied.
 ///
 /// Public seam: `Error::try_with_derived_provenance`.
 /// Logical path: an external caller derives from an Error with absent provenance.
@@ -175,7 +175,7 @@ fn public_error_derive_when_absent_returns_exact_error_and_preserves_source_erro
     assert_eq!(source, source_before_rejection);
 }
 
-/// Requirement validation: D2-ABI-04.
+/// Requirement validation: No requirement validation point is currently supplied.
 ///
 /// Public seam: `Error::try_with_derived_provenance`.
 /// Logical path: an external caller attempts a second derivation after an
