@@ -13,11 +13,11 @@ Kernel OSS releases are immutable signed Git tags:
 
 ```toml
 [dependencies]
-kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.3.0" }
+kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.5.0" }
 ```
 
-The 0.4.0 API described in this source tree is not a published tag. Consumers
-should use an issued immutable tag until its separate distribution decision.
+Version 0.5.0 adds typed Usecase Event Handler contracts and the reusable
+no-op while retaining the bounded Error provenance API introduced in 0.4.0.
 
 ## Main capabilities
 
