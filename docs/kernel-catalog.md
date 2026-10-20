@@ -17,6 +17,7 @@ Search by role, invariant, or module path:
 - If the type has stable identity and identity-based equality, check [Entities](#entities).
 - If the type crosses a use case or gateway boundary, check [Requests And Responses](#requests-and-responses).
 - If behavior crosses an application boundary, check [Use Case Seams](#use-case-seams) and [Gateway Seams](#gateway-seams).
+- For typed event delivery, check [Usecase Event Handler](#usecase-event-handler).
 - If an API looks old, check [Compatibility And Deprecations](#compatibility-and-deprecations).
 
 When a matching type exists, prefer importing it from `kernel_oss` instead of
@@ -35,6 +36,7 @@ type was not reused.
 | No-input gateway | `gateway::VoidGateway` / `gateway::AsyncVoidGateway` | A gateway has no request object. |
 | Request-bearing gateway | `gateway::Gateway` / `gateway::AsyncGateway` | A gateway accepts a finalized request. |
 | Async response | `response::ResponseFuture` | Async seams return a boxed future from a normal `execute` method. |
+| Typed event delivery | `usecase_event_handler::UsecaseEventHandler` | A Handler consumes a finalized parent Response or Event synchronously. |
 | Bounded error | `error::Error` | Public fallible APIs need classified user/system errors. |
 
 Request builders are construction collaborators. They should build finalized
@@ -167,6 +169,28 @@ The kernel owns the shared use case roles, not concrete domain use cases.
 
 Domain crates should define their own `*UC` marker traits as thin supertraits
 over these shared roles.
+
+## Usecase Event Handler
+
+`kernel_oss::usecase_event_handler::UsecaseEventHandler` defines synchronous
+typed delivery: `handle(&self, event: Self::Event) -> Result<(), Error>`.
+The Handler is `Send + Sync`; its required associated `Event` has no additional
+universal bound. Domain marker traits fix the exact finalized input, which may
+be a parent Response or a dedicated Event. This role is distinct from Usecase
+execution and Gateway capabilities.
+
+`kernel_oss::usecase_event_handler::NoOpUsecaseEventHandler<Input>` provides
+explicit `new()` and `Default` for `Input: Send + Sync`. It consumes and drops
+its input before returning `Ok(())`, retains no invocation state and performs
+no output. A destructor panic is not converted to success or Kernel Error.
+Import `UsecaseEventHandler` for method lookup; there is no inherent `handle`.
+
+The Domain crate owning a marker may bind the Kernel no-op only where the
+parent contract permits it. Application explicitly selects and injects the
+Handler; required delivery cannot use a no-op. Default construction is not an
+implicit dependency fallback. Unit success from the no-op establishes no
+boundary output. Parent event meaning, timing and failure policy remain
+outside Kernel. Two markers sharing an input remain separate capabilities.
 
 ## Gateway Seams
 

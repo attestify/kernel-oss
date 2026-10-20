@@ -50,6 +50,32 @@ cover complete public behavior across modules, including:
 An integration test may not import or expose a private engine merely to make
 the move convenient.
 
+Usecase Event Handler consumer tests exercise public typing, trait-object
+dispatch, explicit no-op bindings and unchanged delivery Errors.
+`tests/usecase_event_handler_compile.rs` runs the compiler fixtures under
+`tests/fixtures/usecase_event_handler/` against this actual library.
+Its separate Domain crate owns the markers and a permitted no-op binding.
+A separate consumer rejects a foreign marker implementation for the Kernel
+no-op with `E0117`; a local marker inside an integration test alone cannot
+prove that restriction.
+
+The compiler suite first compiles and runs its positive control, then checks
+the intended diagnostic codes for wrong inputs, missing associated types or
+base implementations, distinct marker identities, and the no-op's `Send + Sync`
+bounds. Generated manifests, lockfile and isolated build output stay beneath
+`target/handler-contract-<process-id>/` and are removed after the test.
+The harness requires Cargo and the current Rust toolchain, runs offline and
+adds no dependency. It runs with `cargo test --all-targets --locked --offline`
+or directly with:
+
+```text
+cargo test --test usecase_event_handler_compile --locked --offline
+```
+
+The nested fixture workspace generates its own temporary lockfile against
+the current source path. It does not change the repository lockfile or replace
+normal locked dependency verification.
+
 ### Generator tests and checks
 
 Generator unit tests remain under `tools/`. They verify parsing, deterministic

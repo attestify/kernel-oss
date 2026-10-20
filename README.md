@@ -26,6 +26,7 @@ should use an issued immutable tag until its separate distribution decision.
 - `entity::Entity` and `response::ResponseFuture`
 - synchronous and asynchronous use-case roles
 - synchronous and asynchronous gateway roles and kernel gateway markers
+- typed synchronous Usecase Event Handler delivery and an explicitly selected no-op
 - `values::text::NfcText`, backed by the shared private Unicode 17 NFC engine
 - `values::uri::url::URL`, a dependency-free immutable WHATWG URL value
 - specification values including redacted `RepositoryLink`
@@ -142,6 +143,14 @@ Standards-aligned gateway markers include new identity, current UTC timestamp,
 directory-path retrieval, file-data retrieval, and log-entry writing. Legacy
 gateway compatibility modules remain available for existing consumers; prefer
 the replacements listed in the [Kernel catalog](docs/kernel-catalog.md).
+
+Typed delivery uses `usecase_event_handler::UsecaseEventHandler` and
+`usecase_event_handler::NoOpUsecaseEventHandler`. Domain markers fix the
+finalized input and own permitted no-op bindings. Application selects and
+injects the Handler explicitly. No-op success does not establish output;
+required delivery cannot use a no-op. See the
+[Handler contract](docs/kernel-catalog.md#usecase-event-handler) for exact bounds
+and construction behavior.
 
 ## Security and data handling
 

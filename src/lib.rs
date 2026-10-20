@@ -23,4 +23,5 @@ pub mod gateway;
 pub mod response;
 pub mod ulid;
 pub mod usecase;
+pub mod usecase_event_handler;
 pub mod values;
