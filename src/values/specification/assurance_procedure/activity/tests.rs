@@ -4,7 +4,7 @@
 //! Public interfaces verified: `new`, `append_action`, and `add_expected_evidence`.
 //! Logical paths covered: successful construction, action addition, expected-evidence insertion,
 //! and validation failures for invalid name/description/evidence inputs.
-//! Requirement validation points: standards-aligned activity behavior for assurance procedures.
+//! Requirement validation points: activity behavior for assurance procedures.
 
 use crate::error::{Audience, Kind};
 use crate::values::specification::assurance_procedure::action::Action;

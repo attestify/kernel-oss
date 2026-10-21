@@ -4,7 +4,7 @@
 //! Public interfaces verified: `builder`, `ActionBuilder::default`, and `try_build`.
 //! Logical paths covered: valid construction, missing fields, and invalid field inputs across
 //! name, outcome, descriptions, and file-path/signature inputs.
-//! Requirement validation points: standards-aligned action builder behavior for assurance
+//! Requirement validation points: action builder behavior for assurance
 //! procedures.
 
 use crate::error::{Audience, Kind};

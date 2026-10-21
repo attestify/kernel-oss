@@ -4,7 +4,7 @@
 //! Public interfaces verified: `default`, `new`, `from_string`, `len`, `is_empty`, and `value`.
 //! Logical paths covered: default construction, string construction, sanitization, length,
 //! emptiness, and equality comparisons.
-//! Requirement validation points: standards-aligned single-line text value behavior.
+//! Requirement validation points: single-line text value behavior.
 
 use super::Line;
 

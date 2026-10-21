@@ -1,4 +1,4 @@
-//! Demonstrates a standards-aligned value object and entity.
+//! Demonstrates a value object and entity.
 //!
 //! This example shows how a value object implements [`Value`] with a
 //! fundamental Rust value type and how an entity implements [`Entity`] with a

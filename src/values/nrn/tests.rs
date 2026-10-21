@@ -5,7 +5,7 @@
 //! formatting for NIDs.
 //! Logical paths covered: valid NRNs, scheme/NID/NSS validation failures, display conversion,
 //! and NID registry checks.
-//! Requirement validation points: standards-aligned parsing and validation behavior for the NRN
+//! Requirement validation points: parsing and validation behavior for the NRN
 //! domain helpers.
 
 use crate::error::{Audience, Kind};

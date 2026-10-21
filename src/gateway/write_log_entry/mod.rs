@@ -1,4 +1,11 @@
-//! Standards-aligned logging gateway seam.
+//! Compatibility logging Gateway seams. These request/Result APIs remain
+//! supported for existing consumers. New operational logging uses
+//! [`crate::logging::Logger`], a separate synchronous, unit-returning interface.
+//!
+//! Contract: kernel-oss-operational-logger@0.1.0
+//! Role: module
+//! Targets: LOG-T10, LOG-T11
+//! Layout: F19
 //!
 //! Logging is modeled as one command capability: write a log entry. The log
 //! level is request data, not a separate architectural seam. This keeps the

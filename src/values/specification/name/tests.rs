@@ -4,7 +4,7 @@
 //! Public interfaces verified: `try_from`.
 //! Logical paths covered: valid normalization, leading/trailing dash rejection, whitespace
 //! rejection, invalid character rejection, and empty input.
-//! Requirement validation points: standards-aligned behavior for the name value object.
+//! Requirement validation points: behavior for the name value object.
 
 use super::Name;
 use crate::error::{Audience, Kind};

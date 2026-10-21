@@ -4,7 +4,7 @@
 //! Public interfaces verified: `default`, `new`, `from_string`, `len`, `is_empty`, and `value`.
 //! Logical paths covered: default construction, string construction, sanitization, length,
 //! emptiness, and equality comparisons.
-//! Requirement validation points: standards-aligned multi-line text block behavior.
+//! Requirement validation points: multi-line text block behavior.
 
 use super::Block;
 

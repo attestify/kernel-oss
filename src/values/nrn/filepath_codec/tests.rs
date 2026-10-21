@@ -3,7 +3,7 @@
 //! Bounded unit under test: the NRN filepath codec helpers.
 //! Public interfaces verified: `encode_as_directory_name` and `decode_from_directory_name`.
 //! Logical paths covered: valid encode/decode round-trips and invalid directory-name decoding.
-//! Requirement validation points: standards-aligned translation between NRN values and directory
+//! Requirement validation points: translation between NRN values and directory
 //! names for filesystem use.
 
 use super::{decode_from_directory_name, encode_as_directory_name};

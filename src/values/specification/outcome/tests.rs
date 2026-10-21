@@ -4,7 +4,7 @@
 //! Public interfaces verified: `try_from`, `to_string`, and `default`.
 //! Logical paths covered: valid inputs, empty input, invalid input, uppercase normalization, and
 //! the default fallback value.
-//! Requirement validation points: standards-aligned outcome parsing and formatting behavior.
+//! Requirement validation points: outcome parsing and formatting behavior.
 
 use super::Outcome;
 use crate::error;

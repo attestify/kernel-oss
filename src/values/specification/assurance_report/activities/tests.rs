@@ -5,7 +5,7 @@
 //! `try_build`.
 //! Logical paths covered: empty collection, merging, duplicate activity handling, action routing,
 //! and invalid activity-name rejection.
-//! Requirement validation points: standards-aligned activities collection behavior for reports.
+//! Requirement validation points: activities collection behavior for reports.
 
 use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;

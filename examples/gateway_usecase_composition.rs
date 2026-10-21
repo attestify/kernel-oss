@@ -1,4 +1,4 @@
-//! Demonstrates standards-aligned gateway and use case composition.
+//! Demonstrates gateway and use case composition.
 //!
 //! This example shows how a caller builds a request before crossing the use
 //! case boundary, how a use case calls a gateway through a domain-specific

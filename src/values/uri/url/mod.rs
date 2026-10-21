@@ -1,6 +1,6 @@
 //! Public, redaction-safe URL facade backed by the private WHATWG engine.
 //!
-//! [`URL::value`] returns the complete canonical serialization, which can contain
+//! [`URL::value`](crate::values::Value::value) returns the complete canonical serialization, which can contain
 //! credentials, query data, and a fragment. Callers must treat it as sensitive.
 
 use std::{

@@ -76,6 +76,34 @@ The nested fixture workspace generates its own temporary lockfile against
 the current source path. It does not change the repository lockfile or replace
 normal locked dependency verification.
 
+Operational Logger behavior is tested in
+`src/logging/no_op_logger/tests.rs`. `tests/logging_consumer.rs` exercises public
+imports, method dispatch and trait-object sharing, using the ordinary recording
+fixture in `tests/logging_support/value/recording_logger/mod.rs`; the support
+and value `mod.rs` files are declaration/re-export barrels.
+
+`tests/logging_compile.rs` builds fixtures under `tests/fixtures/logging/` against
+the actual library path. `positive.rs` must build and execute silently. The
+`missing_method.rs`, `non_send.rs`, `non_sync.rs`, `extra_initialize.rs` and
+`result_return.rs` binary roots load their corresponding implementations from
+`value/<fixture-name>/mod.rs`. Each negative must fail for its intended obligation:
+E0046 (missing required method), E0277 (Send or Sync independently), E0407
+(unsupported initialize method), or E0053 (incorrect Result return).
+
+Temporary manifests, lockfiles and build output reside under
+`target/logging-contract-<process-id>/` and are cleaned up, including on harness
+assertion failure. The nested workspace runs offline and does not replace the
+repository's locked dependency checks. The positive binary is executed directly,
+so compiler output cannot be mistaken for Logger output. Run the suite with:
+
+```text
+cargo test --test logging_compile --locked --offline
+```
+
+Format/check these fixtures explicitly with Rust edition 2024; ordinary Cargo
+formatting need not discover intentionally invalid fixture implementations.
+Preserve the discovery baseline below; new tests do not replace its obligations.
+
 ### Generator tests and checks
 
 Generator unit tests remain under `tools/`. They verify parsing, deterministic

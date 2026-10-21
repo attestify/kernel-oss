@@ -5,7 +5,7 @@
 //! Public interfaces verified: `data` accessor.
 //! Logical paths covered: empty state, add/update/remove success, duplicate-key handling, missing
 //! key lookup, oversized inputs, and invalid key/value inputs.
-//! Requirement validation points: standards-aligned metadata collection behavior.
+//! Requirement validation points: metadata collection behavior.
 
 use super::{KEY_MAX, MetaData, VALUE_MAX};
 use crate::error::{Audience, Kind};

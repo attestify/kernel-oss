@@ -3,7 +3,7 @@
 //! Bounded unit under test: `Procedure`.
 //! Public interfaces verified: `try_new`.
 //! Logical paths covered: valid repository-directory pairs and invalid repository/directory inputs.
-//! Requirement validation points: standards-aligned validation for procedure repository metadata.
+//! Requirement validation points: validation for procedure repository metadata.
 
 use super::Procedure;
 use crate::error::{Audience, Kind};

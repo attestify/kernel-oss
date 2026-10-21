@@ -5,7 +5,7 @@
 //! builder methods.
 //! Logical paths covered: valid construction, override precedence, and invalid inputs across name,
 //! outcome, reason, and file path/signature fields.
-//! Requirement validation points: standards-aligned action behavior for assurance reports.
+//! Requirement validation points: action behavior for assurance reports.
 
 use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;

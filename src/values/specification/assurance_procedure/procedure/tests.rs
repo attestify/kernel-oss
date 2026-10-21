@@ -4,7 +4,7 @@
 //! Public interfaces verified: `new`.
 //! Logical paths covered: valid construction and invalid NRN, short description, and long
 //! description inputs.
-//! Requirement validation points: standards-aligned procedure value-object behavior.
+//! Requirement validation points: procedure value-object behavior.
 
 use super::Procedure;
 use crate::error;

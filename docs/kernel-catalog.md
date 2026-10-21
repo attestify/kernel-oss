@@ -18,6 +18,7 @@ Search by role, invariant, or module path:
 - If the type crosses a use case or gateway boundary, check [Requests And Responses](#requests-and-responses).
 - If behavior crosses an application boundary, check [Use Case Seams](#use-case-seams) and [Gateway Seams](#gateway-seams).
 - For typed event delivery, check [Usecase Event Handler](#usecase-event-handler).
+- For operational logging, check [Operational Logging](#operational-logging).
 - If an API looks old, check [Compatibility And Deprecations](#compatibility-and-deprecations).
 
 When a matching type exists, prefer importing it from `kernel_oss` instead of
@@ -25,9 +26,9 @@ creating a duplicate in a domain crate. If the existing type almost fits but has
 the wrong invariant, create a domain-specific type and document why the kernel
 type was not reused.
 
-## Role Standards
+## Shared Roles
 
-| Role | Standard Shape | Use When |
+| Role | Shared Shape | Use When |
 | --- | --- | --- |
 | Value object | `values::Value` | A type exposes one canonical bounded value. |
 | Entity | `entity::Entity` | A type has stable identity and should compare by identity. |
@@ -37,6 +38,7 @@ type was not reused.
 | Request-bearing gateway | `gateway::Gateway` / `gateway::AsyncGateway` | A gateway accepts a finalized request. |
 | Async response | `response::ResponseFuture` | Async seams return a boxed future from a normal `execute` method. |
 | Typed event delivery | `usecase_event_handler::UsecaseEventHandler` | A Handler consumes a finalized parent Response or Event synchronously. |
+| Operational logging | `logging::Logger` / `logging::NoOpLogger` | Synchronous borrowed-message calls; explicit no-op when output is intentionally absent (0.6.0). |
 | Bounded error | `error::Error` | Public fallible APIs need classified user/system errors. |
 
 Request builders are construction collaborators. They should build finalized
@@ -192,6 +194,24 @@ implicit dependency fallback. Unit success from the no-op establishes no
 boundary output. Parent event meaning, timing and failure policy remain
 outside Kernel. Two markers sharing an input remain separate capabilities.
 
+## Operational Logging
+
+Introduced in 0.6.0 (release tag pending). See the
+[0.6.0 changelog](../CHANGELOG.md#060--unreleased) for compatibility and migration.
+
+| Type | Public path | Contract |
+| --- | --- | --- |
+| `Logger` | `kernel_oss::logging::Logger` | `Send + Sync`; required synchronous `info`, `warn`, `error`, each borrowing `&str` and returning `()`. |
+| `NoOpLogger` | `kernel_oss::logging::NoOpLogger` | Infallible `new()` and `Default`; no output, retained input or invocation state. |
+
+These are operational logging APIs, not Gateways. Unit return is not a delivery
+acknowledgment. See [Logging](logging.md) for safety, concrete implementation
+obligations and compatibility limits. Abandoned original messages are discarded;
+emergency diagnostics report logger health only and never replay payloads.
+The [diagnostic policy](logging.md#concrete-implementation-obligations)
+owns routing, permitted fields, episode accounting and timing. NoOpLogger has no
+sink failures and emits no diagnostics.
+
 ## Gateway Seams
 
 ### Shared Gateway Roles
@@ -215,8 +235,8 @@ outside Kernel. Two markers sharing an input remain separate capabilities.
 | `AsyncRetrieveDirectoryPathGW` | `kernel_oss::gateway::retrieve_directory_path::AsyncRetrieveDirectoryPathGW` | async | `RetrieveDirectoryPathRequest` | `String` | Async directory path retrieval. |
 | `FileDataGW` | `kernel_oss::gateway::file_data::FileDataGW` | sync | `FileDataRequest` | `Vec<u8>` | A caller needs file data by path. |
 | `AsyncFileDataGW` | `kernel_oss::gateway::file_data::AsyncFileDataGW` | async | `FileDataRequest` | `Vec<u8>` | Async file data retrieval. |
-| `WriteLogEntryGW` | `kernel_oss::gateway::write_log_entry::WriteLogEntryGW` | sync | `WriteLogEntryRequest` | `()` | A caller needs to write one log entry. |
-| `AsyncWriteLogEntryGW` | `kernel_oss::gateway::write_log_entry::AsyncWriteLogEntryGW` | async | `WriteLogEntryRequest` | `()` | Async log-entry writing. |
+| `WriteLogEntryGW` | `kernel_oss::gateway::write_log_entry::WriteLogEntryGW` | sync | `WriteLogEntryRequest` | `()` | Compatibility request/Result log-entry writing. |
+| `AsyncWriteLogEntryGW` | `kernel_oss::gateway::write_log_entry::AsyncWriteLogEntryGW` | async | `WriteLogEntryRequest` | `()` | Compatibility async request/Result log-entry writing. |
 
 ## Compatibility And Deprecations
 
@@ -229,7 +249,7 @@ the replacement APIs in new code.
 | `gateway::utc_timestamp::UTCTimestampGateway` | `gateway::current_utc_timestamp::CurrentUTCTimestampGW` |
 | `gateway::directory_list::RetrieveDirectoryPath` | `gateway::retrieve_directory_path::RetrieveDirectoryPathGW` |
 | `gateway::file_data_gateway::FileDataGateway` | `gateway::file_data::FileDataGW` |
-| `gateway::logger::Logger` | `gateway::write_log_entry::WriteLogEntryGW` |
+| `gateway::logger::Logger` | `logging::Logger` (0.6.0; signature adaptation required) |
 
 ## Planned Moves / Do Not Copy
 

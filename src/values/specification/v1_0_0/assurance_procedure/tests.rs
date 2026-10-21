@@ -4,7 +4,7 @@
 //! Public interfaces verified: `builder`, `AssuranceProcedureBuilder::default`, and `try_build`.
 //! Logical paths covered: valid construction, missing API version, invalid API version, missing
 //! procedure data, and duplicate artifact rejection.
-//! Requirement validation points: standards-aligned compatibility wrapper behavior for
+//! Requirement validation points: compatibility wrapper behavior for
 //! assurance-procedure construction.
 
 use crate::error;

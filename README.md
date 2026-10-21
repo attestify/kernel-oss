@@ -9,15 +9,19 @@ network, database, filesystem, or runtime orchestration.
 
 ## Add the crate
 
-Kernel OSS releases are immutable signed Git tags:
+Kernel OSS releases are immutable signed Git tags. This source tree prepares
+**0.6.0**; that tag is not yet published. The dependency below applies once
+0.6.0 is published (the prior release is 0.5.0):
 
 ```toml
 [dependencies]
-kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.5.0" }
+kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.6.0" }
 ```
 
-Version 0.5.0 adds typed Usecase Event Handler contracts and the reusable
-no-op while retaining the bounded Error provenance API introduced in 0.4.0.
+Version 0.6.0 adds the synchronous operational Logger and explicit no-op. It
+retains the typed Usecase Event Handler API from 0.5.0 and bounded Error
+provenance from 0.4.0. See the [0.6.0 changelog](CHANGELOG.md#060--unreleased) for
+compatibility and migration.
 
 ## Main capabilities
 
@@ -27,6 +31,8 @@ no-op while retaining the bounded Error provenance API introduced in 0.4.0.
 - synchronous and asynchronous use-case roles
 - synchronous and asynchronous gateway roles and kernel gateway markers
 - typed synchronous Usecase Event Handler delivery and an explicitly selected no-op
+- synchronous operational logging through `logging::Logger` and explicit
+  `logging::NoOpLogger` (introduced in 0.6.0)
 - `values::text::NfcText`, backed by the shared private Unicode 17 NFC engine
 - `values::uri::url::URL`, a dependency-free immutable WHATWG URL value
 - specification values including redacted `RepositoryLink`
@@ -139,10 +145,14 @@ Gateways:
 - `gateway::AsyncVoidGateway`
 - `gateway::AsyncGateway`
 
-Standards-aligned gateway markers include new identity, current UTC timestamp,
-directory-path retrieval, file-data retrieval, and log-entry writing. Legacy
-gateway compatibility modules remain available for existing consumers; prefer
-the replacements listed in the [Kernel catalog](docs/kernel-catalog.md).
+Gateway markers include new identity, current UTC timestamp, directory-path
+retrieval and file-data retrieval. The log-entry writing Gateways remain
+compatibility APIs. New operational logging uses `logging::Logger` with
+`info`, `warn` and `error`; `logging::NoOpLogger` explicitly discards messages.
+These operational logging APIs are introduced in 0.6.0. See the
+[logging contract](docs/logging.md) for construction, safety
+and migration, and the [Kernel catalog](docs/kernel-catalog.md) for compatibility
+paths.
 
 Typed delivery uses `usecase_event_handler::UsecaseEventHandler` and
 `usecase_event_handler::NoOpUsecaseEventHandler`. Domain markers fix the
@@ -179,6 +189,8 @@ attach, derive, and clear reconstruction transitions.
 
 - [Kernel catalog](docs/kernel-catalog.md): reusable types, seams, and
   compatibility paths
+- [Operational logging](docs/logging.md): synchronous Logger, explicit no-op,
+  concrete implementation obligations and legacy migration
 - [URL value and architecture](docs/url.md): public contract, resolution,
   mutation, security, and private engine composition
 - [NFC text](docs/nfc-text.md): canonical text behavior, shared normalization,
@@ -187,9 +199,8 @@ attach, derive, and clear reconstruction transitions.
   fixture, and generator boundaries
 - [README standard](docs/readme-standard.md): required structure and content
   rules for this README
-- [0.4.0 migration guide](docs/MIGRATION-0.4.0.md): bounded Error provenance
-  source transition and consumer inventory guidance
-- [0.4.0 semver report](docs/SEMVER-0.4.0.md): public API evolution summary
+- [Changelog](CHANGELOG.md): release history, compatibility notes and
+  migration guidance, including the 0.4.0 Error provenance transition
 - Rustdoc: generated API reference from the public source documentation
 
 ## Examples

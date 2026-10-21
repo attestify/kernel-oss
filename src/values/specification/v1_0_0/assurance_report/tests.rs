@@ -5,7 +5,7 @@
 //! Public interfaces verified: `Builder::new`, `Builder::default`, builder setters, and `try_build`.
 //! Logical paths covered: valid construction, override precedence, missing required inputs,
 //! invalid subject/procedure data, invalid activity data, and invalid additional information.
-//! Requirement validation points: standards-aligned compatibility wrapper behavior for assurance
+//! Requirement validation points: compatibility wrapper behavior for assurance
 //! reports.
 
 use crate::algorithms::signature_algorithm::Signature;

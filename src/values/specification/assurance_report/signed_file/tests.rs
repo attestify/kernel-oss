@@ -3,7 +3,7 @@
 //! Bounded unit under test: `assurance_report::SignedFile`.
 //! Public interfaces verified: `new`, `file`, `signature`, and `signature_type`.
 //! Logical paths covered: valid signed-file construction and invalid file-path rejection.
-//! Requirement validation points: standards-aligned signed-file behavior for assurance reports.
+//! Requirement validation points: signed-file behavior for assurance reports.
 
 use crate::algorithms::signature_algorithm::{Signature, SignatureType::SHA256};
 use crate::error::{Audience, Kind};

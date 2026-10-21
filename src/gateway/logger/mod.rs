@@ -1,7 +1,13 @@
 //! Legacy logger compatibility surface.
 //!
-//! Prefer [`crate::gateway::write_log_entry::WriteLogEntryGW`] and
-//! [`crate::gateway::write_log_entry::AsyncWriteLogEntryGW`] in new code.
+//! Prefer [`crate::logging::Logger`] for new operational logging. This legacy
+//! interface remains available for compatibility; the new interface is not a
+//! signature-compatible replacement.
+//!
+//! Contract: kernel-oss-operational-logger@0.1.0
+//! Role: module
+//! Targets: LOG-T10, LOG-T11
+//! Layout: F18
 
 #[cfg(test)]
 mod tests;
@@ -9,7 +15,7 @@ mod tests;
 use crate::error::Error;
 
 #[deprecated(
-    note = "Use gateway::write_log_entry::WriteLogEntryGW, which implements the shared Gateway seam."
+    note = "Use logging::Logger for operational logging; migration requires adapting the legacy signatures."
 )]
 /// A legacy logging gateway trait kept for compatibility.
 pub trait Logger: Sync + Send {

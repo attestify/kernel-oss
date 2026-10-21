@@ -20,6 +20,13 @@ pub mod core;
 pub mod entity;
 pub mod error;
 pub mod gateway;
+/// Canonical operational logging exports.
+///
+/// Contract: kernel-oss-operational-logger@0.1.0
+/// Role: module
+/// Targets: LOG-T09, LOG-T12
+/// Layout: F01
+pub mod logging;
 pub mod response;
 pub mod ulid;
 pub mod usecase;

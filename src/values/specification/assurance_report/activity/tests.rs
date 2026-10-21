@@ -5,7 +5,7 @@
 //! attachment helpers.
 //! Logical paths covered: valid construction, override behavior, multiple action append flows, and
 //! invalid name handling.
-//! Requirement validation points: standards-aligned activity behavior for assurance reports.
+//! Requirement validation points: activity behavior for assurance reports.
 
 use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;

@@ -5,7 +5,7 @@
 //! Public interfaces verified: `time` accessor.
 //! Logical paths covered: current time capture, explicit construction, successful parsing, and the
 //! zero-value rejection path.
-//! Requirement validation points: standards-aligned behavior for the start-time value object.
+//! Requirement validation points: behavior for the start-time value object.
 
 use crate::error::Audience;
 use crate::error::Kind;

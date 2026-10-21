@@ -4,7 +4,7 @@
 //! Public interfaces verified: `default`, `add`, `merge`, and `add_activity`.
 //! Logical paths covered: empty state, merging, duplicate suppression, action routing, and
 //! invalid activity names.
-//! Requirement validation points: standards-aligned activity collection behavior for assurance
+//! Requirement validation points: activity collection behavior for assurance
 //! procedures.
 
 use crate::error::{Audience, Kind};

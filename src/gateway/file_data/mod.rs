@@ -1,4 +1,4 @@
-//! Standards-aligned file-data gateway.
+//! file-data gateway.
 //!
 //! This module provides the request-bearing gateway seam for retrieving file
 //! bytes from a validated file path, along with the compatibility adapter for

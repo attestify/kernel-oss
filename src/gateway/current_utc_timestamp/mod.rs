@@ -1,4 +1,4 @@
-//! Standards-aligned current UTC timestamp gateway.
+//! current UTC timestamp gateway.
 //!
 //! This module provides the shared kernel seam for retrieving the current UTC
 //! timestamp, plus the sync and async marker traits that bind the shared

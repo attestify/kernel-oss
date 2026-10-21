@@ -3,7 +3,7 @@
 //! Bounded unit under test: `assurance_procedure::Artifacts`.
 //! Public interfaces verified: `default`, `add`, and `merge`.
 //! Logical paths covered: successful insertion, merging, and duplicate-artifact rejection.
-//! Requirement validation points: standards-aligned artifact collection behavior for assurance
+//! Requirement validation points: artifact collection behavior for assurance
 //! procedures.
 
 use crate::error::{Audience, Kind};

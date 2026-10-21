@@ -4,7 +4,7 @@
 //! Public interfaces verified: `new`.
 //! Logical paths covered: successful construction and invalid name, description, and metadata
 //! inputs.
-//! Requirement validation points: standards-aligned artifact validation for assurance procedures.
+//! Requirement validation points: artifact validation for assurance procedures.
 
 use crate::error::{Audience, Kind};
 use crate::values::specification::assurance_procedure::artifact::Artifact;

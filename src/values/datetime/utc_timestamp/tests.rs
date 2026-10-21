@@ -4,7 +4,7 @@
 //! Public interfaces verified: the builder, `as_nano`, `as_milli`, `as_sec`, and error handling.
 //! Logical paths covered: millisecond input, nanosecond input, setter override behavior, overflow
 //! handling, truncation behavior, zero-input rejection, and sub-millisecond conversion.
-//! Requirement validation points: standards-aligned timestamp conversion and validation behavior.
+//! Requirement validation points: timestamp conversion and validation behavior.
 
 use crate::error::Audience;
 use crate::error::Kind;

@@ -4,7 +4,7 @@
 //! Public interfaces verified: `default`, `try_from_vec`, `try_add`, `try_get`, and `try_merge`.
 //! Logical paths covered: empty inputs, successful insertions, duplicate key handling, missing
 //! lookups, and list merge behavior.
-//! Requirement validation points: standards-aligned value-object coverage for directory path
+//! Requirement validation points: value-object coverage for directory path
 //! collection behavior.
 
 use super::DirectoryList;

@@ -7,7 +7,7 @@
 //! and `Summary::outcome`.
 //! Logical paths covered: empty collections, all-pass outcomes, fail precedence, inconclusive
 //! precedence, and error handling in summary aggregation.
-//! Requirement validation points: standards-aligned report-summary aggregation behavior.
+//! Requirement validation points: report-summary aggregation behavior.
 
 use crate::algorithms::signature_algorithm::Signature;
 use crate::algorithms::signature_algorithm::SignatureType::SHA256;

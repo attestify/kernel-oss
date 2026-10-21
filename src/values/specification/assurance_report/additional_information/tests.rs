@@ -3,7 +3,7 @@
 //! Bounded unit under test: `assurance_report::AdditionalInformation`.
 //! Public interfaces verified: `builder`, `AdditionalInformationBuilder::default`, and `try_build`.
 //! Logical paths covered: successful append, duplicate suppression, and invalid entry rejection.
-//! Requirement validation points: standards-aligned additional-information behavior for reports.
+//! Requirement validation points: additional-information behavior for reports.
 
 use crate::error::{Audience, Kind};
 use crate::values::specification::assurance_report::additional_information::{
