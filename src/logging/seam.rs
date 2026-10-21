@@ -28,7 +28,7 @@
 ///
 /// # Destination failures and diagnostics
 ///
-/// The accepted local policy is in the crate package's `docs/logging.md`,
+/// The accepted local policy is in the crate package's `docs/logging/README.md`,
 /// "Concrete implementation obligations", "Health diagnostics, never payload
 /// fallback", and "Episodes, concurrency and bounded execution". Concrete
 /// implementations abandon failed original messages; emergency routes report

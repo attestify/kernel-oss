@@ -9,9 +9,7 @@ network, database, filesystem, or runtime orchestration.
 
 ## Add the crate
 
-Kernel OSS releases are immutable signed Git tags. This source tree prepares
-**0.6.0**; that tag is not yet published. The dependency below applies once
-0.6.0 is published (the prior release is 0.5.0):
+Kernel OSS releases are immutable signed Git tags. Use **0.6.0**:
 
 ```toml
 [dependencies]
@@ -20,7 +18,7 @@ kernel_oss = { git = "https://github.com/attestify/kernel-oss.git", tag = "0.6.0
 
 Version 0.6.0 adds the synchronous operational Logger and explicit no-op. It
 retains the typed Usecase Event Handler API from 0.5.0 and bounded Error
-provenance from 0.4.0. See the [0.6.0 changelog](CHANGELOG.md#060--unreleased) for
+provenance from 0.4.0. See the [0.6.0 changelog](CHANGELOG.md#060--2026-10-21) for
 compatibility and migration.
 
 ## Main capabilities
@@ -150,7 +148,7 @@ retrieval and file-data retrieval. The log-entry writing Gateways remain
 compatibility APIs. New operational logging uses `logging::Logger` with
 `info`, `warn` and `error`; `logging::NoOpLogger` explicitly discards messages.
 These operational logging APIs are introduced in 0.6.0. See the
-[logging contract](docs/logging.md) for construction, safety
+[logging contract](docs/logging/README.md) for construction, safety
 and migration, and the [Kernel catalog](docs/kernel-catalog.md) for compatibility
 paths.
 
@@ -187,13 +185,15 @@ attach, derive, and clear reconstruction transitions.
 
 ## Architecture and reference documentation
 
+- [Documentation index](docs/README.md): consumer guides and the library
+  documentation convention
 - [Kernel catalog](docs/kernel-catalog.md): reusable types, seams, and
   compatibility paths
-- [Operational logging](docs/logging.md): synchronous Logger, explicit no-op,
+- [Operational logging](docs/logging/README.md): synchronous Logger, explicit no-op,
   concrete implementation obligations and legacy migration
-- [URL value and architecture](docs/url.md): public contract, resolution,
+- [URL value and architecture](docs/values/uri/url/README.md): public contract, resolution,
   mutation, security, and private engine composition
-- [NFC text](docs/nfc-text.md): canonical text behavior, shared normalization,
+- [NFC text](docs/values/text/README.md): canonical text behavior, shared normalization,
   and Unicode custody
 - [Test architecture](docs/testing.md): unit, private-conformance, integration,
   fixture, and generator boundaries
@@ -216,6 +216,14 @@ cargo run --example error_provenance
 ```
 
 ## Verification
+
+`make ci` is a fast contributor check (format check, lint and tests), not the
+full release baseline. It does not edit source to repair formatting. Use
+`make fmt` when you intend to apply formatting. For locked offline contributor
+checks, run `make ci CARGO_FLAGS="--locked --offline"`.
+
+Run the full baseline below before a release, plus the area-specific checks
+described in [Test architecture](docs/testing.md):
 
 ```text
 cargo fmt --all --check

@@ -1,90 +1,6 @@
-# URL Value and Architecture
+# URL design and maintenance
 
-## Public contract
-
-`kernel_oss::values::uri::url::URL` is an immutable, dependency-free WHATWG URL
-value. It owns canonical private state and exposes borrowed views of that state.
-
-Construct a URL with:
-
-```rust
-use kernel_oss::values::uri::url::URL;
-
-let url = URL::try_new("https://user:secret@example.test/a?one=1#section")
-    .expect("the example URL is valid");
-
-assert_eq!(url.scheme(), "https");
-assert_eq!(url.username(), "user");
-assert_eq!(url.password(), Some("secret"));
-assert_eq!(url.host(), Some("example.test"));
-assert_eq!(url.port(), None);
-assert_eq!(url.path(), "/a");
-assert_eq!(url.query(), Some("one=1"));
-assert_eq!(url.fragment(), Some("section"));
-```
-
-Optional accessors distinguish absence from a present empty component. For
-example, `None` query means there was no query delimiter, while `Some("")`
-means an empty query was present. `query_pairs()` returns a borrowed,
-source-ordered, duplicate-preserving decoded form view.
-
-## Resolution
-
-`try_resolve(&self, reference)` treats `self` as the base URL, applies WHATWG
-relative-reference rules, and returns a new canonical `URL`. It does not mutate
-the base and performs no DNS lookup, redirect, network request, filesystem
-access, or runtime I/O.
-
-```rust
-use kernel_oss::values::uri::url::URL;
-
-let base = URL::try_new("https://example.test/a/b/")
-    .expect("the base URL is valid");
-let result = base
-    .try_resolve("../report")
-    .expect("the relative reference resolves");
-
-assert_eq!(result.value(), "https://example.test/a/report");
-assert_eq!(base.value(), "https://example.test/a/b/");
-```
-
-## Immutable mutation
-
-`mutator()` gathers requested component replacements. Its consuming setters
-copy caller input; the last call to the same setter wins. `try_mutate()` applies
-the complete replacement set once, validates the result through the canonical
-engine, and returns a new URL without changing the original.
-
-Supported setters cover scheme, username, password, host, port, path, query,
-and fragment. Passing `None` clears an optional component. Host input is a host
-component, not an authority string: it cannot inject credentials, ports, paths,
-queries, or fragments.
-
-## Equality, hashing, and errors
-
-Equality and hashing use the complete canonical URL, including credentials,
-query, and fragment. Original spelling and private parser state are not part of
-identity.
-
-Caller-input failures are bounded Kernel errors:
-
-| Operation | Audience | Kind | Message |
-| --- | --- | --- | --- |
-| `try_new` | `User` | `InvalidInput` | `URL parsing failed.` |
-| `try_resolve` | `User` | `InvalidInput` | `URL resolution failed.` |
-| `try_mutate` | `User` | `InvalidInput` | `URL mutation failed.` |
-
-The messages disclose no input, canonical URL, credentials, query, fragment,
-upstream wording, or private parser state.
-
-## Sensitive values
-
-`value()` deliberately exposes the complete canonical serialization. It may
-contain secrets and must be used only at an explicit authorized boundary.
-
-`Debug` is exactly `URL([REDACTED])`. `URL` intentionally has no `Display`,
-`Copy`, `Default`, ordering, `FromStr`, general conversion, or serde contract.
-The API promises Rust source behavior, not stable layout, FFI, or binary ABI.
+[Usage guide](README.md) · [Documentation index](../../../README.md)
 
 ## Private engine architecture
 
@@ -101,7 +17,7 @@ One private engine serves construction, resolution, and mutation:
 The engine is deterministic, performs no runtime I/O, uses no input-controlled
 recursion, and exposes none of its records, parser states, host types, IDNA
 types, NFC types, or generated tables publicly. See the
-[architecture diagram](url-architecture.puml) for the component relationships.
+[architecture diagram](architecture.puml) for the component relationships.
 
 ## Normative profile and precedence
 
@@ -147,14 +63,14 @@ frozen compatibility oracle. It is not a dependency, implementation source,
 public type source, or packaged artifact.
 
 Pinned behavioral fixtures and the oracle live under `tests/data/url/`.
-[`tests/data/url/SOURCES.tsv`](../tests/data/url/SOURCES.tsv) records the exact
+[`tests/data/url/SOURCES.tsv`](../../../../tests/data/url/SOURCES.tsv) records the exact
 WPT commit, Unicode version, source paths, roles, and SHA-256 values;
-[`tests/data/url/CHECKSUMS.sha256`](../tests/data/url/CHECKSUMS.sha256) binds
+[`tests/data/url/CHECKSUMS.sha256`](../../../../tests/data/url/CHECKSUMS.sha256) binds
 their bytes. Generator-only Unicode inputs are separately owned by
 `tools/url-data/data/`, with their own source and checksum manifests.
-[`tools/url-data/README.md`](../tools/url-data/README.md) defines deterministic,
+[`tools/url-data/README.md`](../../../../tools/url-data/README.md) defines deterministic,
 offline reproduction and custody verification. Licenses and attribution are
-retained in [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) and the
+retained in [`THIRD_PARTY_NOTICES.md`](../../../../THIRD_PARTY_NOTICES.md) and the
 corresponding data directories.
 
 A WHATWG, WPT, Unicode, or IDNA-profile update is a reviewed behavioral change.
@@ -165,11 +81,14 @@ accepted state.
 
 ## Verification
 
+Run the complete [offline custody and generator checks](../../../../tools/url-data/README.md#verification-commands)
+from the repository root to verify all generated tables and vectors.
+
 The permanent suite covers URL parsing, canonical round trips, resolution,
 setters, IDNA, percent/form processing, host parsing, redacted diagnostics,
 adversarial inputs, and release-mode performance. Exact behavioral floors,
 corpus counts, exclusions, data ownership, and the discovery guard are defined
-in [Kernel OSS Test Architecture](testing.md). Run the normal crate checks from
+in [Kernel OSS Test Architecture](../../../testing.md). Run the normal crate checks from
 the README; run the dedicated benchmark with:
 
 ```text

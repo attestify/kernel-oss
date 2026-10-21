@@ -5,8 +5,8 @@ files and design targets. Paths are repository-relative; Kernel OSS is the root
 Cargo project. Design identity `kernel-oss-operational-logger@0.1.0` identifies a
 document revision, not the Kernel crate version or release tag.
 
-See the [consumer contract](logging.md), [design targets](logging-design.md#verification-targets)
-and [test architecture](testing.md) for behavior and verification rules.
+See the [consumer contract](README.md), [design targets](design.md#verification-targets)
+and [test architecture](../testing.md) for behavior and verification rules.
 
 ## Public module structure
 
@@ -50,7 +50,7 @@ source responsibilities, not delivery tasks or approval status.
 | F21 | `src/gateway/write_log_entry/tests.rs` | Gateway evidence | LOG-T10 |
 | F22 | `docs/kernel-catalog.md` | API catalog | LOG-T09–LOG-T12 |
 | F23 | `docs/testing.md` | Test ownership guidance | LOG-T08,LOG-T11,LOG-T12 |
-| F24 | `docs/logging.md` | Consumer contract and local diagnostic policy | LOG-T01–LOG-T12 |
+| F24 | `docs/logging/README.md` | Consumer contract and local diagnostic policy | LOG-T01–LOG-T12 |
 | F25 | `Cargo.toml` | Package identity | LOG-T09,LOG-T12 |
 | F26 | `tests/fixtures/logging/value/missing_method/mod.rs` | Test-only negative implementation | LOG-T08 |
 | F27 | `tests/fixtures/logging/value/non_send/mod.rs` | Test-only negative implementation | LOG-T08 |

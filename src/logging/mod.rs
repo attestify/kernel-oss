@@ -6,7 +6,7 @@
 //! Layout: F02
 //!
 //! These are operational interfaces, separate from Gateway and business-event
-//! delivery. The crate package's `docs/logging.md` owns the consumer contract
+//! delivery. The crate package's `docs/logging/README.md` owns the consumer contract
 //! and concrete implementation obligations.
 
 mod no_op_logger;

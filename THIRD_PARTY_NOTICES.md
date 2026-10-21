@@ -14,7 +14,7 @@ The data supports the private normalization engine behind
 normalization API.
 
 The public behavior and private ownership boundary are described in
-[`docs/nfc-text.md`](docs/nfc-text.md) and [`docs/url.md`](docs/url.md).
+[`docs/values/text/README.md`](docs/values/text/README.md) and [`docs/values/uri/url/README.md`](docs/values/uri/url/README.md).
 
 Unicode 17.0 URL/IDNA behavioral fixtures under `tests/data/url/unicode/` and
 table-generation inputs under `tools/url-data/data/unicode/` are retained under

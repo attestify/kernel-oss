@@ -15,8 +15,8 @@ packets, or adjacent repositories as authority for Kernel OSS.
 
 For URL or NFC changes, also read:
 
-- `docs/url.md`
-- `docs/nfc-text.md`
+- `docs/values/uri/url/README.md` and `docs/values/uri/url/design.md`
+- `docs/values/text/README.md` and `docs/values/text/design.md`
 - `THIRD_PARTY_NOTICES.md`
 - the behavioral-fixture custody under `tests/data/` and generation inputs
   under the owning `tools/**/data/` directory

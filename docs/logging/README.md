@@ -1,36 +1,11 @@
 # Operational Logger consumer contract
 
+[Documentation index](../README.md)
+
 Consumer-contract document revision: **0.1.0**.
 **This is a document revision, not the Kernel crate version or a Git release tag.**
-The operational Logger is introduced in Kernel OSS **0.6.0**, currently prepared
-in this source tree but not yet published as a tag. Kernel OSS owns this shared
-contract; consumers own dependency selection and composition.
-
-## Public contract
-
-Consumers use `kernel_oss::logging::{Logger, NoOpLogger}` without depending on
-Application. Logger is an operational dependency, separate from Gateway,
-Usecase execution and business-event delivery.
-
-```rust
-pub trait Logger: Send + Sync {
-    fn info(&self, message: &str);
-    fn warn(&self, message: &str);
-    fn error(&self, message: &str);
-}
-```
-
-All three methods are required, synchronous, borrow their message and return
-unit. There are no default method bodies or shared initialization hooks, extension
-hooks, callbacks, preparation proxies, `debug` method, Error parameter, Result,
-async Logger or implicit global installation. The interface supports `&dyn Logger`
-and `Arc<dyn Logger>`. Its borrowed input does not by itself prevent a concrete
-implementation from making a copy; the no-op's retention guarantee below is
-stronger than the trait signature alone.
-
-A normal return is not a receipt or proof that the primary destination received
-the message. No arbitrary-implementation panic immunity, allocation-failure
-immunity, nonblocking behavior or hard real-time bound is promised.
+The operational Logger is introduced in Kernel OSS **0.6.0**. Kernel OSS owns
+this shared contract; consumers own dependency selection and composition.
 
 ## Construction and use
 
@@ -61,6 +36,32 @@ loggers belong on decorators or separate composition components, not as retained
 dependencies in core Usecases/Gateways. Decorators preserve the original bounded
 Response/unit/Error and provenance. Logs never replace business output or
 required event delivery.
+
+## Public contract
+
+Consumers use `kernel_oss::logging::{Logger, NoOpLogger}` without depending on
+Application. Logger is an operational dependency, separate from Gateway,
+Usecase execution and business-event delivery.
+
+```rust
+pub trait Logger: Send + Sync {
+    fn info(&self, message: &str);
+    fn warn(&self, message: &str);
+    fn error(&self, message: &str);
+}
+```
+
+All three methods are required, synchronous, borrow their message and return
+unit. There are no default method bodies or shared initialization hooks, extension
+hooks, callbacks, preparation proxies, `debug` method, Error parameter, Result,
+async Logger or implicit global installation. The interface supports `&dyn Logger`
+and `Arc<dyn Logger>`. Its borrowed input does not by itself prevent a concrete
+implementation from making a copy; the no-op's retention guarantee below is
+stronger than the trait signature alone.
+
+A normal return is not a receipt or proof that the primary destination received
+the message. No arbitrary-implementation panic immunity, allocation-failure
+immunity, nonblocking behavior or hard real-time bound is promised.
 
 ## Concrete implementation obligations
 
@@ -171,9 +172,9 @@ similar names from different crate identities are interchangeable.
 
 ## Design and references
 
-- [Logger design](logging-design.md): ownership, logical paths, invariants and verification targets.
-- [Source layout](logging-source-layout.md): canonical exports, source responsibilities and test homes.
-- [Test architecture](testing.md): ordinary-interface and compiler-suite verification.
+- [Logger design](design.md): ownership, logical paths, invariants and verification targets.
+- [Source layout](source-layout.md): canonical exports, source responsibilities and test homes.
+- [Test architecture](../testing.md): ordinary-interface and compiler-suite verification.
 
 The diagnostic policy above is self-contained. Concrete implementations own its
 execution and verification; the no-op has no sink failure or diagnostic behavior.

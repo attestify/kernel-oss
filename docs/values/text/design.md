@@ -1,25 +1,6 @@
-# NFC Text
+# NFC text design and maintenance
 
-## Public contract
-
-`kernel_oss::values::text::NfcText` is an immutable Unicode 17 NFC value. It
-normalizes input during construction and implements
-`Value<ValueType = str>` for borrowed canonical access.
-
-```rust
-use kernel_oss::values::Value;
-use kernel_oss::values::text::NfcText;
-
-let text = NfcText::new("e\u{301}");
-
-assert_eq!(text.value(), "é");
-assert!(NfcText::is_nfc(text.value()));
-assert!(!NfcText::is_nfc("e\u{301}"));
-```
-
-Equality and hashing use normalized value semantics. `NfcText` is `Clone`,
-`Send`, and `Sync`. `Debug` is exactly `NfcText([REDACTED])`; the type has no
-general `Display` representation.
+[Usage guide](README.md) · [Documentation index](../../README.md)
 
 ## Shared private normalization
 
@@ -51,7 +32,7 @@ private table byte-for-byte.
 The private algorithm retains the recorded MIT-licensed influence from
 `unicode-normalization` 0.1.25. Unicode data is retained under Unicode License
 v3. Complete attribution and license texts are in
-[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) and `third-party/licenses/`.
+[THIRD_PARTY_NOTICES.md](../../../THIRD_PARTY_NOTICES.md) and `third-party/licenses/`.
 
 ## Verification
 

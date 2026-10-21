@@ -2,17 +2,17 @@
 
 Design document identity: `kernel-oss-operational-logger@0.1.0`.
 **0.1.0 is this design document revision, not a Kernel crate version or Git tag.**
-The API is introduced in Kernel OSS 0.6.0; its release tag is not yet published.
+The API is introduced in Kernel OSS 0.6.0.
 Owner: independently governed Attestify Kernel OSS.
-[Consumer contract](logging.md) defines public behavior;
-[source layout](logging-source-layout.md) maps the implementation and tests.
+[Consumer contract](README.md) defines public behavior;
+[source layout](source-layout.md) maps the implementation and tests.
 
 ## Purpose
 
 Provide a shared operational logging interface without an Application dependency,
 and an explicitly constructed no-op whose absence of effects is predictable.
-This is identified Attestify Kernel documentation, not a Domain Gateway, Usecase,
-Value or a new blueprint type. It applies the common design spine.
+This design describes the shared operational logging seam and its explicit no-op;
+it does not introduce a Domain Gateway, Usecase or Value.
 
 ## Scope
 
@@ -20,7 +20,7 @@ Value or a new blueprint type. It applies the common design spine.
 
 One synchronous operational seam, its explicit no-op, canonical public exposure,
 ordinary consumer verification, compatibility-preserving guidance and documentation
-of concrete implementation obligations. The accepted [consumer contract](logging.md)
+of concrete implementation obligations. The accepted [consumer contract](README.md)
 owns externally visible behavior.
 
 ### Out of scope
@@ -91,8 +91,8 @@ Not applicable: this stateless three-operation abstraction has no persisted
 model, topology, protocol or internal state transition requiring a separate
 view. Participants and logical-path tables completely describe this component.
 Concrete sink episode diagrams would falsely suggest an implementation in scope.
-No PlantUML source/render is claimed. This explicit treatment is part of design
-review under the common spine and identified-Kernel route.
+No separate diagram is needed for the seam and no-op; the participants and
+logical paths above describe their behavior.
 
 ## Failure and boundary behavior
 
@@ -129,14 +129,14 @@ routing, timing or operator notification. No-op is absence of logging, not failu
 
 Governing design: `kernel-oss-operational-logger@0.1.0` (document only).
 Source annotations use this identity and the targets above. Source/test paths
-and Layout IDs are maintained in the [source layout](logging-source-layout.md).
+and Layout IDs are maintained in the [source layout](source-layout.md).
 
 | Consumer requirement | Owned targets | Bounded contribution |
 | --- | --- | --- |
-| [Public contract](logging.md#public-contract) | LOG-T05, LOG-T08, LOG-T09 | Exact operational seam and independent ownership |
-| [Construction and use](logging.md#construction-and-use) | LOG-T01–LOG-T07 | Explicit no-op and observable unit/no-effects behavior |
-| [Concrete implementation obligations](logging.md#concrete-implementation-obligations) | LOG-T11 | Faithful documentation only; actual sinks and qualification external |
-| [Compatibility and migration](logging.md#compatibility-and-migration) | LOG-T10, LOG-T12 | Retain executable compatibility and explain source migration |
+| [Public contract](README.md#public-contract) | LOG-T05, LOG-T08, LOG-T09 | Exact operational seam and independent ownership |
+| [Construction and use](README.md#construction-and-use) | LOG-T01–LOG-T07 | Explicit no-op and observable unit/no-effects behavior |
+| [Concrete implementation obligations](README.md#concrete-implementation-obligations) | LOG-T11 | Faithful documentation only; actual sinks and qualification external |
+| [Compatibility and migration](README.md#compatibility-and-migration) | LOG-T10, LOG-T12 | Retain executable compatibility and explain source migration |
 
 The consumer contract owns the diagnostic policy. Concrete implementations and
 consuming applications own their separate integration and qualification; this

@@ -5,12 +5,11 @@ Version headings identify crate releases; unreleased work is explicitly marked.
 This consolidates the existing release documents, not a complete history of all
 earlier releases.
 
-## 0.6.0 — Unreleased
+## 0.6.0 — 2026-10-21
 
-Status: prepared source; the immutable `0.6.0` release tag has not yet been
-published. A manifest version change alone is not publication. Tags use plain
-version numbers, without a prefix. This is the crate version; Logger design
-document revision 0.1.0 is a separate identifier.
+Release tag: `0.6.0`. Tags use plain version numbers, without a prefix.
+This is the crate version; Logger design document revision 0.1.0 is a separate
+identifier.
 
 ### Added
 
@@ -19,8 +18,8 @@ document revision 0.1.0 is a separate identifier.
   All return unit; a normal return is not a delivery acknowledgment.
 - `kernel_oss::logging::NoOpLogger`: explicit infallible `new()` and `Default`,
   with no allocation, I/O, retained input, invocation state or diagnostics.
-- Self-contained [consumer documentation](docs/logging.md), [design](docs/logging-design.md)
-  and [source layout](docs/logging-source-layout.md), including concrete logger
+- Self-contained [consumer documentation](docs/logging/README.md), [design](docs/logging/design.md)
+  and [source layout](docs/logging/source-layout.md), including concrete logger
   confidentiality and failure-diagnostic obligations.
 - Ordinary-interface tests, trait-object/concurrency tests and compiler fixtures
   verifying the actual public library, including silent no-op execution.
@@ -31,7 +30,14 @@ document revision 0.1.0 is a separate identifier.
   and explicitly requires signature adaptation. Its existing deprecation remains.
 - Log-entry writing Gateways are documented as compatibility request/Result APIs.
 - Documentation and source comments describe the OSS contracts directly within
-  this repository.
+  this repository. Consumer guides are organized by public API area with README
+  landing pages and linked design references; `docs/README.md` provides the index
+  and local authoring convention.
+- Corrected catalog imports, constructors and FilePath validation guidance.
+- Added non-mutating `make fmt-check`; `make ci` uses it and remains a fast
+  contributor check, separate from the documented full release baseline.
+- Added complete URL generator verification instructions and corrected the NFC
+  fixture checksum link.
 
 ### Compatibility and migration
 
@@ -50,8 +56,8 @@ supplied. Choose NoOpLogger explicitly when absence of output is intended.
 
 `WriteLogEntryGW` and `AsyncWriteLogEntryGW` retain their request/Result contracts;
 changing to the operational Logger is a caller design decision, not an automatic
-migration. See [Compatibility and migration](docs/logging.md#compatibility-and-migration).
-After publication, pin tag `0.6.0`, rebuild, and verify consuming applications.
+migration. See [Compatibility and migration](docs/logging/README.md#compatibility-and-migration).
+Pin tag `0.6.0`, rebuild, and verify consuming applications.
 This changelog does not claim downstream adoption or qualification.
 
 ### Boundaries

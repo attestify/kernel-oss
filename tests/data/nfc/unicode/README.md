@@ -2,7 +2,7 @@
 
 This exact committed Unicode 17.0 behavioral fixture is immutable conformance
 data. Its SHA-256 value is bound by
-[`tools/unicode-nfc/checksums.sha256`](../../../tools/unicode-nfc/checksums.sha256).
+[`tools/unicode-nfc/checksums.sha256`](../../../../tools/unicode-nfc/checksums.sha256).
 
 | File | Role | Consumer | Verification |
 | --- | --- | --- | --- |

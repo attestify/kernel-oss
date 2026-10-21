@@ -9,7 +9,7 @@
 //! of scope.
 //!
 //! The permanent private-engine behavior and coverage floor are defined in
-//! `docs/nfc-text.md` and `docs/testing.md`.
+//! `docs/values/text/README.md` and `docs/testing.md`.
 
 use super::{is_virama, normalize_nfc};
 

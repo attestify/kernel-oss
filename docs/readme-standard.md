@@ -2,12 +2,14 @@
 
 ## Status and purpose
 
-This document is the normative authoring standard for a Kernel repository
-README. It governs both initial writing and later maintenance.
+This document is the local authoring standard for the Kernel OSS repository-root
+`README.md`. It governs initial writing and later maintenance of that file.
+Area landing pages under `docs/` follow the
+[library documentation convention](README.md#appendix-a-library-documentation-convention).
 
 A Kernel README is the durable entry point for a consumer or maintainer who
 does not know the repository's implementation history. It must explain what the
-crate is, how it relates to the other Kernel crate, how to consume it safely,
+crate is, what it owns and which declared dependencies it uses, how to consume it safely,
 where deeper reference material lives, and how to verify it.
 
 A README is not a project tracker, approval record, implementation handoff,
@@ -27,7 +29,7 @@ directories, or historical decisions.
 
 ## Required section order
 
-Every Kernel README must use the following information order. Headings may be
+The repository-root README must use the following information order. Headings may be
 specialized when clarity improves, but the content order must remain stable.
 
 1. **Title and summary** — canonical repository/crate name and a two- or
@@ -38,8 +40,8 @@ specialized when clarity improves, but the content order must remain stable.
    dump of every module.
 4. **Quick start** — the smallest compiling examples that demonstrate the
    primary consumer path.
-5. **Ownership or composition** — what this crate owns, re-exports, or delegates
-   to the other Kernel crate.
+5. **Ownership or composition** — what this crate owns and what it
+   re-exports or delegates through its declared dependencies.
 6. **Security and data handling** — sensitive accessors, redacted formatting,
    trust boundaries, and APIs that intentionally do not exist.
 7. **Architecture and reference documentation** — links to durable formal docs,

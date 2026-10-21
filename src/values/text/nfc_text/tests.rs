@@ -8,7 +8,7 @@
 //! transport, and RegularFile-content behavior are intentionally out of scope.
 //!
 //! The permanent behavior contract and coverage floor are defined in
-//! `docs/nfc-text.md` and `docs/testing.md`.
+//! `docs/values/text/README.md` and `docs/testing.md`.
 
 use super::NfcText;
 use crate::values::Value;

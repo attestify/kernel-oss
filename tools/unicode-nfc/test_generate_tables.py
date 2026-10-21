@@ -1,7 +1,7 @@
 """Offline NFC generator coverage for the permanent custody contract.
 
 The controlling generation and coverage requirements are documented in
-``docs/nfc-text.md`` and ``docs/testing.md``.
+``docs/values/text/README.md`` and ``docs/testing.md``.
 """
 
 from __future__ import annotations

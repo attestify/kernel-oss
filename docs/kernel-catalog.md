@@ -75,28 +75,28 @@ descriptor accessors. Kernel supplies no product descriptor meaning.
 | `ULID` | `kernel_oss::ulid::ULID` | `u128` | `from_parts`, `from_string`, `nil`, `from_bytes` | Use as the default stable identity value. Planned move: prefer `kernel_oss::values::ulid::ULID` after the value-module migration. |
 | `UTCTimestamp` | `kernel_oss::values::datetime::utc_timestamp::UTCTimestamp` | nanoseconds/milliseconds/seconds accessors | `builder()` | Use for bounded UTC timestamps. |
 | `StartTime` | `kernel_oss::values::datetime::start_time::StartTime` | `u128` milliseconds | `now`, `from`, `try_from` | Use for process or operation start times. |
-| `Line` | `kernel_oss::values::text::line::Line` | `str` | `try_from` | Use for bounded single-line text. |
-| `Block` | `kernel_oss::values::text::block::Block` | `str` | `try_from` | Use for bounded multi-line text blocks. |
+| `Line` | `kernel_oss::values::text::line::Line` | `str` | `new(&str)`, `from_string(...)` | Use for bounded single-line text. |
+| `Block` | `kernel_oss::values::text::block::Block` | `str` | `new(&str)`, `from_string(...)` | Use for bounded multi-line text blocks. |
 | `NfcText` | `kernel_oss::values::text::NfcText` | Unicode 17.0 NFC `str` | `new` | Use when a complete string must be held as canonical NFC text; the shared normalization engine remains private. |
-| `URL` | `kernel_oss::values::uri::url::URL` | canonical WHATWG URL | `try_new` | Use for dependency-free parsing, resolution, borrowed component access, and immutable mutation. See [URL Value and Architecture](url.md). |
+| `URL` | `kernel_oss::values::uri::url::URL` | canonical WHATWG URL | `try_new` | Use for dependency-free parsing, resolution, borrowed component access, and immutable mutation. See [URL Value and Architecture](values/uri/url/README.md). |
 
 ### File And Directory Values
 
 | Type | Module Path | Canonical Value | Construction | Reuse Guidance |
 | --- | --- | --- | --- | --- |
-| `FilePath` | `kernel_oss::values::specification::file_path::FilePath` | `str` | `from`, `try_from` | Use for validated file path text in requests and specification values. |
+| `FilePath` | `kernel_oss::values::specification::file_path::FilePath` | `str` | `from`, `try_from` | File-path text wrapper. `from` performs no validation; `try_from` rejects empty or whitespace-only input. Neither verifies filesystem existence or platform-specific path syntax. |
 | `FileName` | `kernel_oss::values::file_system::file_name::FileName` | `str` | `builder()` | Use for bounded file names. |
-| `DirectoryName` | `kernel_oss::values::directory::name::DirectoryName` | `str` | `try_from` | Use for bounded directory names. |
+| `DirectoryName` | `kernel_oss::values::directory::name::DirectoryName` | `str` | `from(&Name)` | Use for bounded directory names. |
 | `DirectoryList` | `kernel_oss::values::directory::directory_list::DirectoryList` | named path list | `try_from_vec`, `try_from_hashmap`, `try_add`, `try_merge` | Use for expected directory structures, not OS-specific path retrieval. |
 
 ### Namespace Values
 
 | Type | Module Path | Canonical Value | Construction | Reuse Guidance |
 | --- | --- | --- | --- | --- |
-| `NRN` | `kernel_oss::values::nrn::nrn::NRN` | `str` | `try_from` | Use for Attestify namespace resource names. |
-| `NID` | `kernel_oss::values::nrn::nrn::NID` | `str` | `new` | Use for namespace identifiers. |
-| `NSS` | `kernel_oss::values::nrn::nrn::NSS` | `str` | `new` | Use for namespace-specific resource strings. |
-| `NapeNID` | `kernel_oss::values::nrn::nrn::NapeNID` | enum | `new` | Use for kernel-supported NRN namespace identifiers. |
+| `NRN` | `kernel_oss::values::nrn::NRN` | `str` | `new(&str)` | Use for Attestify namespace resource names. |
+| `NID` | `kernel_oss::values::nrn::NID` | `str` | `new` | Use for namespace identifiers. |
+| `NSS` | `kernel_oss::values::nrn::NSS` | `str` | `new` | Use for namespace-specific resource strings. |
+| `NapeNID` | `kernel_oss::values::nrn::NapeNID` | enum | `new` | Use for kernel-supported NRN namespace identifiers. |
 
 ### Specification Values
 
@@ -107,11 +107,11 @@ descriptor accessors. Kernel supplies no product descriptor meaning.
 | `Description` | `kernel_oss::values::specification::description::Description` | `str` | `try_from` | Use for bounded long descriptions. |
 | `ShortDescription` | `kernel_oss::values::specification::short_description::ShortDescription` | `str` | `try_from` | Use for bounded short descriptions. |
 | `SubjectId` | `kernel_oss::values::specification::subject_id::SubjectId` | `str` | `new` | Use for bounded subject identifiers. |
-| `Subject` | `kernel_oss::values::specification::subject::Subject` | `NRN` plus `SubjectId` | `new` | Use for specification subjects. |
-| `MetaData` | `kernel_oss::values::specification::metadata::MetaData` | name/description pairs | `try_from_vec`, `try_add`, `try_merge` | Use for bounded metadata collections. |
+| `Subject` | `kernel_oss::values::specification::subject::Subject` | `NRN` plus `SubjectId` | `try_new(nrn, id)` | Use for specification subjects. |
+| `MetaData` | `kernel_oss::values::specification::metadata::MetaData` | name/description pairs | `Default`; mutable `add` and `upsert` | Use for bounded metadata collections. |
 | `Kind` | `kernel_oss::values::specification::kind::Kind` | enum | `new` | Use for specification kind values. |
 | `Outcome` | `kernel_oss::values::specification::outcome::Outcome` | enum | `try_from` | Use for pass/fail/error/inconclusive outcomes. |
-| `Procedure` | `kernel_oss::values::specification::procedure::Procedure` | repository and directory | `new` | Use for specification procedure locations. |
+| `Procedure` | `kernel_oss::values::specification::procedure::Procedure` | repository and directory | `try_new(repository, directory)` | Use for specification procedure locations. |
 | `RepositoryLink` | `kernel_oss::values::specification::repository_link::RepositoryLink` | parsed URL | `builder()` | Use for repository URLs with allowed/default schemes. |
 
 ### Assurance Specification Objects
@@ -196,8 +196,8 @@ outside Kernel. Two markers sharing an input remain separate capabilities.
 
 ## Operational Logging
 
-Introduced in 0.6.0 (release tag pending). See the
-[0.6.0 changelog](../CHANGELOG.md#060--unreleased) for compatibility and migration.
+Introduced in 0.6.0. See the
+[0.6.0 changelog](../CHANGELOG.md#060--2026-10-21) for compatibility and migration.
 
 | Type | Public path | Contract |
 | --- | --- | --- |
@@ -205,10 +205,10 @@ Introduced in 0.6.0 (release tag pending). See the
 | `NoOpLogger` | `kernel_oss::logging::NoOpLogger` | Infallible `new()` and `Default`; no output, retained input or invocation state. |
 
 These are operational logging APIs, not Gateways. Unit return is not a delivery
-acknowledgment. See [Logging](logging.md) for safety, concrete implementation
+acknowledgment. See [Logging](logging/README.md) for safety, concrete implementation
 obligations and compatibility limits. Abandoned original messages are discarded;
 emergency diagnostics report logger health only and never replay payloads.
-The [diagnostic policy](logging.md#concrete-implementation-obligations)
+The [diagnostic policy](logging/README.md#concrete-implementation-obligations)
 owns routing, permitted fields, episode accounting and timing. NoOpLogger has no
 sink failures and emits no diagnostics.
 

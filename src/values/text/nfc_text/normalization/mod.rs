@@ -4,7 +4,7 @@
 // Licensed under MIT; see third-party/licenses/unicode-normalization-MIT.txt.
 // Modified by Attestify in 2026 for a private Unicode 17.0 NFC-only engine.
 // Relocated to Kernel OSS without algorithmic rewrite in 2026; see
-// docs/nfc-text.md and THIRD_PARTY_NOTICES.md.
+// docs/values/text/README.md and THIRD_PARTY_NOTICES.md.
 //
 // This owned implementation keeps only the Unicode 17.0 NFC algorithmic
 // portions: canonical decomposition, canonical ordering, and composition.
